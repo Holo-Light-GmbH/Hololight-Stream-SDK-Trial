@@ -1,0 +1,19 @@
+{
+    "name": "Hololight.Isar.Runtime",
+    "references": [
+        "GUID:e40ba710768534012815d3193fa296cb"
+    ],
+    "includePlatforms": [
+        "Editor",
+        "WSA",
+        "WindowsStandalone64"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,17 @@
+{
+	"name": "ISAR XRSDK",
+	"version": "1.0.0",
+	"libraryName": "remoting_unity",
+
+	"displays": [
+		{
+			"id": "ISAR Display",
+			"disablesLegacyVr":  true
+		}
+	],
+	"inputs": [
+		{
+			"id": "ISAR Input"
+		}
+	]
+}
