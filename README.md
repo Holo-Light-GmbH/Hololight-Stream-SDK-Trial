@@ -11,6 +11,8 @@ We’ve taken our approach to Interactive Streaming a step further by developing
 
 # Getting Started
 
+> :warning: This **trial** will expire/renew **April 1st, 2021**.
+
 > :warning: We don't recommend changing any source files delivered with Isar. If you do so, we can't guarantee support.
 
 ## Prerequisites
@@ -50,8 +52,7 @@ We’ve taken our approach to Interactive Streaming a step further by developing
 If you need the manual way (custom MRTK Configurations), then do the following steps.
 
 - Add **MixedRealityToolkit** Object to the Scene by selecting the menu option `Mixed Reality Toolkit->Add to Scene and Configure...` in top menu bar of Unity.
-- Change **Camera** profile from Default to **IsarXRSDKCameraProfile**
-- Change **Input** Profile to **IsarXRSDKInputSystemProfile** 
+- Change profile from Default to **IsarXRSDKConfigurationProfile**
 
 ### Checklist
 
@@ -109,3 +110,26 @@ You can check out the preconfigured Project **HelloIsar**. Navigate to the Folde
 	- Click on the **+** Icon and add package from disk. 
 	- Now select the **package.json** file inside the **com.hololight.isar** folder. 
 - Now the SDK should get correctly loaded. 
+
+# Bug Reporting & Feature Requests
+
+Ultimately, the ISAR SDK was made for developers, by developers. With that in mind, we would like to capture your feedback (i.e. bug reports and/or feature requests). Should you have found an issue/bug/blocking feature, please let us know via the [ISAR SDK Trial Issues Section](https://github.com/Holo-Light-GmbH/ISAR-SDK-Trial/issues). Should you be unfamiliar with the tool feel free to check out [Mastering GitHub Issue Reporting](https://guides.github.com/features/issues/) for more info.
+
+## How to write a good Bug Report?
+
+If your bug report is clear to follow, understand & reproduce, chances are higher that it will get fixed. So fixing a bug depends on how effectively it's reported.
+
+### 1) Reproducible:
+
+
+If your bug is not reproducible it will never get fixed. You should clearly **provide the steps to reproduce the bug**. 
+Do not assume or skip any reproducing step. A Step-by-step description of the issue is easy to reproduce and fix. E.g. **A failing test** with the issue is the preferred way to report a reproducible error as it contains all the assumptions and environment settings necessary for the error to occur. 
+
+### 2) Specificity:
+
+No need to write an essay about the issue. Just be specific and to the point. Try to summarize the problem in minimum words yet in an effective way. Do not combine multiple problems even they seem to be similar. Write different reports for each problem. *But also check if your issue already exists--if so, please leave a comment on the existing issue*.
+
+
+### 3) Environment/Version/Other Details:
+
+Include the SDK version, Unity version HoloLens OS version you're using, as well as versions of the relevant major components, e.g. What .NET version, IIS Version, Windows Version etc.
