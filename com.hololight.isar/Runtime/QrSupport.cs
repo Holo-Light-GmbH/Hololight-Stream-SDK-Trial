@@ -1,49 +1,20 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
+using HoloLight.Isar;
 using HoloLight.Isar.Native;
 using HoloLight.Isar.Native.Qr;
 using UnityEngine;
 
-// KL: Use a base class for wrapping C APIs from the library which handles stuff like Init/Close so you don't have to
-// and exposes connection state things because calling things without a valid connection isn't that good either.
-// But it'd be nice if it worked for scriptableobjects also, but I think MonoBehaviour is more important rn.
-// MonoBehaviour inheritance is kinda ugly tho, I think. We'll see.
-// Also, this could use refcounting in the name so the purpose is more clear? Not sure either.
-// VW: Basically, inherit from IsarEventListener.
-// Don't know about scriptable objects though.
-// that connection init is internally refcounted is of no concern to users and it's implementation-specific knowledge which serves no purpose here, especially if users will simply inherit a base class which already does the initialization.
-public /*abstract*/ class QrSupport : MonoBehaviour
+public class QrSupport : MonoBehaviour
 {
-	ConnectionHandle _handle = new ConnectionHandle();
-	ServerApi _serverApi;
-	ConnectionState _connectionState;
-	object lockObj = new object();
+	IsarQr _isar;
 	bool isWatching;
 
-	void OnConnectionStateChanged(ConnectionState state)
+	void OnConnectionStateChanged(HlrConnectionState state)
 	{
-		lock (lockObj)
-		{
-			_connectionState = state;
-		}
-
-		if (state == ConnectionState.Disconnected)
+		if (state == HlrConnectionState.Disconnected)
 		{
 			isWatching = false;
-		}
-	}
-
-	private bool IsConnected
-	{
-		get
-		{
-			ConnectionState state;
-			lock (lockObj)
-			{
-				state = _connectionState;
-			}
-			return state == ConnectionState.Connected;
 		}
 	}
 
@@ -51,7 +22,7 @@ public /*abstract*/ class QrSupport : MonoBehaviour
 	private UnityEngine.Vector3 positionU = UnityEngine.Vector3.zero;
 	private UnityEngine.Quaternion orientationU = UnityEngine.Quaternion.identity;
 
-	void UpdatePose(Transform _transform, in HoloLight.Isar.Native.Pose pose, float halfLength)
+	void UpdatePose(Transform _transform, in HoloLight.Isar.Native.HlrPose pose, float halfLength)
 	{
 		if (!float.IsNaN(pose.Position.X))
 		{
@@ -73,54 +44,35 @@ public /*abstract*/ class QrSupport : MonoBehaviour
 		}
 	}
 
-	protected virtual void Start()
+	private void Start()
     {
-		//Init remoting library (or rather get its struct, because XR display already initialized it when we called CreateSubsystem) 
-		_serverApi = new ServerApi();
-		Error err = ServerApi.Create(ref _serverApi);
-
-		if (err != Error.eNone)
-		{
-			throw new Exception("Failed to create API struct");
-		}
-
-		GraphicsApiConfig gfx = new GraphicsApiConfig();
-		ConnectionCallbacks cb = new ConnectionCallbacks();
-		err = _serverApi.ConnectionApi.Init(null, gfx, cb, ref _handle);
-
-		if (err != Error.eNone)
-		{
-			throw new Exception("Failed to init remoting lib");
-		}
-
-		//Kinda awful that we have to do this because it's easy to forget and other safehandle types don't do this.
-		//Maybe something for the "nice" C# layer if we want one. Right now it's raw bindings in here.
-		_handle.ConnectionApi = _serverApi.ConnectionApi;
-
-		Callbacks.ConnectionStateChanged += OnConnectionStateChanged;
-
-		QrApi.Init(_serverApi.ConnectionApi, _handle);
-		QrApi.EnumerationCompleted += QrApi_OnEnumerationCompleted;
-		QrApi.IsSupportedReceived += QrApi_OnIsSupportedReceived;
-		QrApi.AccessStatusReceived += QrApi_OnAccessStatusReceived;
-		QrApi.Added += QrApi_OnAdded;
-		QrApi.Updated += QrApi_OnUpdated;
-		QrApi.Removed += QrApi_OnRemoved;
-
-		MessageCallbacks msgCallbacks = new MessageCallbacks(null, null, QrApi.OnIsSupported, QrApi.OnRequestAccess, QrApi.OnAdded, QrApi.OnUpdated, QrApi.OnRemoved, QrApi.OnEnumerationCompleted);
-		_serverApi.ConnectionApi.RegisterMessageCallbacks(_handle, ref msgCallbacks);
+		_isar = new IsarQr();
+		_isar.ConnectionStateChanged += OnConnectionStateChanged;
+		_isar.QrCodeAdded += QrApi_OnAdded;
+		_isar.QrCodeUpdated += QrApi_OnUpdated;
+		_isar.QrCodeRemoved += QrApi_OnRemoved;
+		_isar.QrCodeEnumerationCompleted += QrApi_OnEnumerationCompleted;
+		_isar.QrCodeAccessStatusReceived += QrApi_OnAccessStatusReceived;
+		_isar.QrCodeIsSupportedReceived += QrApi_OnIsSupportedReceived;
 	}
 
-	protected virtual void OnDestroy()
+	private void OnDestroy()
 	{
-		_handle.Dispose();
+		_isar.ConnectionStateChanged -= OnConnectionStateChanged;
+		_isar.QrCodeAdded -= QrApi_OnAdded;
+		_isar.QrCodeUpdated -= QrApi_OnUpdated;
+		_isar.QrCodeRemoved -= QrApi_OnRemoved;
+		_isar.QrCodeEnumerationCompleted -= QrApi_OnEnumerationCompleted;
+		_isar.QrCodeAccessStatusReceived -= QrApi_OnAccessStatusReceived;
+		_isar.QrCodeIsSupportedReceived -= QrApi_OnIsSupportedReceived;
+		_isar.Dispose();
 	}
 
 	private void Update()
 	{
-		if (IsConnected)
+		if (_isar.IsConnected)
 		{
-			QrApi.ProcessMessages();
+			_isar.ProcessMessages();
 		}
 	}
 
@@ -141,19 +93,21 @@ public /*abstract*/ class QrSupport : MonoBehaviour
 	{
 		if (!isWatching)
 		{
-			if (IsConnected)
+			if (_isar.IsConnected)
 			{
-				Error error = QrApi.Start();
-				if (error == Error.eNone)
+				try
 				{
-					isWatching = true;
+					_isar.Start();
+					isWatching = true; 
 				}
-				else
-					Debug.LogWarning($"QrApi call returned an error: {error}");
+				catch (Exception)
+				{
+					throw;
+				}
 			}
 			else
 			{
-				Debug.LogWarning($"cant watch! (isConnected: {IsConnected})");
+				Debug.LogWarning($"cant watch! (isConnected: {_isar.IsConnected})");
 			}
 		}
 	}
@@ -163,15 +117,20 @@ public /*abstract*/ class QrSupport : MonoBehaviour
 	{
 		if (isWatching)
 		{
-			if (IsConnected)
+			if (_isar.IsConnected)
 			{
-				//_server.QrStop();
-				var error = QrApi.Stop();
-				if (error != Error.eNone) Debug.LogWarning($"QrApi call returned an error: {error}");
+				try
+				{
+					_isar.Stop();
+				}
+				catch (Exception)
+				{
+					throw;
+				}
 			}
 			else
 			{
-				Debug.LogWarning($"cant stop watching! (isConnected: {IsConnected})");
+				Debug.LogWarning($"cant stop watching! (isConnected: {_isar.IsConnected})");
 			}
 		}
 		isWatching = false;
@@ -180,29 +139,40 @@ public /*abstract*/ class QrSupport : MonoBehaviour
 	[ContextMenu("IsSupported")]
 	public void IsSupported()
 	{
-		if (IsConnected)
+		if (_isar.IsConnected)
 		{
-			var error = QrApi.IsSupported();
-			if (error != Error.eNone) Debug.LogWarning($"QrApi call returned an error: {error}");
+			try
+			{
+				_isar.IsSupported();
+			}
+			catch (Exception)
+			{
+				throw;
+			}
 		}
 		else
 		{
-			Debug.LogWarning($"cant stop watching! (isConnected: {IsConnected})");
+			Debug.LogWarning($"cant stop watching! (isConnected: {_isar.IsConnected})");
 		}
 	}
 
 	[ContextMenu("RequestAccess")]
 	public void RequestAccess()
 	{
-		if (IsConnected)
+		if (_isar.IsConnected)
 		{
-			//var error = QrApi.RequestAccess(connection);
-			var error = QrApi.RequestAccess();
-			if (error != Error.eNone) Debug.LogWarning($"QrApi call returned an error: {error}");
+			try
+			{
+				_isar.RequestAccess();
+			}
+			catch (Exception)
+			{
+				throw;
+			}
 		}
 		else
 		{
-			Debug.LogWarning($"cant stop watching! (isConnected: {IsConnected})");
+			Debug.LogWarning($"cant stop watching! (isConnected: {_isar.IsConnected})");
 		}
 	}
 
