@@ -22,7 +22,7 @@ namespace HoloLight.Isar.Utils
 			                             $"{matrix.m03:F6}\t{matrix.m13:F6}\t{matrix.m23:F6}\t{matrix.m33:F6}\n");
 		}
 
-		public static void LogMatrixScientific(string name, in Native.Matrix4x4 matrix)
+		public static void LogMatrixScientific(string name, in Native.HlrMatrix4x4 matrix)
 		{
 			UnityEngine.Debug.LogWarning($"{name}\n" +
 			                             $"{matrix.M00:F6}\t{matrix.M01:F6}\t{matrix.M02:F6}\t{matrix.M03:F6}\n" +
@@ -31,7 +31,7 @@ namespace HoloLight.Isar.Utils
 			                             $"{matrix.M30:F6}\t{matrix.M31:F6}\t{matrix.M32:F6}\t{matrix.M33:F6}\n");
 		}
 
-		public static void LogMatrix(string name, in Native.Matrix4x4 matrix)
+		public static void LogMatrix(string name, in Native.HlrMatrix4x4 matrix)
 		{
 			UnityEngine.Debug.LogWarning($"{name}\n (data is column-major in memory)\n" +
 			                             $"{matrix.M00:F6}\t{matrix.M10:F6}\t{matrix.M20:F6}\t{matrix.M30:F6}\n" +

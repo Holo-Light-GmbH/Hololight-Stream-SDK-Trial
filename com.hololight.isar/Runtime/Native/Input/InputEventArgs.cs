@@ -8,53 +8,53 @@ namespace HoloLight.Isar.Native.Input
 {
 	#region InteractionManager
 
-	public struct InteractionSourceDetectedEventArgs
+	public struct HlrInputEventDataSpatialInteractionSourceDetected
 	{
-		public InteractionSourceState InteractionSourceState;
+		public HlrSpatialInteractionSourceState InteractionSourceState;
 
-		public InteractionSourceDetectedEventArgs(InteractionSourceState interactionSourceState)
+		public HlrInputEventDataSpatialInteractionSourceDetected(HlrSpatialInteractionSourceState interactionSourceState)
 		{
 			InteractionSourceState = interactionSourceState;
 		}
 	}
 
-	public struct InteractionSourceLostEventArgs
+	public struct HlrInputEventDataSpatialInteractionSourceLost
 	{
-		public InteractionSourceState InteractionSourceState;
+		public HlrSpatialInteractionSourceState InteractionSourceState;
 
-		public InteractionSourceLostEventArgs(InteractionSourceState interactionSourceState)
+		public HlrInputEventDataSpatialInteractionSourceLost(HlrSpatialInteractionSourceState interactionSourceState)
 		{
 			InteractionSourceState = interactionSourceState;
 		}
 	}
 
-	public struct InteractionSourcePressedEventArgs
+	public struct HlrInputEventDataSpatialInteractionSourcePressed
 	{
-		public InteractionSourceState InteractionSourceState;
+		public HlrSpatialInteractionSourceState InteractionSourceState;
 		// TODO?: WSA has this additional PressType...
 		// public InteractionSourcePressType PressType;
 
-		public InteractionSourcePressedEventArgs(InteractionSourceState interactionSourceState)
+		public HlrInputEventDataSpatialInteractionSourcePressed(HlrSpatialInteractionSourceState interactionSourceState)
 		{
 			InteractionSourceState = interactionSourceState;
 		}
 	}
 
-	public struct InteractionSourceUpdatedEventArgs
+	public struct HlrInputEventDataSpatialInteractionSourceUpdated
 	{
-		public InteractionSourceState InteractionSourceState;
+		public HlrSpatialInteractionSourceState InteractionSourceState;
 
-		public InteractionSourceUpdatedEventArgs(InteractionSourceState interactionSourceState)
+		public HlrInputEventDataSpatialInteractionSourceUpdated(HlrSpatialInteractionSourceState interactionSourceState)
 		{
 			InteractionSourceState = interactionSourceState;
 		}
 	}
 
-	public struct InteractionSourceReleasedEventArgs
+	public struct HlrInputEventDataSpatialInteractionSourceReleased
 	{
-		public InteractionSourceState InteractionSourceState;
+		public HlrSpatialInteractionSourceState InteractionSourceState;
 
-		public InteractionSourceReleasedEventArgs(InteractionSourceState interactionSourceState)
+		public HlrInputEventDataSpatialInteractionSourceReleased(HlrSpatialInteractionSourceState interactionSourceState)
 		{
 			InteractionSourceState = interactionSourceState;
 		}
@@ -64,17 +64,17 @@ namespace HoloLight.Isar.Native.Input
 
 	#region GestureRecognizer
 
-	public /*readonly*/ struct TappedEventArgs
+	public /*readonly*/ struct HlrInputEventDataTapped
 	{
-		public readonly InteractionSource Source;
-		public /*readonly*/ InteractionSourcePose SourcePose;
-		public /*readonly*/ HeadPose HeadPose;
+		public readonly HlrSpatialInteractionSource Source;
+		public /*readonly*/ HlrSpatialInteractionSourcePose SourcePose;
+		public /*readonly*/ HlrHeadPose HeadPose;
 		public readonly int TapCount; // can only be 1 or 2, so it can be packed as 1 bit
 
-		public TappedEventArgs(
-			InteractionSource source,
-			InteractionSourcePose sourcePose,
-			HeadPose headPose,
+		public HlrInputEventDataTapped(
+			HlrSpatialInteractionSource source,
+			HlrSpatialInteractionSourcePose sourcePose,
+			HlrHeadPose headPose,
 			int tapCount)
 		{
 			Source = source;
@@ -84,16 +84,16 @@ namespace HoloLight.Isar.Native.Input
 		}
 	}
 
-	public /*readonly*/ struct HoldStartedEventArgs
+	public /*readonly*/ struct HlrInputEventDataHoldStarted
 	{
-		public readonly InteractionSource Source;
-		public /*readonly*/ InteractionSourcePose SourcePose;
-		public /*readonly*/ HeadPose HeadPose;
+		public readonly HlrSpatialInteractionSource Source;
+		public /*readonly*/ HlrSpatialInteractionSourcePose SourcePose;
+		public /*readonly*/ HlrHeadPose HeadPose;
 
-		public HoldStartedEventArgs(
-			InteractionSource source,
-			InteractionSourcePose sourcePose,
-			HeadPose headPose)
+		public HlrInputEventDataHoldStarted(
+			HlrSpatialInteractionSource source,
+			HlrSpatialInteractionSourcePose sourcePose,
+			HlrHeadPose headPose)
 		{
 			Source = source;
 			SourcePose = sourcePose;
@@ -101,16 +101,16 @@ namespace HoloLight.Isar.Native.Input
 		}
 	}
 
-	public /*readonly*/ struct HoldCompletedEventArgs
+	public /*readonly*/ struct HlrInputEventDataHoldCompleted
 	{
-		public readonly InteractionSource Source;
-		public /*readonly*/ InteractionSourcePose SourcePose;
-		public /*readonly*/ HeadPose HeadPose;
+		public readonly HlrSpatialInteractionSource Source;
+		public /*readonly*/ HlrSpatialInteractionSourcePose SourcePose;
+		public /*readonly*/ HlrHeadPose HeadPose;
 
-		public HoldCompletedEventArgs(
-			InteractionSource source,
-			InteractionSourcePose sourcePose,
-			HeadPose headPose)
+		public HlrInputEventDataHoldCompleted(
+			HlrSpatialInteractionSource source,
+			HlrSpatialInteractionSourcePose sourcePose,
+			HlrHeadPose headPose)
 		{
 			Source = source;
 			SourcePose = sourcePose;
@@ -118,16 +118,16 @@ namespace HoloLight.Isar.Native.Input
 		}
 	}
 
-	public /*readonly*/ struct HoldCanceledEventArgs
+	public /*readonly*/ struct HlrInputEventDataHoldCanceled
 	{
-		public readonly InteractionSource Source;
-		public /*readonly*/ InteractionSourcePose SourcePose;
-		public /*readonly*/ HeadPose HeadPose;
+		public readonly HlrSpatialInteractionSource Source;
+		public /*readonly*/ HlrSpatialInteractionSourcePose SourcePose;
+		public /*readonly*/ HlrHeadPose HeadPose;
 
-		public HoldCanceledEventArgs(
-			InteractionSource source,
-			InteractionSourcePose sourcePose,
-			HeadPose headPose)
+		public HlrInputEventDataHoldCanceled(
+			HlrSpatialInteractionSource source,
+			HlrSpatialInteractionSourcePose sourcePose,
+			HlrHeadPose headPose)
 		{
 			Source = source;
 			SourcePose = sourcePose;
@@ -135,16 +135,16 @@ namespace HoloLight.Isar.Native.Input
 		}
 	}
 
-	public /*readonly*/ struct ManipulationStartedEventArgs
+	public /*readonly*/ struct HlrInputEventDataManipulationStarted
 	{
-		public readonly InteractionSource Source;
-		public /*readonly*/ InteractionSourcePose SourcePose;
-		public /*readonly*/ HeadPose HeadPose;
+		public readonly HlrSpatialInteractionSource Source;
+		public /*readonly*/ HlrSpatialInteractionSourcePose SourcePose;
+		public /*readonly*/ HlrHeadPose HeadPose;
 
-		public ManipulationStartedEventArgs(
-			InteractionSource source,
-			InteractionSourcePose sourcePose,
-			HeadPose headPose)
+		public HlrInputEventDataManipulationStarted(
+			HlrSpatialInteractionSource source,
+			HlrSpatialInteractionSourcePose sourcePose,
+			HlrHeadPose headPose)
 		{
 			Source = source;
 			SourcePose = sourcePose;
@@ -152,38 +152,18 @@ namespace HoloLight.Isar.Native.Input
 		}
 	}
 
-	public /*readonly*/ struct ManipulationUpdatedEventArgs
+	public /*readonly*/ struct HlrInputEventDataManipulationUpdated
 	{
-		public readonly InteractionSource Source;
-		public /*readonly*/ InteractionSourcePose SourcePose;
-		public /*readonly*/ HeadPose HeadPose;
-		public /*readonly*/ ManipulationDelta Delta;
+		public readonly HlrSpatialInteractionSource Source;
+		public /*readonly*/ HlrSpatialInteractionSourcePose SourcePose;
+		public /*readonly*/ HlrHeadPose HeadPose;
+		public /*readonly*/ HlrSpatialManipulationDelta Delta;
 
-		public ManipulationUpdatedEventArgs(
-			InteractionSource source,
-			InteractionSourcePose sourcePose,
-			HeadPose headPose,
-			ManipulationDelta delta)
-		{
-			Source = source;
-			SourcePose = sourcePose;
-			HeadPose = headPose;
-			Delta = delta;
-		}
-	}
-
-	public /*readonly*/ struct ManipulationCompletedEventArgs
-	{
-		public readonly InteractionSource Source;
-		public /*readonly*/ InteractionSourcePose SourcePose;
-		public /*readonly*/ HeadPose HeadPose;
-		public /*readonly*/ ManipulationDelta Delta;
-
-		public ManipulationCompletedEventArgs(
-			InteractionSource source,
-			InteractionSourcePose sourcePose,
-			HeadPose headPose,
-			ManipulationDelta delta)
+		public HlrInputEventDataManipulationUpdated(
+			HlrSpatialInteractionSource source,
+			HlrSpatialInteractionSourcePose sourcePose,
+			HlrHeadPose headPose,
+			HlrSpatialManipulationDelta delta)
 		{
 			Source = source;
 			SourcePose = sourcePose;
@@ -192,16 +172,36 @@ namespace HoloLight.Isar.Native.Input
 		}
 	}
 
-	public /*readonly*/ struct ManipulationCanceledEventArgs
+	public /*readonly*/ struct HlrInputEventDataManipulationCompleted
 	{
-		public readonly InteractionSource Source;
-		public /*readonly*/ InteractionSourcePose SourcePose;
-		public /*readonly*/ HeadPose HeadPose;
+		public readonly HlrSpatialInteractionSource Source;
+		public /*readonly*/ HlrSpatialInteractionSourcePose SourcePose;
+		public /*readonly*/ HlrHeadPose HeadPose;
+		public /*readonly*/ HlrSpatialManipulationDelta Delta;
 
-		public ManipulationCanceledEventArgs(
-			InteractionSource source,
-			InteractionSourcePose sourcePose,
-			HeadPose headPose)
+		public HlrInputEventDataManipulationCompleted(
+			HlrSpatialInteractionSource source,
+			HlrSpatialInteractionSourcePose sourcePose,
+			HlrHeadPose headPose,
+			HlrSpatialManipulationDelta delta)
+		{
+			Source = source;
+			SourcePose = sourcePose;
+			HeadPose = headPose;
+			Delta = delta;
+		}
+	}
+
+	public /*readonly*/ struct HlrInputEventDataManipulationCanceled
+	{
+		public readonly HlrSpatialInteractionSource Source;
+		public /*readonly*/ HlrSpatialInteractionSourcePose SourcePose;
+		public /*readonly*/ HlrHeadPose HeadPose;
+
+		public HlrInputEventDataManipulationCanceled(
+			HlrSpatialInteractionSource source,
+			HlrSpatialInteractionSourcePose sourcePose,
+			HlrHeadPose headPose)
 		{
 			Source = source;
 			SourcePose = sourcePose;
@@ -219,18 +219,18 @@ namespace HoloLight.Isar.Native.Input
 		IsNavZ = 8,
 	}
 
-	public /*readonly*/ struct NavigationStartedEventArgs
+	public /*readonly*/ struct HlrInputEventDataNavigationStarted
 	{
 		public readonly NavigationFlags Flags;
 
-		public readonly InteractionSource Source;
-		public /*readonly*/ InteractionSourcePose SourcePose;
-		public /*readonly*/ HeadPose HeadPose;
+		public readonly HlrSpatialInteractionSource Source;
+		public /*readonly*/ HlrSpatialInteractionSourcePose SourcePose;
+		public /*readonly*/ HlrHeadPose HeadPose;
 
-		public NavigationStartedEventArgs(
-			InteractionSource source,
-			InteractionSourcePose sourcePose,
-			HeadPose headPose,
+		public HlrInputEventDataNavigationStarted(
+			HlrSpatialInteractionSource source,
+			HlrSpatialInteractionSourcePose sourcePose,
+			HlrHeadPose headPose,
 			NavigationFlags flags)
 		{
 			Source = source;
@@ -240,20 +240,20 @@ namespace HoloLight.Isar.Native.Input
 		}
 	}
 
-	public /*readonly*/ struct NavigationUpdatedEventArgs
+	public /*readonly*/ struct HlrInputEventDataNavigationUpdated
 	{
 		public readonly NavigationFlags Flags;
-		public readonly InteractionSource Source;
-		public /*readonly*/ InteractionSourcePose SourcePose;
-		public /*readonly*/ HeadPose HeadPose;
-		public /*readonly*/ Vector3 NormalizedOffset;
+		public readonly HlrSpatialInteractionSource Source;
+		public /*readonly*/ HlrSpatialInteractionSourcePose SourcePose;
+		public /*readonly*/ HlrHeadPose HeadPose;
+		public /*readonly*/ HlrVector3 NormalizedOffset;
 
-		public NavigationUpdatedEventArgs(
-			InteractionSource source,
-			InteractionSourcePose sourcePose,
-			HeadPose headPose,
+		public HlrInputEventDataNavigationUpdated(
+			HlrSpatialInteractionSource source,
+			HlrSpatialInteractionSourcePose sourcePose,
+			HlrHeadPose headPose,
 			NavigationFlags flags,
-			Vector3 normalizedOffset)
+			HlrVector3 normalizedOffset)
 		{
 			Flags = flags;
 			Source = source;
@@ -263,20 +263,20 @@ namespace HoloLight.Isar.Native.Input
 		}
 	}
 
-	public /*readonly*/ struct NavigationCompletedEventArgs
+	public /*readonly*/ struct HlrInputEventDataNavigationCompleted
 	{
 		public readonly NavigationFlags Flags;
-		public readonly InteractionSource Source;
-		public /*readonly*/ InteractionSourcePose SourcePose;
-		public /*readonly*/ HeadPose HeadPose;
-		public /*readonly*/ Vector3 NormalizedOffset;
+		public readonly HlrSpatialInteractionSource Source;
+		public /*readonly*/ HlrSpatialInteractionSourcePose SourcePose;
+		public /*readonly*/ HlrHeadPose HeadPose;
+		public /*readonly*/ HlrVector3 NormalizedOffset;
 
-		public NavigationCompletedEventArgs(
-			InteractionSource source,
-			InteractionSourcePose sourcePose,
-			HeadPose headPose,
+		public HlrInputEventDataNavigationCompleted(
+			HlrSpatialInteractionSource source,
+			HlrSpatialInteractionSourcePose sourcePose,
+			HlrHeadPose headPose,
 			NavigationFlags flags,
-			Vector3 normalizedOffset)
+			HlrVector3 normalizedOffset)
 		{
 			Flags = flags;
 			Source = source;
@@ -286,17 +286,17 @@ namespace HoloLight.Isar.Native.Input
 		}
 	}
 
-	public /*readonly*/ struct NavigationCanceledEventArgs
+	public /*readonly*/ struct HlrInputEventDataNavigationCanceled
 	{
 		public readonly NavigationFlags Flags;
-		public readonly InteractionSource Source;
-		public /*readonly*/ InteractionSourcePose SourcePose;
-		public /*readonly*/ HeadPose HeadPose;
+		public readonly HlrSpatialInteractionSource Source;
+		public /*readonly*/ HlrSpatialInteractionSourcePose SourcePose;
+		public /*readonly*/ HlrHeadPose HeadPose;
 
-		public NavigationCanceledEventArgs(
-			InteractionSource source,
-			InteractionSourcePose sourcePose,
-			HeadPose headPose,
+		public HlrInputEventDataNavigationCanceled(
+			HlrSpatialInteractionSource source,
+			HlrSpatialInteractionSourcePose sourcePose,
+			HlrHeadPose headPose,
 			NavigationFlags flags)
 		{
 			Flags = flags;

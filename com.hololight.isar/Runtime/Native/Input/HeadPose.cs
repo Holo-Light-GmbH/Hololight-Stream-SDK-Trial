@@ -7,13 +7,13 @@ namespace HoloLight.Isar.Native.Input
 	// TODO: this represents any pose (position + orientation) in 3d space
 	// Vector3 + Quaternion would be preferred but hololens spatial API
 	// doesn't expose direct access to the Quaternion of the Head, unfortunately
-	public struct HeadPose
+	public struct HlrHeadPose
 	{
-		public Vector3 Position;
-		public Vector3 ForwardDirection;
-		public Vector3 UpDirection;
+		public HlrVector3 Position;
+		public HlrVector3 ForwardDirection;
+		public HlrVector3 UpDirection;
 
-		public HeadPose(Vector3 position, Vector3 forwardDirection, Vector3 upDirection)
+		public HlrHeadPose(HlrVector3 position, HlrVector3 forwardDirection, HlrVector3 upDirection)
 		{
 			Position = position;
 			ForwardDirection = forwardDirection;

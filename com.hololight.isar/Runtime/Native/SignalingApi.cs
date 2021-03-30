@@ -9,22 +9,19 @@ namespace HoloLight.Isar.Native
 	/// <summary>
 	/// Signaling-related part of remoting API.
 	/// </summary>
-	internal struct SignalingApi
+	internal struct HlrSvSignalingApi
 	{
-		public CreateOffer CreateOffer;
-		public SetRemoteDescription SetRemoteAnswer;
-		public AddIceCandidate AddIceCandidate;
+		public HlrSvCreateOffer CreateOffer;
+		public HlrSvSetRemoteDescription SetRemoteAnswer;
+		public HlrSvAddIceCandidate AddIceCandidate;
 	}
 
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate Error CreateOffer(ConnectionHandle connectionHandle);
+	internal delegate HlrError HlrSvCreateOffer(HlrHandle connectionHandle);
 
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate Error SetRemoteDescription(ConnectionHandle connectionHandle, string sdpAnswer);
+	internal delegate HlrError HlrSvSetRemoteDescription(HlrHandle connectionHandle, string sdpAnswer);
 
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate Error AddIceCandidate(
-		ConnectionHandle connectionHandle,
+	internal delegate HlrError HlrSvAddIceCandidate(
+		HlrHandle connectionHandle,
 		[MarshalAs(UnmanagedType.LPStr)] string mId,
 		int mLineIndex,
 		[MarshalAs(UnmanagedType.LPStr)] string candidate);

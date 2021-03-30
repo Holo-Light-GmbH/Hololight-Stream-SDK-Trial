@@ -3,14 +3,12 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 using AOT;
 using HoloLight.Isar.Native.Input;
 using UnityEngine;
 
 namespace HoloLight.Isar.Native
 {
-
 	/// <summary>
 	/// Callbacks that come from native code; these need to be static because
 	/// IL2CPP does not support instance delegates, i.e. the callee invoked by native code
@@ -23,15 +21,14 @@ namespace HoloLight.Isar.Native
 	/// </summary>
 	// TODO: Callbacks should be a wrapper around ServerApi and handle passing the connectionHandle to the native side by delegating all api functions
 	// including static (and non static?) event handlers etc.
-	internal static class Callbacks
+	public static class Callbacks
 	{
-		internal static event Action<ConnectionState> ConnectionStateChanged;
-		[MonoPInvokeCallback(typeof(ConnectionCallbacks.ConnectionStateChangedCallback))]
-		internal static void OnConnectionStateChanged(ConnectionState newState, IntPtr userData)
+		internal static event Action<HlrConnectionState> ConnectionStateChanged;
+		[MonoPInvokeCallback(typeof(HlrConnectionStateChangedCallback))]
+		internal static void OnConnectionStateChanged(HlrConnectionState newState, IntPtr userData)
 		{
 			try
 			{
-				Debug.Log($"Remoting connection state changed to {newState}");
 				// TODO: dispatch on unity thread eg. using UnityMainThreadDispatcher?
 				ConnectionStateChanged?.Invoke(newState);
 			}
@@ -44,13 +41,13 @@ namespace HoloLight.Isar.Native
 		/// <summary>
 		/// Fired when the local session description is created.
 		/// </summary>
-		internal static event SdpCreatedCallback SdpCreated;
-		[MonoPInvokeCallback(typeof(ConnectionCallbacks.SdpCreatedCallback))]
-		internal static void OnSdpCreated(SdpType type, string sdp)
+		internal static event HlrSdpCreatedCallback SdpCreated;
+		[MonoPInvokeCallback(typeof(HlrSdpCreatedCallback))]
+		internal static void OnSdpCreated(HlrSdpType type, string sdp, IntPtr userData)
 		{
 			try
 			{
-				SdpCreated?.Invoke(type, sdp);
+				SdpCreated?.Invoke(type, sdp, userData);
 			}
 			catch (Exception ex)
 			{
@@ -61,13 +58,13 @@ namespace HoloLight.Isar.Native
 		/// <summary>
 		/// Fired when a local ICE candidate is created.
 		/// </summary>
-		internal static event LocalIceCandidateCreatedCallback LocalIceCandidateCreated;
-		[MonoPInvokeCallback(typeof(ConnectionCallbacks.LocalIceCandidateCreatedCallback))]
-		internal static void OnLocalIceCandidateCreated(string mId, int mLineIndex, string candidate)
+		internal static event HlrLocalIceCandidateCreatedCallback LocalIceCandidateCreated;
+		[MonoPInvokeCallback(typeof(HlrLocalIceCandidateCreatedCallback))]
+		internal static void OnLocalIceCandidateCreated(string mId, int mLineIndex, string candidate, IntPtr userData)
 		{
 			try
 			{
-				LocalIceCandidateCreated?.Invoke(mId, mLineIndex, candidate);
+				LocalIceCandidateCreated?.Invoke(mId, mLineIndex, candidate, userData);
 			}
 			catch (Exception ex)
 			{
@@ -78,10 +75,10 @@ namespace HoloLight.Isar.Native
 		/// <summary>
 		/// Fired when we receive a new XR pose from the client.
 		/// </summary>
-		internal delegate void ViewPoseHandler(in StereoViewPose viewPose);
+		internal delegate void ViewPoseHandler(in HlrXrPose viewPose);
 		internal static event ViewPoseHandler ViewPoseReceived;
-		[MonoPInvokeCallback(typeof(ViewPoseReceivedCallback))]
-		internal static void OnViewPoseReceived(in StereoViewPose pose)
+		[MonoPInvokeCallback(typeof(HlrSvViewPoseReceivedCallback))]
+		internal static void OnViewPoseReceived(in HlrXrPose pose, IntPtr userData)
 		{
 			try
 			{
@@ -96,14 +93,48 @@ namespace HoloLight.Isar.Native
 		/// <summary>
 		/// Fired when we receive a new XR pose from the client.
 		/// </summary>
-		internal delegate void InputEventHandler(in InputEvent inputEvent);
+		internal delegate void InputEventHandler(in HlrInputEvent inputEvent);
 		internal static event InputEventHandler InputEventReceived;
-		[MonoPInvokeCallback(typeof(InputEventReceivedCallback))]
-		internal static void OnInputEventReceived(in InputEvent input)
+		[MonoPInvokeCallback(typeof(HlrSvInputEventReceivedCallback))]
+		internal static void OnInputEventReceived(in HlrInputEvent input, IntPtr userData)
 		{
 			try
 			{
 				InputEventReceived?.Invoke(in input);
+			}
+			catch (Exception ex)
+			{
+				Debug.LogException(ex);
+			}
+		}
+
+		/// <summary>
+		/// Fired when we receive a custom message over DataChannel.
+		/// </summary>
+		internal static event HlrCustomMessageCallback CustomMessageReceived;
+		[MonoPInvokeCallback(typeof(HlrCustomMessageCallback))]
+		internal static void OnCustomMessageReceived(in HlrCustomMessage message, IntPtr userData)
+		{
+			try
+			{
+				CustomMessageReceived?.Invoke(message, userData);
+			}
+			catch (Exception ex)
+			{
+				Debug.LogException(ex);
+			}
+		}
+
+		/// <summary>
+		/// Fired when we receive audio data from the client.
+		/// </summary>
+		internal static event HlrSvAudioDataReceivedCallback AudioDataReceived;
+		[MonoPInvokeCallback(typeof(HlrSvAudioDataReceivedCallback))]
+		internal static void OnAudioDataReceived(in HlrAudioData audioData, IntPtr userData)
+		{
+			try
+			{
+				AudioDataReceived?.Invoke(audioData, userData);
 			}
 			catch (Exception ex)
 			{
@@ -117,8 +148,7 @@ namespace HoloLight.Isar.Native
 	// Also, ref returns could be useful.
 	// https://blogs.msdn.microsoft.com/mazhou/2017/12/12/c-7-series-part-7-ref-returns/
 	// https://docs.microsoft.com/en-us/dotnet/standard/native-interop/pinvoke
-	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-	internal delegate void ConnectionStateChangedCallback(ConnectionState newState, IntPtr userData);
+	internal delegate void HlrConnectionStateChangedCallback(HlrConnectionState newState, IntPtr userData);
 
 	// using ref instead of pointers.
 	// https://manski.net/2012/06/pinvoke-tutorial-passing-parameters-part-3/#marshalling-structs
@@ -132,9 +162,7 @@ namespace HoloLight.Isar.Native
 	// There is UnmanagedType.LPUTF8Str, but not in this version of .NET standard, so we can't use it.
 	// Default marshaling is LPStr, i.e. const char* to ANSI. I guess it should be ok, but in case it's not,
 	// this friendly comment reminds you that string encoding is hard.
-	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-	internal delegate void SdpCreatedCallback(SdpType type, string sdp);
+	internal delegate void HlrSdpCreatedCallback(HlrSdpType type, string sdp, IntPtr userData);
 
-	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-	internal delegate void LocalIceCandidateCreatedCallback(string sdpMline, int mlineIndex, string sdpizedCandidate);
+	internal delegate void HlrLocalIceCandidateCreatedCallback(string sdpMline, int mlineIndex, string sdpizedCandidate, IntPtr userData);
 }

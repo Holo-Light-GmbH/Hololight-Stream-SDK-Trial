@@ -4,11 +4,11 @@
 
 namespace HoloLight.Isar.Native
 {
-	public struct Quaternion
+	public struct HlrQuaternion
 	{
 		public float X, Y, Z, W;
 
-		public Quaternion(float x, float y, float z, float w)
+		public HlrQuaternion(float x, float y, float z, float w)
 		{
 			X = x;
 			Y = y;

@@ -23,7 +23,7 @@ MonoBehaviour:
     deviceManagerProfile: {fileID: 11400000, guid: 2d87dd11b18f700449c9dab320d19b99,
       type: 2}
   - componentType:
-      reference: Hololight.Isar.Runtime.MRTK.IsarXRSDKDeviceManager, Hololight.Isar.Runtime.MRTK
+      reference: HoloLight.Isar.Runtime.MRTK.IsarXRSDKDeviceManager, Hololight.Isar.Runtime.MRTK
     componentName: ISAR XRSDK Device Manager
     priority: 0
     runtimePlatform: 25
@@ -33,6 +33,12 @@ MonoBehaviour:
     componentName: Hand Joint Service
     priority: 0
     runtimePlatform: -1
+    deviceManagerProfile: {fileID: 0}
+  - componentType:
+      reference: HoloLight.Isar.Runtime.MRTK.IsarXRSDKTouchManager, Hololight.Isar.Runtime.MRTK
+    componentName: ISAR XRSDK Touch Device Manager
+    priority: 0
+    runtimePlatform: 25
     deviceManagerProfile: {fileID: 0}
   focusProviderType:
     reference: Microsoft.MixedReality.Toolkit.Input.FocusProvider, Microsoft.MixedReality.Toolkit.Services.InputSystem

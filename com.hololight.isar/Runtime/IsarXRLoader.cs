@@ -1,4 +1,7 @@
-﻿using System;
+﻿
+//#define USE_SIGNALING_FALLBACK
+
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Runtime.InteropServices;
@@ -8,6 +11,7 @@ using UnityEngine;
 using UnityEngine.XR;
 using UnityEngine.XR.Management;
 using System.Threading;
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -19,14 +23,31 @@ namespace Unity.XR.Isar
 	/// </summary>
 	public class IsarXRLoader : XRLoaderHelper
 	{
+		//KL: we could use Isar class instance here for init/close instead of raw API.
+
 		//Used to post calls on Unity's main thread. Useful when we want to call into remoting lib while in a native callback.
 		//Here's a lengthy read why this is useful:
 		//https://docs.microsoft.com/en-us/archive/msdn-magazine/2011/february/msdn-magazine-parallel-computing-it-s-all-about-the-synchronizationcontext
 		SynchronizationContext _syncContext;
 
 		ISignaling _signaling;
-		ServerApi _serverApi;
-		ConnectionHandle _handle = new ConnectionHandle();
+		HlrSvApi _serverApi;
+		HlrHandle _handle = new HlrHandle();
+
+		HlrConnectionState _connectionState;
+		object _lockObj = new object();
+		private bool IsConnected
+		{
+			get
+			{
+				HlrConnectionState state;
+				lock (_lockObj)
+				{
+					state = _connectionState;
+				}
+				return state == HlrConnectionState.Connected;
+			}
+		}
 
 		/// <summary>
 		/// Settings that need to be passed into the plugin BEFORE any initialization.
@@ -34,7 +55,7 @@ namespace Unity.XR.Isar
 		[StructLayout(LayoutKind.Sequential)]
 		struct UserDefinedSettings
 		{
-			public UserDefinedSettings(string configPath, SdpCreatedCallback sdpCb, LocalIceCandidateCreatedCallback iceCb, RenderingMode renderingMode)
+			public UserDefinedSettings(string configPath, HlrSdpCreatedCallback sdpCb, HlrLocalIceCandidateCreatedCallback iceCb, RenderingMode renderingMode)
 			{
 				this.configPath = configPath;
 				this.sdpCreatedCb = sdpCb;
@@ -44,8 +65,8 @@ namespace Unity.XR.Isar
 
 			[MarshalAs(UnmanagedType.LPWStr)]
 			public string configPath;
-			public SdpCreatedCallback sdpCreatedCb;
-			public LocalIceCandidateCreatedCallback localIceCandidateCreatedCb;
+			public HlrSdpCreatedCallback sdpCreatedCb;
+			public HlrLocalIceCandidateCreatedCallback localIceCandidateCreatedCb;
 			public RenderingMode renderingMode;
 		}
 
@@ -73,8 +94,8 @@ namespace Unity.XR.Isar
 			_syncContext = SynchronizationContext.Current;
 
 			string configPath = Application.streamingAssetsPath + "/remoting-config.cfg";
-			SdpCreatedCallback sdpCallback = Callbacks.OnSdpCreated;
-			LocalIceCandidateCreatedCallback iceCallback = Callbacks.OnLocalIceCandidateCreated;
+			HlrSdpCreatedCallback sdpCallback = Callbacks.OnSdpCreated;
+			HlrLocalIceCandidateCreatedCallback iceCallback = Callbacks.OnLocalIceCandidateCreated;
 
 			IsarXRSettings xrSettings = GetXRSettings();
 
@@ -100,28 +121,28 @@ namespace Unity.XR.Isar
 			_signaling.IceCandidateReceived += Signaling_IceCandidateReceived;
 
 			//Init remoting library (or rather get its struct, because XR display already initialized it when we called CreateSubsystem)
-			_serverApi = new ServerApi();
-			Error err = ServerApi.Create(ref _serverApi);
+			_serverApi = new HlrSvApi();
+			HlrError err = HlrSvApi.Create(ref _serverApi);
 
-			if (err != Error.eNone)
+			if (err != HlrError.eNone)
 			{
 				throw new Exception("Failed to create API struct");
 			}
 
-			GraphicsApiConfig gfx = new GraphicsApiConfig();
-			ConnectionCallbacks cb = new ConnectionCallbacks();
-			err = _serverApi.ConnectionApi.Init(null, gfx, cb, ref _handle);
+			HlrGraphicsApiConfig gfx = new HlrGraphicsApiConfig();
+			HlrConnectionCallbacks cb = new HlrConnectionCallbacks();
+			err = _serverApi.Connection.Init(null, gfx, cb, ref _handle);
 
-			if (err != Error.eNone)
+			if (err != HlrError.eNone)
 			{
 				throw new Exception("Failed to init remoting lib");
 			}
 
 			//Kinda awful that we have to do this because it's easy to forget and other safehandle types don't do this.
 			//Maybe something for the "nice" C# layer if we want one. Right now it's raw bindings in here.
-			_handle.ConnectionApi = _serverApi.ConnectionApi;
+			_handle.ConnectionApi = _serverApi.Connection;
 
-			_serverApi.ConnectionApi.RegisterConnectionStateHandler(_handle, Callbacks.OnConnectionStateChanged);
+			_serverApi.Connection.RegisterConnectionStateHandler(_handle, Callbacks.OnConnectionStateChanged, IntPtr.Zero);
 
 			Callbacks.SdpCreated += Callbacks_SdpCreated;
 			Callbacks.LocalIceCandidateCreated += Callbacks_LocalIceCandidateCreated;
@@ -138,6 +159,7 @@ namespace Unity.XR.Isar
 			StartSubsystem<XRInputSubsystem>();
 
 			_signaling.Listen();
+			
 			return true;
 		}
 
@@ -148,18 +170,12 @@ namespace Unity.XR.Isar
 			var display = GetLoadedSubsystem<XRDisplaySubsystem>();
 			if (display != null && display.running)
 			{
-				//we don't want to throw away all lib resources here, only reset so a new connection can be made.
-				var err = _serverApi.ConnectionApi.Reset(_handle);
-				if (err != Error.eNone)
-				{
-					Debug.LogError("Failed to reset remoting lib");
-				}
-
 				_signaling.Dispose();
 			}
 
-			StopSubsystem<XRDisplaySubsystem>();
 			StopSubsystem<XRInputSubsystem>();
+			StopSubsystem<XRDisplaySubsystem>();
+
 			return true;
 		}
 
@@ -176,17 +192,29 @@ namespace Unity.XR.Isar
 			Callbacks.LocalIceCandidateCreated -= Callbacks_LocalIceCandidateCreated;
 			Callbacks.SdpCreated -= Callbacks_SdpCreated;
 
-			DestroySubsystem<XRDisplaySubsystem>();
 			DestroySubsystem<XRInputSubsystem>();
+			DestroySubsystem<XRDisplaySubsystem>();
+
 			return true;
 		}
 
-		private void Callbacks_ConnectionStateChanged(ConnectionState newState)
+		private void Callbacks_ConnectionStateChanged(HlrConnectionState newState)
 		{
-			if (newState == ConnectionState.Disconnected)
+			lock (_lockObj)
+			{
+				_connectionState = newState;
+			}
+
+			Debug.Log($"ISAR connection state changed to {_connectionState}");
+
+			if (newState == HlrConnectionState.Connected)
+			{
+				_signaling.Dispose();
+			}
+			else if (newState == HlrConnectionState.Disconnected)
 			{
 				//Post makes an asynchronous call the next time Unity's SynchronizationContext impl does some processing.
-				//Here's Unity's reference source: 
+				//Here's Unity's reference source:
 				//https://github.com/Unity-Technologies/UnityCsReference/blob/2019.4/Runtime/Export/Scripting/UnitySynchronizationContext.cs
 				_syncContext.Post((state) =>
 				{
@@ -194,24 +222,23 @@ namespace Unity.XR.Isar
 					Start();
 				}, newState);
 			}
-			// @nocheckin: TODO: Connected -> Start() ?
 		}
 
-		private async void Callbacks_SdpCreated(SdpType type, string sdp)
+		private async void Callbacks_SdpCreated(HlrSdpType type, string sdp, IntPtr userData)
 		{
 			await _signaling.SendOfferAsync(sdp);
 		}
 
-		private async void Callbacks_LocalIceCandidateCreated(string mId, int mLineIndex, string candidate)
+		private async void Callbacks_LocalIceCandidateCreated(string mId, int mLineIndex, string candidate, IntPtr userData)
 		{
 			await _signaling.SendIceCandidateAsync(mId, mLineIndex, candidate);
 		}
 
 		private void Signaling_IceCandidateReceived(string mId, int mLineIndex, string candidate)
 		{
-			var err = _serverApi.SignalingApi.AddIceCandidate(_handle, mId, mLineIndex, candidate);
+			var err = _serverApi.Signaling.AddIceCandidate(_handle, mId, mLineIndex, candidate);
 
-			if (err != Error.eNone)
+			if (err != HlrError.eNone)
 			{
 				Debug.LogError("Failed to add ICE candidate");
 			}
@@ -221,9 +248,9 @@ namespace Unity.XR.Isar
 		{
 			Debug.Log($"Received answer SDP: {sdp}");
 
-			var err = _serverApi.SignalingApi.SetRemoteAnswer(_handle, sdp);
+			var err = _serverApi.Signaling.SetRemoteAnswer(_handle, sdp);
 
-			if (err != Error.eNone)
+			if (err != HlrError.eNone)
 			{
 				Debug.LogError("Failed to set remote answer");
 			}
@@ -237,9 +264,9 @@ namespace Unity.XR.Isar
 			await _signaling.SendVersionAsync(_serverApi.Version.PackedValue);
 
 			//This leads to Callbacks_SdpCreated if successful
-			Error err = _serverApi.SignalingApi.CreateOffer(_handle);
+			HlrError err = _serverApi.Signaling.CreateOffer(_handle);
 
-			if (err != Error.eNone)
+			if (err != HlrError.eNone)
 			{
 				Debug.LogError("Failed to create offer");
 			}

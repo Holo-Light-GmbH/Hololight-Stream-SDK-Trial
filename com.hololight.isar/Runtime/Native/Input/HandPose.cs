@@ -5,7 +5,7 @@
 namespace HoloLight.Isar.Native.Input
 {
 
-	public enum HandJointKind : int
+	public enum HlrHandJointKind : int
 	{
 		Palm = 0,
 		Wrist = 1,
@@ -36,21 +36,21 @@ namespace HoloLight.Isar.Native.Input
 		Count
 	}
 
-	public enum JointPoseAccuracy
+	public enum HlrJointPoseAccuracy
 	{
 		High = 0,
 		Approximate = 1,
 	}
 
 	// TODO: encode Accuracy (0/1) into radius sign bit (can't have negative radius)
-	public struct JointPose
+	public struct HlrJointPose
 	{
-		public Quaternion Orientation; // 16 bytes
-		public Vector3 Position;
+		public HlrQuaternion Orientation; // 16 bytes
+		public HlrVector3 Position;
 		public float Radius;
-		public JointPoseAccuracy Accuracy;
+		public HlrJointPoseAccuracy Accuracy;
 
-		public JointPose(Quaternion orientation, Vector3 position, float radius, JointPoseAccuracy accuracy)
+		public HlrJointPose(HlrQuaternion orientation, HlrVector3 position, float radius, HlrJointPoseAccuracy accuracy)
 		{
 			Orientation = orientation;
 			Position = position;
@@ -63,40 +63,40 @@ namespace HoloLight.Isar.Native.Input
 	// NativeArray has no marshalling cost
 	public struct JointPoseArray
 	{
-		private JointPose Palm;
-		private JointPose Wrist;
-		private JointPose ThumbMetacarpal;
-		private JointPose ThumbProximal;
-		private JointPose ThumbDistal;
-		private JointPose ThumbTip;
-		private JointPose IndexMetacarpal;
-		private JointPose IndexProximal;
-		private JointPose IndexIntermediate;
-		private JointPose IndexDistal;
-		private JointPose IndexTip;
-		private JointPose MiddleMetacarpal;
-		private JointPose MiddleProximal;
-		private JointPose MiddleIntermediate;
-		private JointPose MiddleDistal;
-		private JointPose MiddleTip;
-		private JointPose RingMetacarpal;
-		private JointPose RingProximal;
-		private JointPose RingIntermediate;
-		private JointPose RingDistal;
-		private JointPose RingTip;
-		private JointPose LittleMetacarpal;
-		private JointPose LittleProximal;
-		private JointPose LittleIntermediate;
-		private JointPose LittleDistal;
-		private JointPose LittleTip;
+		private HlrJointPose Palm;
+		private HlrJointPose Wrist;
+		private HlrJointPose ThumbMetacarpal;
+		private HlrJointPose ThumbProximal;
+		private HlrJointPose ThumbDistal;
+		private HlrJointPose ThumbTip;
+		private HlrJointPose IndexMetacarpal;
+		private HlrJointPose IndexProximal;
+		private HlrJointPose IndexIntermediate;
+		private HlrJointPose IndexDistal;
+		private HlrJointPose IndexTip;
+		private HlrJointPose MiddleMetacarpal;
+		private HlrJointPose MiddleProximal;
+		private HlrJointPose MiddleIntermediate;
+		private HlrJointPose MiddleDistal;
+		private HlrJointPose MiddleTip;
+		private HlrJointPose RingMetacarpal;
+		private HlrJointPose RingProximal;
+		private HlrJointPose RingIntermediate;
+		private HlrJointPose RingDistal;
+		private HlrJointPose RingTip;
+		private HlrJointPose LittleMetacarpal;
+		private HlrJointPose LittleProximal;
+		private HlrJointPose LittleIntermediate;
+		private HlrJointPose LittleDistal;
+		private HlrJointPose LittleTip;
 
 		public int Length
 		{
-			get { return (int)HandJointKind.Count; }
+			get { return (int)HlrHandJointKind.Count; }
 		}
 
 		[System.Runtime.CompilerServices.IndexerName("data")]
-		public JointPose this[int index]
+		public HlrJointPose this[int index]
 		{
 		  get
 		  {
@@ -171,7 +171,7 @@ namespace HoloLight.Isar.Native.Input
 
 	// NOTE: structs should be sequential by default, actually, so we might not need this.
 	//[StructLayout(LayoutKind.Sequential)]
-	public struct HandPose
+	public struct HlrHandPose
 	{
 		// TODO: it would be really nice if this would work
 		//[MarshalAs(UnmanagedType.ByValArray, SizeConst = (int)HandJointKind.Count/*, ArraySubType = UnmanagedType.?*/)]
@@ -181,13 +181,13 @@ namespace HoloLight.Isar.Native.Input
 
 		public JointPoseArray JointPoses;
 
-		public bool TryGetJoint( /*coordsystem, */ in HandJointKind jointIndex, out JointPose jointPose)
+		public bool TryGetJoint( /*coordsystem, */ in HlrHandJointKind jointIndex, out HlrJointPose jointPose)
 		{
 			jointPose = JointPoses[(int)jointIndex];
 			return true;
 		}
 
-		public bool TryGetJoints( /*coordsystem, */ HandJointKind[] jointIndices, JointPose[] jointPoses)
+		public bool TryGetJoints( /*coordsystem, */ HlrHandJointKind[] jointIndices, HlrJointPose[] jointPoses)
 		{
 			for (int i = 0; i < jointIndices.Length; i++)
 			{

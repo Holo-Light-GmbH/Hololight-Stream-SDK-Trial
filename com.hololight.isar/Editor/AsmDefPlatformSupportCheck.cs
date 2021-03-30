@@ -44,7 +44,8 @@ public class AsmDefPlatformSupportCheck : IPreprocessBuildWithReport
 					string json = reader.ReadToEnd();
 					var data = JsonUtility.FromJson<AsmDefData>(json);
 
-					if (!IsPlatformSupported(currentAsmDefPlatform, data))
+					//Only complain about assemblies that are not editor only (those probably have a good reason to be)
+					if (!IsPlatformSupported(currentAsmDefPlatform, data) && !IsEditorOnlyAssembly(data))
 					{
 						Debug.LogWarning($"Assembly at {path} does not support currently selected build platform ({currentAsmDefPlatform.Name})");
 					}
@@ -141,6 +142,18 @@ public class AsmDefPlatformSupportCheck : IPreprocessBuildWithReport
 		}
 
 		return supported;
+	}
+
+	private static bool IsEditorOnlyAssembly(AsmDefData data)
+	{
+		string[] includePlatforms = data.includePlatforms;
+
+		if (includePlatforms != null && includePlatforms.Length == 1 && includePlatforms[0] == "Editor")
+		{
+			return true;
+		}
+
+		return false;
 	}
 
 	public void OnPreprocessBuild(BuildReport report)

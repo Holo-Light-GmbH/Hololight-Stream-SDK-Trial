@@ -2,9 +2,21 @@
 #define USING_UNITY
 #endif
 
+#if USING_UNITY
+//#define VERBOSE_LOGS
 
+#else
+//#define VERBOSE_LOGS
+//#define TEST_THROW_XML_EXCEPTION
 
-#pragma warning disable IDE0063 
+#endif
+
+/*
+ * Copyright 2019 Holo-Light GmbH. All Rights Reserved.
+ */
+
+#pragma warning disable IDE0063 // Use simple 'using' statement // not supported in older C#/Unity versions
+
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -14,57 +26,18 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using Debug = HoloLight.Isar.Shared.Debug;
+using Trace = HoloLight.Isar.Shared.Trace;
+using Assertions = HoloLight.Isar.Shared.Assertions;
 
 #if USING_UNITY
-// TODO: merge // @nocheckin
-using Unity.XR.Isar;
+using Unity.XR.Isar; // ISignaling
 // using UnityEngine;
 // using UnityEngine.Assertions;
 #endif
 
 namespace HoloLight.Isar.Signaling
 {
-#if WITH_CANCELLATION
-	public static class BlackMagic
-	{
-		// ref: https://stackoverflow.com/questions/14524209/what-is-the-correct-way-to-cancel-an-async-operation-that-doesnt-accept-a-cance/14524565#14524565
-		// ref: https://devblogs.microsoft.com/pfxteam/how-do-i-cancel-non-cancelable-async-operations/
-		public static async Task<T> WithWaitCancellation<T>(this Task<T> task, CancellationToken token)
-		{
-			// The task completion source.
-			var tcs = new TaskCompletionSource<bool>();
-
-			// Register with the cancellation token.
-			using(token.Register( s => ((TaskCompletionSource<bool>)s).TrySetResult(true), tcs) )
-			{
-				// If the task waited on is the cancellation token...
-				if (await Task.WhenAny(task, tcs.Task) != task)
-				{
-					throw new OperationCanceledException(token);
-				}
-			}
-
-			// Wait for one or the other to complete.
-			return await task;
-		}
-
-		// throws
-		// NullReferenceException - The TaskAwaiter object was not properly initialized.
-		// TaskCanceledException - The task was canceled.
-		// Exception - The task completed in a Faulted state.
-		public static Task<T> WithWaitCancellation2<T>(this Task<T> task, CancellationToken cancellationToken)
-		{
-			return task.IsCompleted
-				? task
-				: task.ContinueWith(
-					completedTask => completedTask.GetAwaiter().GetResult(),
-					cancellationToken,
-					TaskContinuationOptions.ExecuteSynchronously,
-					TaskScheduler.Default);
-		}
-	}
-#endif // WITH_CANCELLATION
-
 	/// <summary>
 	/// This is a sample signaling implementation.
 	/// Do NOT use this in production. It is intended merely as an example!
@@ -87,15 +60,13 @@ namespace HoloLight.Isar.Signaling
 
 		private TcpListener _tcpListener;
 		private TcpClient _client;
+		//private NetworkStream _stream;
 		private byte[] _msgBuffer = new byte[1024];
+		// TODO
+		// private MemoryStream _memStream = new MemoryStream(1024);
 
-
-		private CancellationTokenSource _cancellation = new CancellationTokenSource();
 		private Task _connectAndReceiveTask;
 		private Task _connectAndReceiveTask2;
-
-		private readonly Encoding _encoding = new UTF8Encoding(true, true); 
-		private readonly IsarXmlWriter _isarXmlWriter = new IsarXmlWriter();
 
 		/// <summary>
 		/// Invoked when a signaling connection has been established.
@@ -113,7 +84,6 @@ namespace HoloLight.Isar.Signaling
 			catch (Exception e)
 			{
 				Debug.LogError(e.Message);
-				throw;
 			}
 		}
 
@@ -130,7 +100,6 @@ namespace HoloLight.Isar.Signaling
 			catch (Exception e)
 			{
 				Debug.LogError(e.Message);
-				throw;
 			}
 		}
 
@@ -148,7 +117,6 @@ namespace HoloLight.Isar.Signaling
 			catch (Exception e)
 			{
 				Debug.LogError(e.Message);
-				throw;
 			}
 		}
 
@@ -163,7 +131,6 @@ namespace HoloLight.Isar.Signaling
 			catch (Exception e)
 			{
 				Debug.LogError(e.Message);
-				throw;
 			}
 		}
 #else
@@ -181,7 +148,6 @@ namespace HoloLight.Isar.Signaling
 			catch (Exception e)
 			{
 				Debug.LogError(e.Message);
-				throw;
 			}
 		}
 #endif
@@ -203,7 +169,6 @@ namespace HoloLight.Isar.Signaling
 			catch (Exception e)
 			{
 				Debug.LogError(e.Message);
-				throw;
 			}
 		}
 
@@ -213,28 +178,33 @@ namespace HoloLight.Isar.Signaling
 		private IPAddress _signalingServerIpAddress = IPAddress.Any;
 		private int _signalingServerPort = DebugSignaling.DEFAULT_PORT;
 
-		// @nocheckin TODO: HACK: ISignaling
+		// HACK: ISignaling
 		public async void Listen()
 		{
+			Task listenTask = null;
 			try
 			{
-				await /*_signaling.*/Listen(_signalingServerIpAddress, _signalingServerPort).ConfigureAwait(false);
+				//for (int tries = 3; tries > 0; tries--)
+				//{
+					listenTask = /*_signaling.*/Listen(_signalingServerIpAddress, _signalingServerPort)/*.ConfigureAwait(false)*/;
+					await listenTask;
+				//}
 			}
 			catch (TaskCanceledException)
 			{
-				Debug.Log("+++> StartSignaling:\n" + " Connecting to signaling server cancelled by the user.");
+				Debug.Log("+++> Connecting to signaling server cancelled by the user.");
 				// ignored - expected behavior
 			}
 			catch (ObjectDisposedException disposedEx)
 			{
-				Debug.Log("+++> StartSignaling:\n" + "tcp listener was shut down while waiting for connections: " + disposedEx.Message);
+				Debug.Log("+++> tcp listener was shut down while waiting for connections: " + disposedEx.Message);
 			}
 			catch (InvalidOperationException invalidOpEx)
 			{
-				Console.WriteLine("+++> StartSignaling:\n" + invalidOpEx.Message + "\n" + invalidOpEx.StackTrace);
-				Debugger.Break();
+				Trace.Log(invalidOpEx.Message);
+				if (Debugger.IsAttached) Debugger.Break();
 			}
-			catch (System.Net.Sockets.SocketException socketEx)
+			catch (SocketException socketEx)
 			{
 				// repro: start a second server while the first one is still signaling
 				Debug.LogError(socketEx.Message);
@@ -243,7 +213,7 @@ namespace HoloLight.Isar.Signaling
 			{
 				// repro: kill client during signaling
 				// Unable to read data from the transport connection: An existing connection was forcibly closed by the remote host.
-				Debug.Log(ioEx.Message);
+				Debug.Log("IOException: " + ioEx.Message + "\n" + ioEx.StackTrace);
 				//Debug.LogWarning(ex.Message);
 				//Reset();
 			}
@@ -266,86 +236,112 @@ namespace HoloLight.Isar.Signaling
 						break;
 					default:
 						//Debug.LogError((uint)ex.HResult + ": " + ex.Message);
-						Debugger.Break();
+						if (Debugger.IsAttached) Debugger.Break();
 						throw;
 				}
+			}
+
+			if (listenTask?.Status == TaskStatus.RanToCompletion)
+			{
+				Trace.Log("There were no matching ice candidates, I think?");
+				//if (Debugger.IsAttached) Debugger.Break();
 			}
 		}
 
 #endif
 
+		// NOTE: WIP, this used to be "Async over Sync" (see https://stackoverflow.com/a/24298425)
+		// due to our UWP/C# version not supporting IAsyncDisposable or JoinableTaskFactory
+		// TODO: clean up async/await or just get rid of it all together (it's a cancerous & half-baked feature)
 		public async Task Listen(IPAddress ipAddress, int port)
 		{
 			_connectAndReceiveTask = Task.Run(async () =>
 			{
-				Debug.Log($"{nameof(Listen)}: Task.Run: Task Id: {Task.CurrentId ?? -1}");
-				_connectAndReceiveTask2 = ListenAsync(ipAddress, port, _cancellation.Token);
-				Debug.Log($"{nameof(Listen)}: Task.Run: {nameof(_connectAndReceiveTask2)}.Id: {_connectAndReceiveTask2.Id}");
+#if VERBOSE_LOGS
+				Debug.Log($"Task Id: {Task.CurrentId ?? -1}");
+#endif
+				_connectAndReceiveTask2 = ListenAsync(ipAddress, port);
+				// NOTE: called after first await in _connectAndReceiveTask2 task
+#if VERBOSE_LOGS
+				Debug.Log($"{nameof(_connectAndReceiveTask2)}.Id: {_connectAndReceiveTask2.Id}");
+#endif
 				await _connectAndReceiveTask2.ConfigureAwait(false);
-
-			}, _cancellation.Token);
+			});
 			await _connectAndReceiveTask.ConfigureAwait(false);
-			Debug.Log($"{nameof(Listen)}: Task.Run: {nameof(_connectAndReceiveTask)}.Id: {_connectAndReceiveTask.Id}");
+#if VERBOSE_LOGS
+			Debug.Log($"{nameof(_connectAndReceiveTask)}.Id: {_connectAndReceiveTask.Id}");
+#endif
 		}
 
+		//private Task<TcpClient> connectTask;
 		/// <summary>
 		/// Start listening for a TCP connection.
 		/// </summary>
 		/// <param name="ipAddress">IP to listen on</param>
 		/// <param name="port">Port to listen on</param>
 		/// <param name="token">Task cancellation token</param>
-		public async Task ListenAsync(IPAddress ipAddress, int port, CancellationToken token)
+		public async Task ListenAsync(IPAddress ipAddress, int port)
 		{
-			Debug.Log($"+++> {nameof(ListenAsync)} begin");
-			Debug.Log($"{nameof(ListenAsync)}: Task Id: {Task.CurrentId} Thread Id: {Thread.CurrentThread.ManagedThreadId}");
-
+#if VERBOSE_LOGS
+			Debug.Log($"Task Id: {Task.CurrentId} Thread Id: {Thread.CurrentThread.ManagedThreadId}");
+#endif
 			Debug.Assert(_tcpListener == null);
 			_tcpListener = new TcpListener(ipAddress, port);
 			_tcpListener.Start(1);
 
-
-			Debug.Log("==========> Waiting for a connection. <==========");
-			var accept = _tcpListener.AcceptTcpClientAsync();
-#if WITH_CANCELLATION
-			//connectTask = _tcpListener.AcceptTcpClientAsync(/*cancellation.Token*/);
-			//_client = await connectTask.ConfigureAwait(false);
-
-			//cancellation.Token.ThrowIfCancellationRequested();
-			_client = await accept.WithWaitCancellation2(token).ConfigureAwait(false);
-#else
-			_client = await accept.ConfigureAwait(true);
+/* 			// TODO: merge
+			//On UWP with Unity 2019.4 the DNS-SD library is kinda janky and throws exceptions which prevent signaling from working,
+			//so we temporarily disable it.
+#if UNITY_EDITOR || !UNITY_WSA
+			StartDnssdServiceAdvertisement(port);
 #endif
+*/
+			Trace.Log("==========> Waiting for a connection. <==========");
+			var accept = _tcpListener.AcceptTcpClientAsync();
 
-			Debug.Log("==========> Connected! <==========");
+			_client = await accept/*.ConfigureAwait(false)*/;
+			//if (_client!= null) _client.LingerState = new LingerOption(true, 1);
+
+			Trace.Log("==========> Signaling Connected! <==========");
 			await OnConnected();
 
 			try
 			{
-				await ReceiveLoopAsync(token).ConfigureAwait(true);
+				await ReceiveLoopAsync()/*.ConfigureAwait(false)*/;
 			}
-
 			finally
 			{
+				// TODO: close client here?
+				Trace.Log("==========> Signaling Disconnecting! <==========");
 				OnDisconnected();
-				Debug.Log("==========> Disconnected! <==========");
+				Trace.Log("==========> Signaling Disconnected! <==========");
+				//if (Debugger.IsAttached) Debugger.Break();
 			}
 		}
 
-
+		// NOTE: WIP, this used to be "Async over Sync" (see https://stackoverflow.com/a/24298425)
+		// due to our UWP/C# version not supporting IAsyncDisposable or JoinableTaskFactory
+		// TODO: clean up async/await or just get rid of it all together (it's a cancerous & half-baked feature)
 		public async Task Connect(IPAddress ipAddress, int port)
 		{
 			_connectAndReceiveTask = Task.Run(async () =>
 			{
-				Debug.Log($"{nameof(Connect)}: Task.Run: Task Id: {Task.CurrentId ?? -1}");
-				_connectAndReceiveTask2 = ConnectAsync(ipAddress, port, _cancellation.Token);
-				Debug.Log($"{nameof(Connect)}: Task.Run: {nameof(_connectAndReceiveTask2)}.Id: {_connectAndReceiveTask2.Id}");
+#if VERBOSE_LOGS
+				Debug.Log($"Task Id: {Task.CurrentId ?? -1}");
+#endif
+				_connectAndReceiveTask2 = ConnectAsync(ipAddress, port);
+				// NOTE: called after first await in _connectAndReceiveTask2 task
+#if VERBOSE_LOGS
+				Debug.Log($"{nameof(_connectAndReceiveTask2)}.Id: {_connectAndReceiveTask2.Id}");
+#endif
 				await _connectAndReceiveTask2.ConfigureAwait(false);
 
-			}, _cancellation.Token);
+			});
 			await _connectAndReceiveTask.ConfigureAwait(false);
-			Debug.Log($"{nameof(Connect)}: Task.Run: {nameof(_connectAndReceiveTask)}.Id: {_connectAndReceiveTask.Id}");
+#if VERBOSE_LOGS
+			Debug.Log($"{nameof(_connectAndReceiveTask)}.Id: {_connectAndReceiveTask.Id}");
+#endif
 		}
-//#endif
 
 		/// <summary>
 		/// Start listening for a TCP connection.
@@ -353,303 +349,353 @@ namespace HoloLight.Isar.Signaling
 		/// <param name="ipAddress">IP to listen on</param>
 		/// <param name="port">Port to listen on</param>
 		/// <param name="token">Task cancellation token</param>
-		public async Task ConnectAsync(IPAddress ipAddress, int port, CancellationToken token)
+		public async Task ConnectAsync(IPAddress ipAddress, int port)
 		{
-			Debug.Log($"+++> {nameof(ConnectAsync)} begin");
-			Debug.Log($"{nameof(ListenAsync)}: Task Id: {Task.CurrentId} Thread Id: {Thread.CurrentThread.ManagedThreadId}");
+#if VERBOSE_LOGS
+			Debug.Log($"Task Id: {Task.CurrentId} Thread Id: {Thread.CurrentThread.ManagedThreadId}");
+#endif
 
 			_client = new TcpClient(AddressFamily.InterNetwork);
 
-			Debug.Log("==========> Connecting. <==========");
-#if WITH_CANCELLATION
-			//cancellation.Token.ThrowIfCancellationRequested();
-			_client = await accept.WithWaitCancellation2(token)/*.ConfigureAwait(false)*/;
-#else
-			await _client.ConnectAsync(ipAddress, port).ConfigureAwait(true);
-#endif
+			Trace.Log("==========> Signaling Connecting. <==========");
 
+			await _client.ConnectAsync(ipAddress, port)/*.ConfigureAwait(false)*/;
 
-
-			Debug.Log("==========> Connected! <==========");
+			Trace.Log("==========> Signaling Connected! <==========");
 			await OnConnected();
 
 			try
 			{
-				await ReceiveLoopAsync(token).ConfigureAwait(true);
+				await ReceiveLoopAsync()/*.ConfigureAwait(false)*/;
 			}
-			catch(Exception ex)
-			{
-				Debug.Log("Exception thrown which i dont care");
-			}
-
 			finally
 			{
+				Trace.Log("ReceiveLoopAsync exited");
+				// TODO: close client here?
+				Trace.Log("==========> Signaling Disconnecting! <==========");
 				OnDisconnected();
-				Debug.Log("==========> Disconnected! <==========");
+				Trace.Log("==========> Signaling Disconnected! <==========");
+				//if (Debugger.IsAttached) Debugger.Break();
 			}
 		}
 
-		private async Task ReceiveLoopAsync(CancellationToken token)
+#if TEST_THROW_XML_EXCEPTION
+		private static bool testOnce = true;
+#endif
+		private async Task ReceiveLoopAsync()
 		{
+#if VERBOSE_LOGS
 			Debug.Log($"ReceiveLoopAsync: Task Id: {Task.CurrentId} Thread Id: {Thread.CurrentThread.ManagedThreadId}");
+#endif
 
 				var stream = _client.GetStream();
+
+#if VERBOSE_LOGS
 				Debug.Log("_client?.ReceiveBufferSize: " + _client?.ReceiveBufferSize);
 				Debug.Log("_client?.ReceiveTimeout: " + _client?.ReceiveTimeout);
 				Debug.Log("_client?.SendBufferSize: " + _client?.SendBufferSize);
 				Debug.Log("_client?.SendTimeout: " + _client?.SendTimeout);
-
-				while (/*_client.Connected*/ true
-#if WITH_CANCELLATION
-				       && !cancellation.IsCancellationRequested
 #endif
-				)
-				{
-					try
-					{
-
-					Debug.Log("===== recv =====");
-					byte[] lengthBuffer = new byte[sizeof(int)];
-				
-					int numberOfBytesRead = 0;
-				
-					Debug.Log("client?.Connected: " + _client?.Connected +
-					          " client?.Available: " + _client?.Available + " (amount of data received from the network and available to read)" +
-					          " stream.DataAvailable: " + _client?.GetStream()?.DataAvailable);
-
-						Debug.Log("ThreadId: " + Thread.CurrentThread.ManagedThreadId);
-						numberOfBytesRead = await stream.ReadAsync(lengthBuffer, 0, lengthBuffer.Length, token).ConfigureAwait(true);
-						Debug.Log("ThreadId: " + Thread.CurrentThread.ManagedThreadId);
-		
-					Debug.Log("numberOfBytesRead: " + numberOfBytesRead);
-
-
-
-					Debug.Log("client?.Connected: " + _client?.Connected +
-					          " client?.Available: " + _client?.Available + " (amount of data received from the network and available to read)" +
-					          " stream.DataAvailable: " + _client?.GetStream()?.DataAvailable);
-
-					if (numberOfBytesRead == 0)
-					{
-
-						return;
-					}
-					Debug.Assert(numberOfBytesRead == lengthBuffer.Length, "numberOfBytesRead != lengthBuffer.Length");
-
-					Debug.Log("lengthBuffer: " + BitConverter.ToInt32(lengthBuffer, 0).ToString("x8") + " (== little endian of msgLength)");
-					int msgLength = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(lengthBuffer, 0));
-				
-					Debug.Log("msgLength: " + msgLength);
-
-					byte[] msgBuffer = new byte[msgLength];
-
-					const int MAX_TRIES = 3;
-					int tries = MAX_TRIES;
-					numberOfBytesRead = 0;
-					int numberOfBytesReadSum = 0;
-					do
-					{
-						Debug.Log("read pass " + (MAX_TRIES - tries));
-					
-
-						Debug.Log("ThreadId: " + Thread.CurrentThread.ManagedThreadId);
-						numberOfBytesRead = await stream.ReadAsync(msgBuffer, numberOfBytesRead, msgLength - numberOfBytesRead, token).ConfigureAwait(true);
-						numberOfBytesReadSum += numberOfBytesRead;
-						Debug.Log($"ReadAsync: {numberOfBytesReadSum}/{msgLength}");
-						Debug.Log("ThreadId: " + Thread.CurrentThread.ManagedThreadId);
-
-					Debug.Log("numberOfBytesRead: " + numberOfBytesRead);
-
-
-						Debug.Log("client?.Connected: " + _client?.Connected +
-						          " client?.Available: " + _client?.Available + " (amount of data received from the network and available to read)" +
-						          " stream.DataAvailable: " + _client?.GetStream()?.DataAvailable);
-
-						if (numberOfBytesReadSum != msgLength)
-							Debug.Log("msgBuffer (so far): " + Encoding.Default.GetString(msgBuffer, 0, numberOfBytesReadSum));
-
-						if (numberOfBytesRead == 0)
-						{
-							
-							Debugger.Break();
-							return;
-						}
-
-						tries--;
-					} while (numberOfBytesReadSum < msgLength && tries > 0);
-
-					Debug.Assert(numberOfBytesReadSum==msgLength);
-
-					if (tries == 0)
-					{
-						Debug.Log("+++> Need more than " + MAX_TRIES + "passes to read message. Pulling the plug, the message is too big.");
-						Debug.Log("TODO: return a value or exception so that the endpoint can react e.g. by restarting");
-						return;
-					}
-
-					Debug.Assert(numberOfBytesReadSum == msgLength, "numberOfBytesRead != msgLength");
-
-					var msg = Encoding.UTF8.GetString(msgBuffer);
-					Debug.Log("\nreceived msg (length: " + msg.Length + "): |" + msg + "|");
-
-					var msg2 = msg.Replace("\0", "");
-					if (msg != msg2) Debug.Log("\nmsg2 (length: " + msg2.Length + "): |" + msg2 + "|");
-					ParseMessage(msgBuffer);
-
-
-					}
-					catch (IOException e)
-					{
-						Debug.Log(e.Message + "\n" + e.StackTrace);
-						Console.WriteLine(e.Message + "\n" + e.StackTrace);
-						throw;
-					}
-				}
-		}
-
-#if WITH_CANCELLATION
-		public void Cancel()
-		{
-			cancellation.Cancel();
-			//cancellation.Cancel(true);
-		}
-#endif
-
-
-		private void ParseMessage(in byte[] msgRaw)
-		{
-			using (XmlReader reader = XmlReader.Create(new MemoryStream(msgRaw)))
+			while (true)
 			{
-				var xmlNodeType = reader.MoveToContent();
-				if (xmlNodeType != XmlNodeType.Element)
+				Debug.Log("===== recv =====");
+				byte[] lengthBuffer = new byte[sizeof(int)];
+
+				int numberOfBytesRead = 0;
+#if VERBOSE_LOGS
+				Debug.Log("client?.Connected: " + _client?.Connected +
+				          " client?.Available: " + _client?.Available + " (amount of data received from the network and available to read)" +
+				          " stream.DataAvailable: " + _client?.GetStream()?.DataAvailable);
+#endif
+#if VERBOSE_LOGS
+				Debug.Log("ThreadId: " + Thread.CurrentThread.ManagedThreadId);
+#endif
+
+				numberOfBytesRead = await stream.ReadAsync(lengthBuffer, 0, lengthBuffer.Length)/*.ConfigureAwait(false)*/;
+
+#if VERBOSE_LOGS
+				Debug.Log("ThreadId: " + Thread.CurrentThread.ManagedThreadId);
+#endif
+#if VERBOSE_LOGS
+				Debug.Log("numberOfBytesRead: " + numberOfBytesRead);
+#endif
+
+#if VERBOSE_LOGS
+				Debug.Log("client?.Connected: " + _client?.Connected +
+				          " client?.Available: " + _client?.Available + " (amount of data received from the network and available to read)" +
+				          " stream.DataAvailable: " + _client?.GetStream()?.DataAvailable);
+#endif
+				// Note: await is a suspension point, which means that it is possible that socket is disposed or cancellation is requested while being suspended causing ReadAsync to return 0
+				if (numberOfBytesRead == 0)
 				{
-					Debug.LogError("Signaling: XML message doesn't contain an element.");
+					Trace.Log("Read 0 bytes; exiting receive loop");
 					return;
 				}
-				Debug.Log("parsing xml node <" + reader.Name + ">");
-				switch (reader.Name)
-				{
-					case Tokens.VERSION:
-						IsarXmlReader.ReadVersion(reader, out var version);
-						OnVersionReceived(version);
-						break;
-					case Tokens.SDP:
-						IsarXmlReader.ReadSdp(reader, out var type, out var sdp);
-#if USING_UNITY
-						// @nocheckin TODO: HACK: ISignaling
-						if (type == Tokens.SDP_TYPE_OFFER)
-						{
-							//OnSdpOfferReceived(sdp);
-						}
-						else if (type == Tokens.SDP_TYPE_ANSWER)
-						{
-							OnSdpAnswerReceived(sdp);
+				Debug.Assert(numberOfBytesRead == lengthBuffer.Length, "numberOfBytesRead != lengthBuffer.Length");
 
-						}
-#else
-						OnSdpReceived(type, sdp);
+#if VERBOSE_LOGS
+				Debug.Log("lengthBuffer: " + BitConverter.ToInt32(lengthBuffer, 0).ToString("x8") + " (== little endian of msgLength)");
 #endif
-						break;
-					case Tokens.ICE_CANDIDATE:
-						IsarXmlReader.ReadIceCandidate(reader, out var mId, out var mLineIndex, out var candidate);
-						OnIceCandidateReceived(mId, mLineIndex, candidate);
-						break;
-					default:
-						Debug.LogError("Unexpected token. XML message cannot be parsed.");
-						Debugger.Break();
-						break;
+				int msgLength = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(lengthBuffer, 0));
+
+//#if VERBOSE_LOGS
+				Debug.Log("msgLength: " + msgLength);
+//#endif
+				byte[] msgBuffer = new byte[msgLength];
+
+				// do multiple read passes if the message couldn't be read with one read
+				const int MAX_TRIES = 3;
+				int tries = MAX_TRIES;
+				numberOfBytesRead = 0;
+				int numberOfBytesReadSum = 0;
+				do
+				{
+#if VERBOSE_LOGS
+					Debug.Log("read pass " + (MAX_TRIES - tries));
+#endif
+#if VERBOSE_LOGS
+					Debug.Log("ThreadId: " + Thread.CurrentThread.ManagedThreadId);
+#endif
+
+					numberOfBytesRead = await stream.ReadAsync(msgBuffer, numberOfBytesReadSum, msgLength - numberOfBytesReadSum)/*.ConfigureAwait(false)*/;
+
+#if VERBOSE_LOGS
+					Debug.Log("ThreadId: " + Thread.CurrentThread.ManagedThreadId);
+#endif
+
+					numberOfBytesReadSum += numberOfBytesRead;
+					Trace.Log($"ReadAsync: {numberOfBytesReadSum}/{msgLength}");
+#if VERBOSE_LOGS
+					Debug.Log("numberOfBytesRead: " + numberOfBytesRead);
+#endif
+
+#if VERBOSE_LOGS
+					Debug.Log("client?.Connected: " + _client?.Connected +
+					          " client?.Available: " + _client?.Available + " (amount of data received from the network and available to read)" +
+					          " stream.DataAvailable: " + _client?.GetStream()?.DataAvailable);
+
+					if (numberOfBytesReadSum != msgLength)
+						Debug.Log("msgBuffer (so far): " + new UTF8Encoding(false, true).GetString(msgBuffer, 0, numberOfBytesReadSum));
+#endif
+					//if (numberOfBytesRead != msgLength)
+					//{
+					//	Debugger.Break();
+					//}
+
+					// Note: await is a suspension point, which means that it is possible that socket is disposed or cancellation is requested while being suspended causing ReadAsync to return 0
+					if (numberOfBytesRead == 0)
+					{
+						Trace.Log("Read 0 bytes; exiting receive loop");
+						return;
+					}
+
+					tries--;
+				} while (numberOfBytesReadSum < msgLength && tries > 0);
+
+				if (tries == 0)
+				{
+					Debug.Log("+++> Need more than " + MAX_TRIES + "passes to read message. Pulling the plug, the message is too big.");
+					// TODO: return a value or exception so that the server can react e.g. by restarting
+					Debug.Log("TODO: return a value or exception so that the endpoint can react e.g. by restarting");
+					if (Debugger.IsAttached) Debugger.Break();
+					return;
 				}
+
+				Debug.Assert(numberOfBytesReadSum == msgLength, "numberOfBytesRead != msgLength");
+
+				var first = (char)msgBuffer[0];
+				var last = (char)msgBuffer[msgLength - 1];
+				Assertions.Assert(first == '<' && last == '>');
+
+				var msg = new UTF8Encoding(false, true).GetString(msgBuffer, 0, msgLength);
+
+#if VERBOSE_LOGS
+				Trace.Log("\nreceived msg (length: " + msg.Length + "): |" + msg + "|");
+#endif
+
+#if TEST_THROW_XML_EXCEPTION
+				if (testOnce)
+				{
+					testOnce = false;
+					throw new XmlException("test");
+				}
+#endif
+
+				ParseMessage(msgBuffer);
+
+				// TODO: exit while loop here once ice candidates are successfully exchanged?
 			}
 		}
 
-		public async Task SendVersionAsync(uint serverApiVersion) => await SendQueuedAsync(SendVersionAsync_OG(serverApiVersion));
-		public async Task SendVersionAsync_OG(uint serverApiVersion)
+		private void ParseMessage(in byte[] msgRaw)
 		{
-#if WRITE_STRING
-			await SendAsync(_isarXmlWriter.WriteVersionAsString(serverApiVersion));
+			try
+			{
+				using (XmlReader reader = XmlReader.Create(new MemoryStream(msgRaw)))
+				{
+					var xmlNodeType = reader.MoveToContent();
+					if (xmlNodeType != XmlNodeType.Element)
+					{
+						Debug.LogError("Signaling: XML message doesn't contain an element.");
+						return;
+					}
+					Debug.Log("parsing xml node <" + reader.Name + ">");
+					switch (reader.Name)
+					{
+						case Tokens.VERSION:
+							IsarXmlReader.ReadVersion(reader, out var version);
+							OnVersionReceived(version);
+							break;
+						case Tokens.SDP:
+							IsarXmlReader.ReadSdp(reader, out var type, out var sdp);
+#if USING_UNITY
+							// HACK: ISignaling
+							if (type == Tokens.SDP_TYPE_OFFER)
+							{
+								//OnSdpOfferReceived(sdp);
+							}
+							else if (type == Tokens.SDP_TYPE_ANSWER)
+							{
+								OnSdpAnswerReceived(sdp);
+							}
 #else
-			var length = _isarXmlWriter.WriteVersionAsBytes(serverApiVersion, ref _msgBuffer, sizeof(int));
-			await SendAsync(_msgBuffer, length);
+							OnSdpReceived(type, sdp);
 #endif
-		}
+							break;
+						case Tokens.ICE_CANDIDATE:
+							IsarXmlReader.ReadIceCandidate(reader, out var mId, out var mLineIndex, out var candidate);
+							OnIceCandidateReceived(mId, mLineIndex, candidate);
+							break;
+						default:
+							Debug.LogError("Unexpected token. XML message cannot be parsed.");
+							Debugger.Break();
+							break;
+					}
+				}
 
-		/// <summary>
-		/// Sends a offer SDP (session description) message to the remote peer.
-		/// </summary>
-		/// <param name="sdp">Offer Session description</param>
-
-		/// <summary>
-		/// Sends a answer SDP (session description) message to the remote peer.
-		/// </summary>
-		/// <param name="sdp">Offer Session description</param>
-
-		/// <summary>
-		/// Sends an SDP (session description) message to the remote peer.
-		/// </summary>
-		/// <param name="sdp">Offer Session description</param>
-		public async Task SendSdpAsync2(string type, string sdp)
-		{
-#if WRITE_STRING
-			await SendAsync(_isarXmlWriter.WriteSdpAsString(type, sdp));
-#else
-			var length = _isarXmlWriter.WriteSdpAsBytes(type, sdp, ref _msgBuffer, sizeof(int));
-			await SendAsync(_msgBuffer, length);
-#endif
+			}
+			catch (Exception e)
+			{
+				// TODO: we need to fix this, this should never happen but sometimes it does!!!
+				// exception message: "'.', hexadecimal value 0x00, is an invalid character. Line 1, position 197."
+				Debug.LogError(e.Message + "\nexception stacktrace: \n" + e.StackTrace);
+				if (Debugger.IsAttached) Debugger.Break();
+				throw;
+			}
 		}
 
 		private Task _lastSendTask = null;
 
-
-
+		//private static int sendCount = 0;
 		public async Task SendQueuedAsync(Task task)
 		{
 			if (_lastSendTask == null)
 			{
 				_lastSendTask = task;
-				Debug.Log("pre await SendQueuedAsync: ThreadId: " + Thread.CurrentThread.ManagedThreadId);
+#if VERBOSE_LOGS
+				Debug.Log("===== Send pre await Thread Id: " + Thread.CurrentThread.ManagedThreadId);
+#endif
 				await _lastSendTask;
-				Debug.Log("post await SendQueuedAsync: ThreadId: " + Thread.CurrentThread.ManagedThreadId);
+#if VERBOSE_LOGS
+				Debug.Log("===== Send post await Thread Id: " + Thread.CurrentThread.ManagedThreadId);
+#endif
 			}
 			else
 			{
+				//#if VERBOSE_LOGS
+				//				Debug.Log("pre await Thread Id: " + Thread.CurrentThread.ManagedThreadId);
+				//#endif
+#if false
 				var previousTask = _lastSendTask;
 				_lastSendTask = task;
-				Debug.Log("pre await SendQueuedAsync: ThreadId: " + Thread.CurrentThread.ManagedThreadId);
-				await previousTask.ContinueWith( _ => _lastSendTask );
-				Debug.Log("post await SendQueuedAsync: ThreadId: " + Thread.CurrentThread.ManagedThreadId);
+				await previousTask.ContinueWith(
+						async _ => await _lastSendTask,
+						TaskContinuationOptions.OnlyOnRanToCompletion |
+						TaskContinuationOptions.PreferFairness /*|*/
+				//TaskContinuationOptions.ExecuteSynchronously |
+				//TaskContinuationOptions.
+				);
+#else
+				// TODO: I don't think this actually fixed anything
+				Task continuation = _lastSendTask.ContinueWith(
+					async _ => await task,
+					TaskContinuationOptions.OnlyOnRanToCompletion |
+					TaskContinuationOptions.PreferFairness /*|*/
+					//TaskContinuationOptions.ExecuteSynchronously |
+					//TaskContinuationOptions.
+				).Unwrap();
+				_lastSendTask = continuation;
+				await _lastSendTask;
+#endif
+			//#if VERBOSE_LOGS
+			//				Debug.Log("post await Thread Id: " + Thread.CurrentThread.ManagedThreadId);
+			//#endif
 			}
+			//Trace.Log("===== finished with send task " + sendCount);
+			//sendCount++;
 		}
 
+		//public async Task SendVersionAsync(uint version) => await SendQueuedAsync(SendVersionAsync_OG(version));
+		public async Task SendVersionAsync_OG(uint version)
+		{
+			var length = IsarXmlWriter.WriteVersionAsBytes(version, ref _msgBuffer, sizeof(int));
+			await SendAsync(_msgBuffer, length);
+		}
+
+		public async Task SendVersionAsync(uint version) => await SendQueuedAsync(SendVersionAsync_Stream(version));
+		public async Task SendVersionAsync_Stream(uint version) =>
+			await SendMessageAsync(stream => IsarXmlWriter.WriteVersion(version, stream), 4);
+
+		// HACK: ISignaling
 		public async Task SendOfferAsync(string sdp)
 		{
-			Debug.Log("pre await SendOfferAsync: ThreadId: " + Thread.CurrentThread.ManagedThreadId);
+#if VERBOSE_LOGS
+			Debug.Log("pre await Thread Id: " + Thread.CurrentThread.ManagedThreadId);
+#endif
 			await SendQueuedAsync(SendSdpAsync(Tokens.SDP_TYPE_OFFER, sdp));
-			Debug.Log("post await SendOfferAsync: ThreadId: " + Thread.CurrentThread.ManagedThreadId);
-		}
-
-
-		public async Task SendSdpAsync(string type, string sdp)
-		{
-#if WRITE_STRING
-			await SendAsync(_isarXmlWriter.WriteSdpAsString(type, sdp));
-#else
-			using (var stream = new MemoryStream(1024))
-			{
-				stream.Seek(sizeof(int), SeekOrigin.Begin);
-				_isarXmlWriter.WriteSdp(type, sdp, stream);
-				await SendAsync(stream.GetBuffer(), (int)stream.Position - sizeof(int));
-			}
+#if VERBOSE_LOGS
+			Debug.Log("post await Thread Id: " + Thread.CurrentThread.ManagedThreadId);
 #endif
 		}
 
-		public async Task SendIceCandidateAsync(string mId, int mLineIndex, string candidate)
+		public async Task SendSdpAsync(string type, string sdp)
 		{
-			Debug.Log("pre await SendIceCandidateAsync: ThreadId: " + Thread.CurrentThread.ManagedThreadId);
-			await SendQueuedAsync(SendIceCandidateAsync_OG(mId, mLineIndex, candidate));
-			Debug.Log("post await SendIceCandidateAsync: ThreadId: " + Thread.CurrentThread.ManagedThreadId);
+			// TODO: actually test this out with 10 reconnects in release without debuggers attached
+			//await SendMessageAsync( stream => IsarXmlWriter.WriteSdp(type, sdp, stream) );
+
+			// TODO: maybe use a shared buffer
+			using (var stream = new MemoryStream(1024))
+			{
+				stream.Seek(sizeof(int), SeekOrigin.Begin);
+				IsarXmlWriter.WriteSdp(type, sdp, stream);
+				await SendAsync(stream.GetBuffer(), (int)stream.Position - sizeof(int));
+			}
 		}
 
+		public async Task SendMessageAsync(Action<Stream> write, int bufferSize = 1024)
+		{
+			// TODO: maybe use a shared buffer, sending is single-threaded/sequential anyway
+			using (var stream = new MemoryStream(bufferSize))
+			{
+				stream.Seek(sizeof(int), SeekOrigin.Begin);
+				write(stream);
+				await SendAsync(stream.GetBuffer(), (int)stream.Position - sizeof(int));
+			}
+		}
 
+		// HACK: ISignaling
+		public async Task SendIceCandidateAsync(string mId, int mLineIndex, string candidate)
+		{
+#if VERBOSE_LOGS
+			Debug.Log("pre await Thread Id: " + Thread.CurrentThread.ManagedThreadId);
+#endif
+			await SendQueuedAsync(SendIceCandidateAsync_OG(mId, mLineIndex, candidate));
+#if VERBOSE_LOGS
+			Debug.Log("post await Thread Id: " + Thread.CurrentThread.ManagedThreadId);
+#endif
+		}
+
+#if false
 		/// <summary>
 		/// Sends an ICE message to the remote peer.
 		/// </summary>
@@ -658,221 +704,93 @@ namespace HoloLight.Isar.Signaling
 		/// <param name="candidate">SDPized candidate</param>
 		public async Task SendIceCandidateAsync_OG(string mId, int mLineIndex, string candidate)
 		{
-#if WRITE_STRING
-			await SendAsync(_isarXmlWriter.WriteIceCandidateAsString(mId, mLineIndex, candidate));
-#else
-			var length = _isarXmlWriter.WriteIceCandidateAsBytes(mId, mLineIndex, candidate, ref _msgBuffer, sizeof(int));
+			var length = IsarXmlWriter.WriteIceCandidateAsBytes(mId, mLineIndex, candidate, ref _msgBuffer, sizeof(int));
 			await SendAsync(_msgBuffer, length);
-#endif
 		}
-
-
-		public async Task SendAsync(string message)
+#else
+		/// <summary>
+		/// Sends an ICE message to the remote peer.
+		/// </summary>
+		/// <param name="mId">SDP mid</param>
+		/// <param name="mLineIndex">SDP m-line index</param>
+		/// <param name="candidate">SDPized candidate</param>
+		public async Task SendIceCandidateAsync_OG(string mId, int mLineIndex, string candidate)
 		{
-			Debug.Assert(!string.IsNullOrEmpty(message));
-
-			byte[] encodedMessage = _encoding.GetBytes(message);
-			byte[] encodedMessageLength = BitConverter.GetBytes(IPAddress.HostToNetworkOrder(encodedMessage.Length));
-
-			byte[] networkMessage = new byte[encodedMessageLength.Length + encodedMessage.Length];
-			encodedMessageLength.CopyTo(networkMessage, 0);
-			encodedMessage.CopyTo(networkMessage, encodedMessageLength.Length);
-
-			await _client?.GetStream()?.WriteAsync(networkMessage, 0, networkMessage.Length, _cancellation.Token);
+			using (var stream = new MemoryStream(1024))
+			{
+				stream.Seek(sizeof(int), SeekOrigin.Begin);
+				IsarXmlWriter.WriteIceCandidate(mId, mLineIndex, candidate, stream);
+				await SendAsync(stream.GetBuffer(), (int)stream.Position - sizeof(int));
+			}
 		}
+#endif
 
 		public async Task SendAsync(byte[] message, int length)
 		{
+			// prepend length in front of array
 			int networkLength = IPAddress.HostToNetworkOrder(length);
+			byte[] encodedMessageLength = BitConverter.GetBytes(networkLength);
+			encodedMessageLength.CopyTo(message, 0);
+			//message[0] = (byte)  networkLength;
+			//message[1] = (byte) (networkLength >> 8);
+			//message[2] = (byte) (networkLength >> 16);
+			//message[3] = (byte) (networkLength >> 24);
 
-			message[0] = (byte)  networkLength;
-			message[1] = (byte) (networkLength >> 8);
-			message[2] = (byte) (networkLength >> 16);
-			message[3] = (byte) (networkLength >> 24);
-			Debug.Log(">>> Sending(" + length + "): |" + Encoding.Default.GetString(message, sizeof(int), length) + "|");
+#if VERBOSE_LOGS
+			Debug.Log(">>> Sending(" + length + "): |" + new UTF8Encoding(false, true).GetString(message, sizeof(int), length) + "|");
+#endif
+			//Trace.Log(">>> Sending(" + length + "): |" + new UTF8Encoding(false, true).GetString(message, sizeof(int), length) + "|");
+			var first = (char)message[0 + sizeof(int)];
+			var last = (char)message[length - 1 + sizeof(int)];
+			Assertions.Assert(first == '<' && last == '>');
 
-			await _client?.GetStream()?.WriteAsync(message, 0, length + sizeof(int), _cancellation.Token);
-			await _client?.GetStream()?.FlushAsync(_cancellation.Token);
+			await _client?.GetStream()?.WriteAsync(message, 0, length + sizeof(int));
 		}
 
-		public void WaitForExplosion()
-		{
-			if (_connectAndReceiveTask == null) return;
-
-			Debug.Log($"+++> waiting for _connectAndReceiveTask. Status: {_connectAndReceiveTask.Status}");
-			Debug.Log($"+++> waiting for _connectAndReceiveTask2. Status: {_connectAndReceiveTask2.Status}");
-			Debug.Log("===> TODO: handle sending properly");
-			Debug.Log($"+++> waiting for lastSendTask. Status: {_lastSendTask?.Status}");
-
-			Task[] tasks = {_connectAndReceiveTask, _lastSendTask ?? Task.CompletedTask};
-			try
-			{
-				if (!Task.WaitAll(tasks, TimeSpan.FromSeconds(1)))
-				{
-					Debug.Log("===> TODO: Tasks didn't finish in time...");
-
-					Debug.Log($"+++> waiting for _connectAndReceiveTask. Status: {_connectAndReceiveTask.Status}");
-					Debug.Log($"+++> waiting for _connectAndReceiveTask2. Status: {_connectAndReceiveTask2.Status}");
-					Debug.Log("===> TODO: handle sending properly");
-					Debug.Log($"+++> waiting for lastSendTask. Status: {_lastSendTask?.Status}");
-					Debugger.Break();
-				}
-				else
-				{
-					_connectAndReceiveTask.Dispose();
-					_connectAndReceiveTask = null;
-
-					_lastSendTask?.Dispose();
-					_lastSendTask = null;
-				}
-			}
-			catch (Exception ex)
-			{
-				Debug.Log("BOOM: " + ex.Message);
-			}
-
-			if (_connectAndReceiveTask != null)
-				Debug.Log("leaking _connectAndReceiveTask");
-			_connectAndReceiveTask = null;
-
-			if (_lastSendTask != null)
-				Debug.Log("leaking lastSendTask");
-			_lastSendTask = null;
-		}
-
-		private static void WaitAndDispose(ref Task task)
-		{
-			if (task == null) return;
-			Debug.Log($"+++> waiting for task. Status: {task.Status}");
-
-			try
-			{
-				task.GetAwaiter().GetResult();
-			}
-			catch (TaskCanceledException ex)
-			{
-				Debug.Log(ex.Message);
-			}
-			finally
-			{
-				try
-				{
-					task.Dispose();
-				}
-				catch (Exception e)
-				{
-					Console.WriteLine(e);
-				}
-				finally
-				{
-					task = null;
-				}
-			}
-		}
-
-		public void Close()
-		{
-			_cancellation?.Cancel();
-			WaitAndDispose(ref _connectAndReceiveTask);
-			WaitAndDispose(ref _lastSendTask);
-		}
-
-		public void Close_old()
-		{
-			_cancellation?.Cancel();
-			if (_connectAndReceiveTask == null) return;
-
-			Debug.Log($"+++> waiting for _connectAndReceiveTask. Status: {_connectAndReceiveTask.Status}");
-			Debug.Log($"+++> waiting for _connectAndReceiveTask2. Status: {_connectAndReceiveTask2.Status}");
-			Debug.Log($"+++> waiting for lastSendTask. Status: {_lastSendTask?.Status}");
-
-			try
-			{
-				Task[] tasks = {_connectAndReceiveTask, _lastSendTask ?? Task.CompletedTask};
-				if (Task.WaitAll(tasks, TimeSpan.FromTicks(3)))
-				{
-					Debug.Log("TODO: Tasks didn't finish in time...");
-					Debugger.Break();
-				}
-			}
-
-			catch (AggregateException ex)
-			{
-				Debug.Log(ex.Message);
-				Debug.Log("AggregateException: " + ex.InnerException?.Message);
-			}
-			catch (Exception ex)
-			{
-				Debug.Log(ex.Message);
-			}
-			finally
-			{
-				Debug.Log($"+++> finished waiting for _connectAndReceiveTask. Status: {_connectAndReceiveTask.Status}");
-				Debug.Log($"+++> finished waiting for _connectAndReceiveTask2. Status: {_connectAndReceiveTask2.Status}");
-				Debug.Log($"+++> finished waiting for lastSendTask. Status: {_lastSendTask?.Status}");
-
-				_connectAndReceiveTask.Dispose();
-				_connectAndReceiveTask = null;
-
-				_lastSendTask?.Dispose();
-				_lastSendTask = null;
-			}
-		}
-
-#if WITH_CANCELLATION
 		public void Dispose()
 		{
-			//if (_client == null)
-			//{
-			// there is no connection, StartAsync is blocked by AcceptTcpClientAsync
-			Connected = null;
-			IceCandidateReceived = null;
-			SdpReceived = null;
-			VersionReceived = null;
+#if VERBOSE_LOGS
+				Debug.Log("Signaling.Dispose: Thread Id: " + Thread.CurrentThread.ManagedThreadId);
+#endif
+//				try
+//				{
+//					if (_client?.Connected == true)
+//					{
+//#if VERBOSE_LOGS
+//						Debug.Log("DebugSignaling is getting disposed while stream is still active; flushing stream.");
+//#endif
+//						//_client?.GetStream()?.FlushAsync().Wait(); // NetworkStream.FlushAsync doesn't do anything
+//						// TODO: _client?.Close();
+//						//_client?.GetStream()?.Flush();
+//						//Debug.Log("Signaling.Dispose: waiting for stream operations to finish (deadlock potential)");
+//						//TODO: not being able to cancel TcpListener.ListenAsync is really annoying, we should separate the initial tcp connection establishment from the receive loop to enable task cancellation
+//						//_cancellation.Cancel(true);
+//						//_lastSendTask.Wait();
+//						//_connectAndReceiveTask.Wait();
+//#if VERBOSE_LOGS
+//						Debug.Log("Signaling.Dispose: finished waiting for send operations to finish");
+//#endif
+//					}
+//				}
+//				catch (Exception e)
+//				{
+//					Debug.LogError(e.Message);
+//					if (Debugger.IsAttached) Debugger.Break();
+//					throw;
+//				}
 
-			Close();
-
-			//Cancelled = null;
-			//}
-			//else
-			//{
-				//_stream.Dispose();
-			_client?.Dispose();
-			_tcpListener?.Stop();
-			_tcpListener = null;
-
-			//}
-			Disconnected = null;
-
-			_tcpListener?.Stop();
-			_tcpListener = null;
-
-			cancellation.Dispose();
-		}
-#else
-		public void Dispose()
-		{
-
-				try
-				{
-					if (_client?.Connected == true)
-					{
-						Debug.Log("DebugSignaling is getting disposed while stream is still active; flushing stream.");
-						_client?.GetStream()?.FlushAsync().Wait();
-
-						Debug.Log("Signaling.Dispose: ThreadId: " + Thread.CurrentThread.ManagedThreadId);
-						Debug.Log("Signaling.Dispose: waiting for stream operations to finish (deadlock potential)");
-
-						Debug.Log("Signaling.Dispose: finished waiting for send operations to finish");
-					}
-				}
-				catch (Exception e)
-				{
-					Debug.LogError(e.Message);
-					if (Debugger.IsAttached) Debugger.Break();
-					throw;
-				}
+			try {
+				// TODO:
+				//_client.Close();
 				_client?.Dispose();
+			}
+			catch(Exception e)
+			{
+				Debug.LogError(e.Message);
+				if (Debugger.IsAttached) Debugger.Break();
+				throw;
+			}
+
 			try
 			{
 				_tcpListener?.Stop();
@@ -885,14 +803,8 @@ namespace HoloLight.Isar.Signaling
 				throw;
 			}
 			_tcpListener = null;
-
-
-			Disconnected = null;
 		}
-#endif
-
-
-		}
+	}
 }
 
 #pragma warning restore IDE0063 // Use simple 'using' statement

@@ -6,27 +6,20 @@ using System;
 using System.Runtime.InteropServices;
 using HoloLight.Isar.Native.Input;
 using HoloLight.Isar.Native.Qr;
-using UnityEngine.Assertions;
 
 namespace HoloLight.Isar.Native
 {
-	public enum PluginEventId
-	{
-		kPushFrame = 0,             // TODO(viktor): = 2
-		kInitVideo = 1,             // TODO(viktor): = 1
-		kGetGraphicsDeviceInfo = 2  // TODO(viktor): = 0
-	}
-
 	//KL: add Hlr prefix to all types that represent raw C bindings so they have the same names on both C and C# sides.
-	internal struct ConnectionApi
+	internal struct HlrSvConnectionApi
 	{
 		/* Connection */
-
-		public Init Init;
-		public Close Close;
-		public Reset Reset;
-		public InitVideoTrack InitVideoTrack;
-		public PushFrame PushFrame;
+		public HlrInit Init;
+		public HlrClose Close;
+		public HlrSvReset Reset;
+		public HlrSvInitVideoTrack InitVideoTrack;
+		public HlrSvPushFrame PushFrame;
+		public HlrPushCustomMessage PushCustomMessage;
+		public HlrSvSetAudioTrackEnabled SetAudioTrackEnabled;
 
 		public HlrSvRegisterConnectionStateHandler RegisterConnectionStateHandler;
 		public HlrSvUnregisterConnectionStateHandler UnregisterConnectionStateHandler;
@@ -34,6 +27,10 @@ namespace HoloLight.Isar.Native
 		public HlrSvUnregisterViewPoseHandler UnregisterViewPoseHandler;
 		public HlrSvRegisterInputEventHandler RegisterInputEventHandler;
 		public HlrSvUnregisterInputEventHandler UnregisterInputEventHandler;
+		public HlrRegisterCustomMessageHandler RegisterCustomMessageHandler;
+		public HlrUnregisterCustomMessageHandler UnregisterCustomMessageHandler;
+		public HlrRegisterAudioDataHandler RegisterAudioDataHandler;
+		public HlrUnregisterAudioDataHandler UnregisterAudioDataHandler;
 
 		/* Data */
 		//KL: make this a struct QrApi because that's essentially what it is
@@ -48,30 +45,27 @@ namespace HoloLight.Isar.Native
 
 	#region Connection
 
-	internal struct ConnectionCallbacks
+	internal struct HlrConnectionCallbacks
 	{
 		// All the delegates in the original code are unsafe.
 		// Then again, it could be good for performance.
 		// Also, ref returns could be useful.
 		// https://blogs.msdn.microsoft.com/mazhou/2017/12/12/c-7-series-part-7-ref-returns/
 		// https://docs.microsoft.com/en-us/dotnet/standard/native-interop/pinvoke
-		internal delegate void ConnectionStateChangedCallback(ConnectionState newState, IntPtr userData);
-		private readonly ConnectionStateChangedCallback _connectionStateChangedCallback;
+		private readonly HlrConnectionStateChangedCallback _connectionStateChangedCallback;
 
-		// About string marshalling: SDP spec says it's UTF-8 unless there's a "charset=X" in the desc.
+		// About string marshaling: SDP spec says it's UTF-8 unless there's a "charset=X" in the desc.
 		// There is UnmanagedType.LPUTF8Str, but not in this version of .NET Standard, so we can't use it.
 		// Default marshaling is LPStr, i.e. const char* to ANSI. I guess it should be ok, but in case it's not,
 		// this friendly comment reminds you that string encoding is hard.
-		internal delegate void SdpCreatedCallback(SdpType type, string sdp);
-		private readonly SdpCreatedCallback _sdpCreatedCallback;
+		private readonly HlrSdpCreatedCallback _sdpCreatedCallback;
 
-		internal delegate void LocalIceCandidateCreatedCallback(string mId, int mLineIndex, string candidate);
-		private readonly LocalIceCandidateCreatedCallback _localIceCandidateCreatedCallback;
+		private readonly HlrLocalIceCandidateCreatedCallback _localIceCandidateCreatedCallback;
 
-		public ConnectionCallbacks(
-			ConnectionStateChangedCallback connectionStateChangedCallback,
-			SdpCreatedCallback sdpCreatedCallback,
-			LocalIceCandidateCreatedCallback localIceCandidateCreatedCallback)
+		public HlrConnectionCallbacks(
+			HlrConnectionStateChangedCallback connectionStateChangedCallback,
+			HlrSdpCreatedCallback sdpCreatedCallback,
+			HlrLocalIceCandidateCreatedCallback localIceCandidateCreatedCallback)
 		{
 			//Assert.AreNotEqual(null, connectionStateChangedCallback,   "null is not a valid callback");
 			//Assert.AreNotEqual(null, sdpCreatedCallback,               "null is not a valid callback");
@@ -81,55 +75,60 @@ namespace HoloLight.Isar.Native
 			_localIceCandidateCreatedCallback = localIceCandidateCreatedCallback;
 		}
 	}
-	internal delegate Error Init(
-		[MarshalAs(UnmanagedType.LPStr)] string configPath, GraphicsApiConfig gfxConfig,
-		ConnectionCallbacks callbacks, ref /*out*/ ConnectionHandle connectionHandle);
-	internal delegate Error Close(ref IntPtr connectionHandle);
-	internal delegate Error Reset(ConnectionHandle connectionHandle);
+
+	internal delegate HlrError HlrInit(
+		[MarshalAs(UnmanagedType.LPStr)] string configPath, HlrGraphicsApiConfig gfxConfig,
+		HlrConnectionCallbacks callbacks, ref /*out*/ HlrHandle connectionHandle);
+	internal delegate HlrError HlrClose(ref IntPtr connectionHandle);
+	internal delegate HlrError HlrSvReset(HlrHandle connectionHandle);
+	internal delegate HlrError HlrSvSetAudioTrackEnabled(HlrHandle connectionHandle, int enabled);
 
 	#endregion Connection
 
 	#region Video
 
-	internal delegate void GraphicsDeviceInfoReceivedCallback(GraphicsDeviceInfo deviceInfo);
-	internal delegate IntPtr GetGraphicsDeviceInfo(IntPtr renderTarget, GraphicsDeviceInfoReceivedCallback callback);
+	internal delegate HlrError HlrSvInitVideoTrack(HlrHandle connectionHandle, HlrGraphicsApiConfig gfxConfig);
 
-	internal delegate void VideoTrackInitializedCallback(Error err);
-	internal delegate IntPtr InitVideoTrack(
-		ConnectionHandle connectionHandle, GraphicsApiConfig gfxConfig, VideoTrackInitializedCallback callback);
-
-	internal delegate IntPtr PushFrame(ConnectionHandle connectionHandle, GraphicsApiFrame videoFrame);
+	internal delegate HlrError HlrSvPushFrame(HlrHandle connectionHandle, HlrGraphicsApiFrame videoFrame);
 
 	#endregion Video
 
 	#region Data
 
-	//[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	//internal delegate IntPtr InitVideoTrack(
-	//	ConnectionHandle connectionHandle,
-	//	GraphicsApiConfig gfxConfig,
-	//	VideoTrackInitializedCallback callback);
+	internal delegate HlrError HlrPushCustomMessage(HlrHandle handle, HlrCustomMessage message);
 
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate void HlrSvRegisterConnectionStateHandler(ConnectionHandle handle, ConnectionStateChangedCallback cb);
+	public struct HlrCustomMessage
+	{
+		public uint Length;
+		public IntPtr Data;
+	}
 
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate void HlrSvUnregisterConnectionStateHandler(ConnectionHandle handle, ConnectionStateChangedCallback cb);
+	public struct HlrAudioData
+	{
+		public IntPtr Data;
+		public int BitsPerSample;
+		public int SampleRate;
+		public UIntPtr NumberOfChannels;
+		public UIntPtr SamplesPerChannel;
+	}
 
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate void HlrSvRegisterViewPoseHandler(ConnectionHandle handle, ViewPoseReceivedCallback cb);
+	// Callback registration delegates
+	internal delegate void HlrSvRegisterConnectionStateHandler(HlrHandle handle, HlrConnectionStateChangedCallback cb, IntPtr userData);
+	internal delegate void HlrSvUnregisterConnectionStateHandler(HlrHandle handle, HlrConnectionStateChangedCallback cb);
+	internal delegate void HlrSvRegisterViewPoseHandler(HlrHandle handle, HlrSvViewPoseReceivedCallback cb, IntPtr userData);
+	internal delegate void HlrSvUnregisterViewPoseHandler(HlrHandle handle, HlrSvViewPoseReceivedCallback cb);
+	internal delegate void HlrSvRegisterInputEventHandler(HlrHandle handle, HlrSvInputEventReceivedCallback cb, IntPtr userData);
+	internal delegate void HlrSvUnregisterInputEventHandler(HlrHandle handle, HlrSvInputEventReceivedCallback cb);
+	internal delegate void HlrRegisterCustomMessageHandler(HlrHandle handle, HlrCustomMessageCallback cb, IntPtr userData);
+	internal delegate void HlrUnregisterCustomMessageHandler(HlrHandle handle, HlrCustomMessageCallback cb, IntPtr userData);
+	internal delegate void HlrRegisterAudioDataHandler(HlrHandle handle, HlrSvAudioDataReceivedCallback cb, IntPtr userData);
+	internal delegate void HlrUnregisterAudioDataHandler(HlrHandle handle, HlrSvAudioDataReceivedCallback cb);
 
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate void HlrSvUnregisterViewPoseHandler(ConnectionHandle handle, ViewPoseReceivedCallback cb);
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate void HlrSvRegisterInputEventHandler(ConnectionHandle handle, InputEventReceivedCallback cb);
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate void HlrSvUnregisterInputEventHandler(ConnectionHandle handle, InputEventReceivedCallback cb);
-
-	internal delegate void ViewPoseReceivedCallback(in StereoViewPose pose/*, IntPtr userData*/);
-	internal delegate void InputEventReceivedCallback(in InputEvent pose/*, IntPtr userData*/);
+	// Callback delegates
+	internal delegate void HlrSvViewPoseReceivedCallback(in HlrXrPose pose, IntPtr userData);
+	internal delegate void HlrSvInputEventReceivedCallback(in HlrInputEvent pose, IntPtr userData);
+	internal delegate void HlrCustomMessageCallback(in HlrCustomMessage message, IntPtr userData);
+	internal delegate void HlrSvAudioDataReceivedCallback(in HlrAudioData audioData, IntPtr userData);
 
 	internal delegate void QrIsSupportedCallback(in QrIsSupportedEventArgs args/*, IntPtr userData*/);
 	internal delegate void QrRequestAccessCallback(in QrRequestAccessEventArgs args/*, IntPtr userData*/);
@@ -139,10 +138,10 @@ namespace HoloLight.Isar.Native
 	internal delegate void QrEnumerationCompletedCallback(/*IntPtr userData*/);
 
 	// Hololens 2
-	internal readonly struct MessageCallbacks
+	internal readonly struct HlrSvMessageCallbacks
 	{
-		private readonly ViewPoseReceivedCallback _viewPoseReceivedCallback;
-		private readonly InputEventReceivedCallback _inputEventReceivedCallback;
+		private readonly HlrSvViewPoseReceivedCallback _viewPoseReceivedCallback;
+		private readonly HlrSvInputEventReceivedCallback _inputEventReceivedCallback;
 
 		private readonly QrIsSupportedCallback _qrIsSupportedCallback;
 		private readonly QrRequestAccessCallback _qrRequestAccessCallback;
@@ -151,9 +150,9 @@ namespace HoloLight.Isar.Native
 		private readonly QrRemovedCallback _qrRemovedCallback;
 		private readonly QrEnumerationCompletedCallback _qrEnumerationCompletedCallback;
 
-		public MessageCallbacks(
-			ViewPoseReceivedCallback viewPoseReceivedCallback,
-			InputEventReceivedCallback inputEventReceivedCallback,
+		public HlrSvMessageCallbacks(
+			HlrSvViewPoseReceivedCallback viewPoseReceivedCallback,
+			HlrSvInputEventReceivedCallback inputEventReceivedCallback,
 			QrIsSupportedCallback qrIsSupportedCallback,
 			QrRequestAccessCallback qrRequestAccessCallback,
 			QrAddedCallback qrAddedCallback,
@@ -173,14 +172,13 @@ namespace HoloLight.Isar.Native
 		}
 	}
 
-	internal delegate void RegisterMessageCallbacks(ConnectionHandle connectionHandle, ref MessageCallbacks callbacks);
-	internal delegate void ProcessMessages(ConnectionHandle connectionHandle);
-	internal delegate Error QrIsSupported(ConnectionHandle connectionHandle);
-	internal delegate Error QrRequestAccess(ConnectionHandle connectionHandle);
-	internal delegate Error QrStart(ConnectionHandle connectionHandle);
-	internal delegate Error QrStop(ConnectionHandle connectionHandle);
+	internal delegate void RegisterMessageCallbacks(HlrHandle connectionHandle, ref HlrSvMessageCallbacks callbacks);
+	internal delegate void ProcessMessages(HlrHandle connectionHandle);
+	internal delegate HlrError QrIsSupported(HlrHandle connectionHandle);
+	internal delegate HlrError QrRequestAccess(HlrHandle connectionHandle);
+	internal delegate HlrError QrStart(HlrHandle connectionHandle);
+	internal delegate HlrError QrStop(HlrHandle connectionHandle);
 	//internal delegate Error QrGetList(ConnectionHandle connectionHandle);
-
 
 	#endregion Data
 }

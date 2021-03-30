@@ -15,7 +15,7 @@ MonoBehaviour:
   isCustomProfile: 1
   settingsConfigurations:
   - componentType:
-      reference: Hololight.Isar.Runtime.MRTK.IsarXRSDKCameraSettings, Hololight.Isar.Runtime.MRTK
+      reference: HoloLight.Isar.Runtime.MRTK.IsarXRSDKCameraSettings, Hololight.Isar.Runtime.MRTK
     componentName: XR SDK Camera Settings
     priority: 0
     runtimePlatform: 25

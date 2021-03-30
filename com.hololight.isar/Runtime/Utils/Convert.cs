@@ -8,7 +8,7 @@ namespace HoloLight.Isar.Utils
 		// TODO: this will be moved into the unity <-> .Net bindings layer
 		// TODO: should we actually support .Net in general? maybe that's just unnecessary bloat
 		// TODO: if anyone needs .Net they can duplicate our c# code and replace UnityEngine types (Matrix4x4, Vector3, etc)
-		public static UnityEngine.Vector3 ToUnity(/*this*/ Vector3 value)
+		public static UnityEngine.Vector3 ToUnity(/*this*/ HlrVector3 value)
 		{
 			return new UnityEngine.Vector3(value.X, value.Y, value.Z);
 		}
@@ -27,7 +27,7 @@ namespace HoloLight.Isar.Utils
 
 		// quaternions have no coord system handedness
 		// the conversion from a quaternion to a matrix implies a specific coordinate system
-		public static UnityEngine.Quaternion ToUnity(/*this*/ Quaternion value)
+		public static UnityEngine.Quaternion ToUnity(/*this*/ HlrQuaternion value)
 		{
 			return new UnityEngine.Quaternion(value.X, value.Y, value.Z, value.W);
 		}
@@ -48,7 +48,7 @@ namespace HoloLight.Isar.Utils
 		//}
 
 		// This does no coordinate system conversion
-		public static UnityEngine.Matrix4x4 ToUnity(/*this*/ Matrix4x4 value)
+		public static UnityEngine.Matrix4x4 ToUnity(/*this*/ HlrMatrix4x4 value)
 		{
 			var matrix = new UnityEngine.Matrix4x4
 			{

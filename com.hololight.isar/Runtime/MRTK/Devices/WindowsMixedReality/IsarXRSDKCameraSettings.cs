@@ -1,7 +1,7 @@
 ﻿using Microsoft.MixedReality.Toolkit.CameraSystem;
 using Microsoft.MixedReality.Toolkit.XRSDK;
 
-namespace Hololight.Isar.Runtime.MRTK
+namespace HoloLight.Isar.Runtime.MRTK
 {
 	public class IsarXRSDKCameraSettings : GenericXRSDKCameraSettings
 	{

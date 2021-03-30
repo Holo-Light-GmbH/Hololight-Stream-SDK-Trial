@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using HoloLight.Isar.MRTK.Devices.WindowsMixedReality;
+using HoloLight.Isar.Runtime.MRTK.Devices.WindowsMixedReality;
 using Microsoft.MixedReality.Toolkit;
 using Microsoft.MixedReality.Toolkit.Input;
 using Microsoft.MixedReality.Toolkit.Utilities;
@@ -8,7 +8,7 @@ using Microsoft.MixedReality.Toolkit.XRSDK.Input;
 using UnityEngine;
 using UnityEngine.XR;
 
-namespace Hololight.Isar.Runtime.MRTK
+namespace HoloLight.Isar.Runtime.MRTK
 {
 	[MixedRealityController(
 		SupportedControllerType.ArticulatedHand,
@@ -82,9 +82,9 @@ namespace Hololight.Isar.Runtime.MRTK
 						}
 
 						// Unity doesn't provide a palm joint, so we synthesize one here.
-						// I think we (Holo-Light) use the palm joint (as provided by Windows) as the device/controller position.
+						// This is copy-pasted from WindowsMixedRealityXRSDKArticulatedHand
 						MixedRealityPose palmPose = CurrentControllerPose;
-						//palmPose.Rotation *= (ControllerHandedness == Handedness.Left ? leftPalmOffset : rightPalmOffset);
+						palmPose.Rotation *= (ControllerHandedness == Handedness.Left ? leftPalmOffset : rightPalmOffset);
 						unityJointPoses[TrackedHandJoint.Palm] = palmPose;
 					}
 				}

@@ -4,7 +4,7 @@
 
 namespace HoloLight.Isar.Native
 {
-	public struct Matrix4x4
+	public struct HlrMatrix4x4
 	{
 		// TODO: this does not represent the current layout (which is that of directx)
 		// this will be fixed once we move all the conversion crap to remoting_unity
@@ -13,7 +13,7 @@ namespace HoloLight.Isar.Native
 		public float M02, M12, M22, M32;
 		public float M03, M13, M23, M33;
 
-		public Matrix4x4(
+		public HlrMatrix4x4(
 			float m00, float m10, float m20, float m30,
 			float m01, float m11, float m21, float m31,
 			float m02, float m12, float m22, float m32,

@@ -6,24 +6,12 @@ using System;
 
 namespace HoloLight.Isar.Native
 {
-	public struct GraphicsDeviceInfo
-	{
-		public readonly IntPtr Device;
-		public readonly IntPtr DeviceContext;
-		public readonly IntPtr RenderTargetDesc;
-
-		public override string ToString()
-		{
-			return $"Device: {Device}, DeviceContext: {DeviceContext}, RenderTargetDesc: {RenderTargetDesc}";
-		}
-	}
-
 	// This is platform specific for now. Will need changes in representation
 	// when more graphics apis are added maybe a union would fit?
 	// Also, we don't specify StructLayout since according to MS docs the
 	// C# compiler defaults to Sequential for structs.
 	// See: https://docs.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.layoutkind?=netframework-4.8#remarks
-	public struct GraphicsApiConfig
+	internal struct HlrGraphicsApiConfig
 	{
 		//ID3D11Device*
 		public readonly IntPtr d3dDevice;
@@ -34,7 +22,7 @@ namespace HoloLight.Isar.Native
 		//D3D11_TEXTURE2D_DESC*
 		public readonly IntPtr renderTargetDesc;
 
-		public GraphicsApiConfig(IntPtr device, IntPtr context, IntPtr desc)
+		public HlrGraphicsApiConfig(IntPtr device, IntPtr context, IntPtr desc)
 		{
 			d3dDevice = device;
 			d3dContext = context;
@@ -44,7 +32,7 @@ namespace HoloLight.Isar.Native
 
 	// this is platform specific for now. Will need changes in representation when more graphics apis are added.
 	// maybe a union would fit?
-	internal struct GraphicsApiFrame
+	internal struct HlrGraphicsApiFrame
 	{
 		public readonly long timestamp;
 
@@ -53,7 +41,7 @@ namespace HoloLight.Isar.Native
 
 		public readonly uint subResourceIndex;
 
-		public GraphicsApiFrame(long timestamp, IntPtr d3dFrame, uint subResourceIndex = 0)
+		public HlrGraphicsApiFrame(long timestamp, IntPtr d3dFrame, uint subResourceIndex = 0)
 		{
 			this.timestamp = timestamp;
 			this.d3dFrame = d3dFrame;
@@ -61,20 +49,20 @@ namespace HoloLight.Isar.Native
 		}
 	}
 
-	public enum SdpType : int
+	public enum HlrSdpType : int
 	{
 		Offer = 0,
 		Answer
 	}
 
-	public enum ConnectionState : int
+	public enum HlrConnectionState : int
 	{
-		Connected,      // TODO: = 1
-		Disconnected    // TODO: = 0
+		Disconnected,
+		Connected
 	}
 
-	//Keep in sync with native remoting/error.h
-	public enum Error : Int32
+	//Keep in sync with native HlrError
+	public enum HlrError : Int32
 	{
 		eNone = 0,                  // This should only be used at the API boundary.
 		eAlreadyInitialized,        // Init has already been called
@@ -101,6 +89,9 @@ namespace HoloLight.Isar.Native
 		eSdpParse,            // failed to parse session decription or ICE candidate
 		eNoFrame,             // user tried to pull frame but there is none
 		eUnsupportedVersion,  // user tried to create api with unsupported version
-		eInvalidArgument
+		eInvalidArgument,
+		eMessageTooLong,      //custom message data too long
+		eAudioTrack,          // failed to initialize audio track
+		eAudioTrack_NotInitialized, // tried to perform an operation on audio track but there is none
 	}
 }

@@ -4,14 +4,16 @@ using UnityEngine;
 
 namespace HoloLight.Isar
 {
+	//KL: Isar has connection state event already and subclasses do parts of the API.
+	//We could convert this one to be a MonoBehaviour that includes Isar for (maybe) easier usage.
 	public abstract class IsarEventListener : MonoBehaviour
 	{
-		protected RemotingServer _server;
+		protected Isar _server;
 		private bool _isRegistered = false;
 
-		private void RemotingServer_OnConnectionStateChanged(ConnectionState state)
+		private void RemotingServer_OnConnectionStateChanged(HlrConnectionState state)
 		{
-			if (state == ConnectionState.Connected)
+			if (state == HlrConnectionState.Connected)
 			{
 				OnConnected();
 			}

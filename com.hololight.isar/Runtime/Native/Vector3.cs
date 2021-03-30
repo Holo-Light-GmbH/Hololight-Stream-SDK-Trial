@@ -4,11 +4,11 @@
 
 namespace HoloLight.Isar.Native
 {
-	public struct Vector3
+	public struct HlrVector3
 	{
 		public float X, Y, Z;
 
-		public Vector3(float x, float y, float z)
+		public HlrVector3(float x, float y, float z)
 		{
 			X = x;
 			Y = y;

@@ -6,7 +6,7 @@ using System;
 
 namespace HoloLight.Isar.Native.Input
 {
-	public enum InteractionSourcePositionAccuracy : int
+	public enum HlrSpatialInteractionSourcePositionAccuracy : int
 	{
 		//None,
 		High = 0,
@@ -14,7 +14,7 @@ namespace HoloLight.Isar.Native.Input
 	}
 
 	[Flags]
-	public enum InteractionSourcePoseFlags : uint
+	public enum HlrSpatialInteractionSourcePoseFlags : uint
 	{
 		None = 0,
 		HasGripPosition = 1,
@@ -25,67 +25,67 @@ namespace HoloLight.Isar.Native.Input
 		HasAngularVelocity = 32, // 0x00000020
 	}
 
-	public struct InteractionSourcePose
+	public struct HlrSpatialInteractionSourcePose
 	{
-		internal Quaternion GripOrientation;
-		internal Quaternion PointerOrientation;
-		internal Vector3 GripPosition;
-		internal Vector3 PointerPosition;
-		internal Vector3 Velocity;
-		internal Vector3 AngularVelocity;
-		public InteractionSourcePositionAccuracy PositionAccuracy;
-		public InteractionSourcePoseFlags Flags;
+		internal HlrQuaternion GripOrientation;
+		internal HlrQuaternion PointerOrientation;
+		internal HlrVector3 GripPosition;
+		internal HlrVector3 PointerPosition;
+		internal HlrVector3 Velocity;
+		internal HlrVector3 AngularVelocity;
+		public HlrSpatialInteractionSourcePositionAccuracy PositionAccuracy;
+		public HlrSpatialInteractionSourcePoseFlags Flags;
 
-		public bool TryGetPosition(out Vector3 position)
+		public bool TryGetPosition(out HlrVector3 position)
 		{
 			return TryGetGripPosition(out position);
 		}
 
-		public bool TryGetGripPosition(out Vector3 position)
+		public bool TryGetGripPosition(out HlrVector3 position)
 		{
 			position = GripPosition;
-			return Flags.HasFlag(InteractionSourcePoseFlags.HasGripPosition);
+			return Flags.HasFlag(HlrSpatialInteractionSourcePoseFlags.HasGripPosition);
 			// TODO: could Convert.ToBoolean(Flags & SpatialInteractionSourcePoseFlags.HasGripPosition); to prevent branching
 			// Although, branch prediction could render this irrelevant, we would need to benchmark
 			//return (Flags & InteractionSourcePoseFlags.HasGripPosition) != InteractionSourcePoseFlags.None;
 		}
 
-		public bool TryGetPointerPosition(out Vector3 position)
+		public bool TryGetPointerPosition(out HlrVector3 position)
 		{
 			position = PointerPosition;
-			return Flags.HasFlag(InteractionSourcePoseFlags.HasPointerPosition);
+			return Flags.HasFlag(HlrSpatialInteractionSourcePoseFlags.HasPointerPosition);
 			//return (Flags & InteractionSourcePoseFlags.HasPointerPosition) != InteractionSourcePoseFlags.None;
 		}
 
-		public bool TryGetOrientation(out Quaternion orientation)
+		public bool TryGetOrientation(out HlrQuaternion orientation)
 		{
 			return TryGetGripOrientation(out orientation);
 		}
 
-		public bool TryGetGripOrientation(out Quaternion orientation)
+		public bool TryGetGripOrientation(out HlrQuaternion orientation)
 		{
 			orientation = GripOrientation;
-			return Flags.HasFlag(InteractionSourcePoseFlags.HasGripOrientation);
+			return Flags.HasFlag(HlrSpatialInteractionSourcePoseFlags.HasGripOrientation);
 			//return (Flags & InteractionSourcePoseFlags.HasGripOrientation) != InteractionSourcePoseFlags.None;
 		}
 
-		public bool TryGetPointerOrientation(out Quaternion orientation)
+		public bool TryGetPointerOrientation(out HlrQuaternion orientation)
 		{
 			orientation = PointerOrientation;
-			return Flags.HasFlag(InteractionSourcePoseFlags.HasPointerOrientation);
+			return Flags.HasFlag(HlrSpatialInteractionSourcePoseFlags.HasPointerOrientation);
 			//return (Flags & InteractionSourcePoseFlags.HasPointerOrientation) != InteractionSourcePoseFlags.None;
 		}
 
-		public bool TryGetVelocity(out Vector3 velocity)
+		public bool TryGetVelocity(out HlrVector3 velocity)
 		{
 			velocity = Velocity;
-			return (Flags & InteractionSourcePoseFlags.HasVelocity) != InteractionSourcePoseFlags.None;
+			return (Flags & HlrSpatialInteractionSourcePoseFlags.HasVelocity) != HlrSpatialInteractionSourcePoseFlags.None;
 		}
 
-		public bool TryGetAngularVelocity(out Vector3 angularVelocity)
+		public bool TryGetAngularVelocity(out HlrVector3 angularVelocity)
 		{
 			angularVelocity = AngularVelocity;
-			return Flags.HasFlag(InteractionSourcePoseFlags.HasAngularVelocity);
+			return Flags.HasFlag(HlrSpatialInteractionSourcePoseFlags.HasAngularVelocity);
 			//return (Flags & InteractionSourcePoseFlags.HasAngularVelocity) != InteractionSourcePoseFlags.None;
 		}
 	}

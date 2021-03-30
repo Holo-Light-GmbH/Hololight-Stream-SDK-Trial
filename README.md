@@ -11,7 +11,7 @@ We’ve taken our approach to Interactive Streaming a step further by developing
 
 # Getting Started
 
-> :warning: This **trial** will expire/renew **April 1st, 2021**.
+> :warning: This **trial** will expire/renew **May 1st, 2021**.
 
 > :warning: We don't recommend changing any source files delivered with Isar. If you do so, we can't guarantee support.
 
@@ -20,7 +20,7 @@ We’ve taken our approach to Interactive Streaming a step further by developing
 - Minimum Unity 2019.4.x (tested with 2019.4.18f1)
 - Holo-Light ISAR SDK Package → com.hololight.isar
 - HoloLens Client Application → ISAR_Client_x.x.x.x
-- Mixed Reality Toolkit (tested with MRTK 2.5.3)
+- Mixed Reality Toolkit (tested with MRTK 2.5.4)
 
 ## Installation Guide of ISAR SDK
 
@@ -41,7 +41,16 @@ We’ve taken our approach to Interactive Streaming a step further by developing
 2. Open `File → Build Settings`
 	- Supported Platforms: **PC, Mac & Linux Standalone** or **Universal Windows Platform (UWP)**
 	- Architecture: **x86_64** or **x64 (UWP)**
-3. Continue with **Scene Configuration**
+3. Restart Unity, otherwise some weird behaviour could occur.
+4. In case UWP is used, assure that the following capabilites are active in the Player Settings:
+	- PrivateNetworkClientServer
+	- InternetClientServer
+	- InternetClient
+	- SpatialPerception
+	- Microphone
+	- GazeInput
+	
+5. Continue with **Scene Configuration**
 
 ## Scene Configuration
 ### 1-Click Scene Config
@@ -87,7 +96,11 @@ You can check out the preconfigured Project **HelloIsar**. Navigate to the Folde
 - Insert the servers IP address in the client application and press on "Connect".
 - You can as well let the Client App search for local Servers and press on the found server and press "Connect".
 - Once the client connects successfully, you should see the Objects from your Scene. 
-
+# Testing in the Editor
+In case you want to test your application without connecting to ISAR you need to do the following steps:
+- Uncheck "ISAR XR" and check "Mock HMD Loader" in the XR Plug-In Management of Unitys project settings. Also uncheck "Initialize XR on Startup"
+- Make sure no specific ISAR code is executed, otherwise unity crashes. This means, the MRTK Profile has to be changed to a non ISAR one (e.g "DefaultMixedRealityToolkitProfile") and in case present, the ISAR QRSupport Game Object has to be disabled.
+- Make sure to not call the ISAR class constructer anywhere.
 **Congratulations! 🙌🙌🙌**
 
 ## Need QR Code Support?
@@ -97,10 +110,14 @@ You can check out the preconfigured Project **HelloIsar**. Navigate to the Folde
 ## Having Troubles? All Good:
 
 - If the client fails to connect, check if the correct IP is written (e.g. 192.168.0.122 - WITHOUT the Port Number)
-- If the client fails to connect, click on `Servers -> List servers` and see if it finds the server, then you can connect by clicking on the item -> `Connect`
 - Check if the Firewall is blocking the connection (you can deactivate it for a short time to check that)
 - When using Universal Render Pipeline (URP) please check the property **Post Processing**, which you can find **Main Camera->Rendering->Post Processing** 
-- When your build target is UWP, please remember to check the following capabilities (InternetClient, InternetClientServer & PrivateNetworkClientServer)
+- When your build target is UWP, please remember to check the following capabilities (InternetClient, InternetClientServer, PrivateNetworkClientServer, SpatialPerception, Microphone & GazeInput)
+- If the Editor crashes when trying to use my application in the Editor without ISAR and ISAR is in the Project, check if all steps stated in chapter "Testing in the Editor" above are done. Make sure to not call the ISAR class constructer anywhere.
+- Audio doesn't work:
+	1. Make Sure your Default Communication Audio Device is the Same as the Default Audio Device in the Windows Sound Control Panel
+	2. In case your project uses UWP as target, the issue is UWP is not supporting grabbing sound from an output device. To work around this issue you can use 3d party software (e.g https://vb-audio.com/Cable/) to pass the auio output signal to a audio input device. Make sure the input device receiving this signal is the Default Communication Audio Device.
+	We are working on both issues
 
 ## Issues with HelloIsar Example?
 
@@ -111,25 +128,7 @@ You can check out the preconfigured Project **HelloIsar**. Navigate to the Folde
 	- Now select the **package.json** file inside the **com.hololight.isar** folder. 
 - Now the SDK should get correctly loaded. 
 
-# Bug Reporting & Feature Requests
+## License 
+By downloading/using/evlatuating ISAR, you agree to our <a href="Licenses/ISAR.txt">proprietary license terms and conditions</a>.
+Licensing informations can be found in the folder "Licenses" of this repository
 
-Ultimately, the ISAR SDK was made for developers, by developers. With that in mind, we would like to capture your feedback (i.e. bug reports and/or feature requests). Should you have found an issue/bug/blocking feature, please let us know via the [ISAR SDK Trial Issues Section](https://github.com/Holo-Light-GmbH/ISAR-SDK-Trial/issues). Should you be unfamiliar with the tool feel free to check out [Mastering GitHub Issue Reporting](https://guides.github.com/features/issues/) for more info.
-
-## How to write a good Bug Report?
-
-If your bug report is clear to follow, understand & reproduce, chances are higher that it will get fixed. So fixing a bug depends on how effectively it's reported.
-
-### 1) Reproducible:
-
-
-If your bug is not reproducible it will never get fixed. You should clearly **provide the steps to reproduce the bug**. 
-Do not assume or skip any reproducing step. A Step-by-step description of the issue is easy to reproduce and fix. E.g. **A failing test** with the issue is the preferred way to report a reproducible error as it contains all the assumptions and environment settings necessary for the error to occur. 
-
-### 2) Specificity:
-
-No need to write an essay about the issue. Just be specific and to the point. Try to summarize the problem in minimum words yet in an effective way. Do not combine multiple problems even they seem to be similar. Write different reports for each problem. *But also check if your issue already exists--if so, please leave a comment on the existing issue*.
-
-
-### 3) Environment/Version/Other Details:
-
-Include the SDK version, Unity version HoloLens OS version you're using, as well as versions of the relevant major components, e.g. What .NET version, IIS Version, Windows Version etc.

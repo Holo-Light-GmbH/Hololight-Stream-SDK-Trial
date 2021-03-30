@@ -4,11 +4,11 @@
 
 namespace HoloLight.Isar.Native.Input
 {
-	public /*readonly*/ struct ManipulationDelta
+	public /*readonly*/ struct HlrSpatialManipulationDelta
 	{
-		public /*readonly*/ Vector3 Translation;
+		public /*readonly*/ HlrVector3 Translation;
 
-		public ManipulationDelta(Vector3 translation)
+		public HlrSpatialManipulationDelta(HlrVector3 translation)
 		{
 			Translation = translation;
 		}

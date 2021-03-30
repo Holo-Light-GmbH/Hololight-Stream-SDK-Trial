@@ -6,7 +6,7 @@ using Microsoft.MixedReality.Toolkit.Windows.Input;
 using Microsoft.MixedReality.Toolkit.XRSDK.Input;
 using UnityEngine.XR;
 
-namespace Hololight.Isar.Runtime.MRTK
+namespace HoloLight.Isar.Runtime.MRTK
 {
 	[MixedRealityDataProvider(
 		typeof(IMixedRealityInputSystem),
@@ -102,11 +102,14 @@ namespace Hololight.Isar.Runtime.MRTK
 			//the profile info needed to raise gestures (i.e. the input actions).
 			foreach (var controller in ActiveControllers.Values)
 			{
-				var isarHand = (IsarXRSDKArticulatedHand)controller;
-				isarHand.HoldAction = holdAction;
-				isarHand.ManipulationAction = manipulationAction;
-				isarHand.NavigationAction = navigationAction;
-				isarHand.SelectAction = selectAction;
+				if (controller is IsarXRSDKArticulatedHand)
+				{
+					var isarHand = (IsarXRSDKArticulatedHand)controller;
+					isarHand.HoldAction = holdAction;
+					isarHand.ManipulationAction = manipulationAction;
+					isarHand.NavigationAction = navigationAction;
+					isarHand.SelectAction = selectAction;
+				}
 			}
 
 			base.Update();

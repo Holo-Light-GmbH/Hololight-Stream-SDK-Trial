@@ -1,9 +1,9 @@
 ﻿
 namespace HoloLight.Isar.Native
 {
-	public struct Pose
+	public struct HlrPose
 	{
-		public Vector3 Position;
-		public Quaternion Orientation;
+		public HlrVector3 Position;
+		public HlrQuaternion Orientation;
 	}
 }

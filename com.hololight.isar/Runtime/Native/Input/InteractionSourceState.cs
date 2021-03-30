@@ -6,16 +6,16 @@ using System;
 
 namespace HoloLight.Isar.Native.Input
 {
-	public struct InteractionSourceProperties
+	public struct HlrSpatialInteractionSourceProperties
 	{
 		public double SourceLossRisk;
-		public Vector3 SourceLossMitigationDirection;
-		public InteractionSourcePose SourcePose;
+		public HlrVector3 SourceLossMitigationDirection;
+		public HlrSpatialInteractionSourcePose SourcePose;
 
-		public InteractionSourceProperties(
+		public HlrSpatialInteractionSourceProperties(
 			double sourceLossRisk,
-			Vector3 sourceLossMitigationDirection,
-			InteractionSourcePose sourcePose)
+			HlrVector3 sourceLossMitigationDirection,
+			HlrSpatialInteractionSourcePose sourcePose)
 		{
 			SourceLossRisk = sourceLossRisk;
 			SourceLossMitigationDirection = sourceLossMitigationDirection;
@@ -24,7 +24,7 @@ namespace HoloLight.Isar.Native.Input
 	}
 
 	[Flags]
-	public enum InteractionSourceStateFlags : uint
+	public enum HlrSpatialInteractionSourceStateFlags : uint
 	{
 		None = 0,
 		Grasped = 1 << 0,
@@ -36,19 +36,19 @@ namespace HoloLight.Isar.Native.Input
 		TouchpadTouched = 1 << 6, // 0x00000040
 	}
 
-	public struct InteractionSourceState
+	public struct HlrSpatialInteractionSourceState
 	{
-		public InteractionSourceProperties Properties;
-		public InteractionSource Source;
-		public HeadPose HeadPose; // TODO: THIS IS NEVER USED AND CAN BE THROWN AWAY
+		public HlrSpatialInteractionSourceProperties Properties;
+		public HlrSpatialInteractionSource Source;
+		public HlrHeadPose HeadPose; // TODO: THIS IS NEVER USED AND CAN BE THROWN AWAY
 		//public Pose HeadPose;
-		public HandPose HandPose;
+		public HlrHandPose HandPose;
 		//public Vector2 ThumbstickPosition;
 		//public Vector2 TouchpadPosition;
 		public float SelectPressedAmount;
-		public InteractionSourceStateFlags Flags;
+		public HlrSpatialInteractionSourceStateFlags Flags;
 
-		public InteractionSourcePose SourcePose
+		public HlrSpatialInteractionSourcePose SourcePose
 		{
 			get
 			{
@@ -56,7 +56,7 @@ namespace HoloLight.Isar.Native.Input
 			}
 		}
 
-		public HandPose TryGetHandPose()
+		public HlrHandPose TryGetHandPose()
 		{
 			return HandPose;
 		}
@@ -66,7 +66,7 @@ namespace HoloLight.Isar.Native.Input
 			get
 			{
 				//return Flags.HasFlag(InteractionSourceStateFlags.AnyPressed);
-				return (this.Flags & InteractionSourceStateFlags.AnyPressed) != InteractionSourceStateFlags.None;
+				return (this.Flags & HlrSpatialInteractionSourceStateFlags.AnyPressed) != HlrSpatialInteractionSourceStateFlags.None;
 			}
 		}
 
@@ -75,7 +75,7 @@ namespace HoloLight.Isar.Native.Input
 			get
 			{
 				//return Flags.HasFlag(InteractionSourceStateFlags.SelectPressed);
-				return (this.Flags & InteractionSourceStateFlags.SelectPressed) != InteractionSourceStateFlags.None;
+				return (this.Flags & HlrSpatialInteractionSourceStateFlags.SelectPressed) != HlrSpatialInteractionSourceStateFlags.None;
 			}
 		}
 
@@ -84,7 +84,7 @@ namespace HoloLight.Isar.Native.Input
 			get
 			{
 				//return Flags.HasFlag(InteractionSourceStateFlags.MenuPressed);
-				return (this.Flags & InteractionSourceStateFlags.MenuPressed) != InteractionSourceStateFlags.None;
+				return (this.Flags & HlrSpatialInteractionSourceStateFlags.MenuPressed) != HlrSpatialInteractionSourceStateFlags.None;
 			}
 		}
 
@@ -93,7 +93,7 @@ namespace HoloLight.Isar.Native.Input
 			get
 			{
 				//return Flags.HasFlag(InteractionSourceStateFlags.Grasped);
-				return (this.Flags & InteractionSourceStateFlags.Grasped) != InteractionSourceStateFlags.None;
+				return (this.Flags & HlrSpatialInteractionSourceStateFlags.Grasped) != HlrSpatialInteractionSourceStateFlags.None;
 			}
 		}
 
@@ -102,7 +102,7 @@ namespace HoloLight.Isar.Native.Input
 			get
 			{
 				//return Flags.HasFlag(InteractionSourceStateFlags.TouchpadTouched);
-				return (this.Flags & InteractionSourceStateFlags.TouchpadTouched) != InteractionSourceStateFlags.None;
+				return (this.Flags & HlrSpatialInteractionSourceStateFlags.TouchpadTouched) != HlrSpatialInteractionSourceStateFlags.None;
 			}
 		}
 
@@ -111,7 +111,7 @@ namespace HoloLight.Isar.Native.Input
 			get
 			{
 				//return Flags.HasFlag(InteractionSourceStateFlags.TouchpadPressed);
-				return (this.Flags & InteractionSourceStateFlags.TouchpadPressed) != InteractionSourceStateFlags.None;
+				return (this.Flags & HlrSpatialInteractionSourceStateFlags.TouchpadPressed) != HlrSpatialInteractionSourceStateFlags.None;
 			}
 		}
 
@@ -120,7 +120,7 @@ namespace HoloLight.Isar.Native.Input
 			get
 			{
 				//return Flags.HasFlag(InteractionSourceStateFlags.ThumbstickPressed);
-				return (this.Flags & InteractionSourceStateFlags.ThumbstickPressed) != InteractionSourceStateFlags.None;
+				return (this.Flags & HlrSpatialInteractionSourceStateFlags.ThumbstickPressed) != HlrSpatialInteractionSourceStateFlags.None;
 			}
 		}
 	}

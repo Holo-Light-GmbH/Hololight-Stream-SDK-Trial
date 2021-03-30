@@ -14,19 +14,19 @@ namespace HoloLight.Isar.Native.Qr
 
 	public static class QrApi
 	{
-		private static ConnectionHandle _connectionHandle;
+		private static HlrHandle _connectionHandle;
 
 		// ConnectionApi is a struct so maybe this should be a reference? but of course C# doesn't allow it
 		//private static ByReference<ConnectionApi> _connectionApi;
-		private static /*ref*/ ConnectionApi _connectionApi;
+		private static /*ref*/ HlrSvConnectionApi _connectionApi;
 
-		internal static void Init(ConnectionApi connectionApi, ConnectionHandle connectionHandle)
+		internal static void Init(HlrSvConnectionApi connectionApi, HlrHandle connectionHandle)
 		{
 			_connectionApi = connectionApi;
 			_connectionHandle = connectionHandle;
 		}
 
-		public static Error IsSupported()
+		public static HlrError IsSupported()
 		{
 			Assert.IsNotNull(_connectionApi.QrIsSupported, "You didn't call ServerApi.Create!");
 			return _connectionApi.QrIsSupported(_connectionHandle);
@@ -46,7 +46,7 @@ namespace HoloLight.Isar.Native.Qr
 			}
 		}
 
-		public static Error RequestAccess()
+		public static HlrError RequestAccess()
 		{
 			Assert.IsNotNull(_connectionApi.QrRequestAccess, "You didn't call ServerApi.Create!");
 			return _connectionApi.QrRequestAccess(_connectionHandle);
@@ -66,13 +66,13 @@ namespace HoloLight.Isar.Native.Qr
 			}
 		}
 
-		public static Error Start()
+		public static HlrError Start()
 		{
 			Assert.IsNotNull(_connectionApi.QrStart, "You didn't call ServerApi.Create!");
 			return _connectionApi.QrStart(_connectionHandle);
 		}
 
-		public static Error Stop()
+		public static HlrError Stop()
 		{
 			Assert.IsNotNull(_connectionApi.QrStop, "You didn't call ServerApi.Create!");
 			return _connectionApi.QrStop(_connectionHandle);

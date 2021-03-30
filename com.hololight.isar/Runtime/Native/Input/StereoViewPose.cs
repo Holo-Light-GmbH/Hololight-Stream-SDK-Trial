@@ -4,14 +4,14 @@
 
 namespace HoloLight.Isar.Native.Input
 {
-	public struct StereoViewPose
+	public struct HlrXrPose
 	{
 		public long timestamp;
 
-		public Matrix4x4 viewLeft;
-		public Matrix4x4 viewRight;
+		public HlrMatrix4x4 viewLeft;
+		public HlrMatrix4x4 viewRight;
 
-		public Matrix4x4 projLeft;
-		public Matrix4x4 projRight;
+		public HlrMatrix4x4 projLeft;
+		public HlrMatrix4x4 projRight;
 	}
 }

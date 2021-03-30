@@ -101,7 +101,7 @@ namespace HoloLight.Isar.Native.Qr
 		//		data = value;
 		//	}
 		//}
-		public readonly Pose Pose;
+		public readonly HlrPose Pose;
 	}
 
 	public /*ref*/ struct QrAddedEventArgs

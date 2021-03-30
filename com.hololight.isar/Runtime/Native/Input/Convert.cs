@@ -5,13 +5,13 @@ namespace HoloLight.Isar.Native.Input
 {
 	static class Convert
 	{
-		public delegate void InputEventConverter(ref InputEvent input);
-		public static void ToUnityCoordinateSystem(ref InputEvent input)
+		public delegate void InputEventConverter(ref HlrInputEvent input);
+		public static void ToUnityCoordinateSystem(ref HlrInputEvent input)
 		{
 			//Assert.IsTrue(input.Type >= InputEventType.Min &&
 			//              input.Type <= InputEventType.Max);
-			if (input.Type < InputEventType.Min &&
-			    input.Type > InputEventType.Max)
+			if (input.Type < HlrInputEventType.Min &&
+			    input.Type > HlrInputEventType.Max)
 			{
 				throw new IndexOutOfRangeException(nameof(input.Type));
 			}
@@ -59,7 +59,7 @@ namespace HoloLight.Isar.Native.Input
 		//	jointPose.Orientation.Y = -jointPose.Orientation.Y;
 		//}
 
-		private static JointPose DoConversion(JointPose jointPose)
+		private static HlrJointPose DoConversion(HlrJointPose jointPose)
 		{
 			jointPose.Position.Z    = -jointPose.Position.Z;
 			jointPose.Orientation.X = -jointPose.Orientation.X;
@@ -67,7 +67,7 @@ namespace HoloLight.Isar.Native.Input
 			return jointPose;
 		}
 
-		private static void DoConversion(ref HandPose handPose)
+		private static void DoConversion(ref HlrHandPose handPose)
 		{
 			for (int i = 0; i < handPose.JointPoses.Length; i++)
 			{
@@ -78,7 +78,7 @@ namespace HoloLight.Isar.Native.Input
 			}
 		}
 
-		private static void DoConversion(ref InteractionSourcePose sourcePose)
+		private static void DoConversion(ref HlrSpatialInteractionSourcePose sourcePose)
 		{
 			sourcePose.Velocity.Z           = -sourcePose.Velocity.Z;
 			sourcePose.AngularVelocity.Z    = -sourcePose.AngularVelocity.Z;
@@ -92,14 +92,14 @@ namespace HoloLight.Isar.Native.Input
 			sourcePose.PointerOrientation.Y = -sourcePose.PointerOrientation.Y;
 		}
 
-		private static void DoConversion(ref HeadPose headPose)
+		private static void DoConversion(ref HlrHeadPose headPose)
 		{
 			headPose.ForwardDirection.Z = -headPose.ForwardDirection.Z;
 			headPose.UpDirection.Z      = -headPose.UpDirection.Z;
 			headPose.Position.Z         = -headPose.Position.Z;
 		}
 
-		private static void DoConversion(ref InteractionSourceState state)
+		private static void DoConversion(ref HlrSpatialInteractionSourceState state)
 		{
 			DoConversion(ref state.Properties.SourcePose);
 			state.Properties.SourceLossMitigationDirection.Z = -state.Properties.SourceLossMitigationDirection.Z;
@@ -107,7 +107,7 @@ namespace HoloLight.Isar.Native.Input
 			DoConversion(ref state.HandPose);
 		}
 
-		private static void ConvertInteractionSourceDetected(ref InputEvent input)
+		private static void ConvertInteractionSourceDetected(ref HlrInputEvent input)
 		{
 			//var args = input.SourceDetectedEventArgs;
 			// HACK: convert directx coord system to unity coord system
@@ -117,7 +117,7 @@ namespace HoloLight.Isar.Native.Input
 			//args.InteractionSourceState.Source.Flags &= ~InteractionSourceFlags.SupportsPointing;
 		}
 
-		private static void ConvertInteractionSourceLost(ref InputEvent input)
+		private static void ConvertInteractionSourceLost(ref HlrInputEvent input)
 		{
 			//var args = input.SourceLostEventArgs;
 			// HACK: convert directx coord system to unity coord system
@@ -127,7 +127,7 @@ namespace HoloLight.Isar.Native.Input
 			//args.InteractionSourceState.Source.Flags &= ~InteractionSourceFlags.SupportsPointing;
 		}
 
-		private static void ConvertInteractionSourcePressed(ref InputEvent input)
+		private static void ConvertInteractionSourcePressed(ref HlrInputEvent input)
 		{
 			//var args = input.SourcePressedEventArgs;
 			// HACK: convert directx coord system to unity coord system
@@ -137,7 +137,7 @@ namespace HoloLight.Isar.Native.Input
 			//args.InteractionSourceState.Source.Flags &= ~InteractionSourceFlags.SupportsPointing;
 		}
 
-		private static void ConvertInteractionSourceUpdated(ref InputEvent input)
+		private static void ConvertInteractionSourceUpdated(ref HlrInputEvent input)
 		{
 			//var args = input.SourceUpdatedEventArgs;
 			// HACK: convert directx coord system to unity coord system
@@ -147,7 +147,7 @@ namespace HoloLight.Isar.Native.Input
 			//args.InteractionSourceState.Source.Flags &= ~InteractionSourceFlags.SupportsPointing;
 		}
 
-		private static void ConvertInteractionSourceReleased(ref InputEvent input)
+		private static void ConvertInteractionSourceReleased(ref HlrInputEvent input)
 		{
 			//var args = input.SourceReleasedEventArgs;
 			// HACK: convert directx coord system to unity coord system
@@ -157,78 +157,78 @@ namespace HoloLight.Isar.Native.Input
 			//args.InteractionSourceState.Source.Flags &= ~InteractionSourceFlags.SupportsPointing;
 		}
 
-		private static void ConvertSelected(ref InputEvent input) { /*do nothing*/ }
+		private static void ConvertSelected(ref HlrInputEvent input) { /*do nothing*/ }
 
-		private static void ConvertTapped(ref InputEvent input)
+		private static void ConvertTapped(ref HlrInputEvent input)
 		{
 			DoConversion(ref input.TappedEventArgs.HeadPose);
 		}
 
-		private static void ConvertHoldStarted(ref InputEvent input)
+		private static void ConvertHoldStarted(ref HlrInputEvent input)
 		{
 			DoConversion(ref input.HoldStartedEventArgs.SourcePose);
 			DoConversion(ref input.HoldStartedEventArgs.HeadPose);
 		}
 
-		private static void ConvertHoldCompleted(ref InputEvent input)
+		private static void ConvertHoldCompleted(ref HlrInputEvent input)
 		{
 			DoConversion(ref input.HoldCompletedEventArgs.SourcePose);
 			DoConversion(ref input.HoldCompletedEventArgs.HeadPose);
 		}
 
-		private static void ConvertHoldCanceled(ref InputEvent input)
+		private static void ConvertHoldCanceled(ref HlrInputEvent input)
 		{
 			DoConversion(ref input.HoldCanceledEventArgs.SourcePose);
 			DoConversion(ref input.HoldCanceledEventArgs.HeadPose);
 		}
 
-		private static void ConvertManipulationStarted(ref InputEvent input)
+		private static void ConvertManipulationStarted(ref HlrInputEvent input)
 		{
 			DoConversion(ref input.ManipulationStartedEventArgs.SourcePose);
 			DoConversion(ref input.ManipulationStartedEventArgs.HeadPose);
 		}
 
-		private static void ConvertManipulationUpdated(ref InputEvent input)
+		private static void ConvertManipulationUpdated(ref HlrInputEvent input)
 		{
 			DoConversion(ref input.ManipulationUpdatedEventArgs.SourcePose);
 			DoConversion(ref input.ManipulationUpdatedEventArgs.HeadPose);
 			input.ManipulationUpdatedEventArgs.Delta.Translation.Z = -input.ManipulationUpdatedEventArgs.Delta.Translation.Z;
 		}
 
-		private static void ConvertManipulationCompleted(ref InputEvent input)
+		private static void ConvertManipulationCompleted(ref HlrInputEvent input)
 		{
 			DoConversion(ref input.ManipulationCompletedEventArgs.SourcePose);
 			DoConversion(ref input.ManipulationCompletedEventArgs.HeadPose);
 			input.ManipulationCompletedEventArgs.Delta.Translation.Z = -input.ManipulationCompletedEventArgs.Delta.Translation.Z;
 		}
 
-		private static void ConvertManipulationCanceled(ref InputEvent input)
+		private static void ConvertManipulationCanceled(ref HlrInputEvent input)
 		{
 			DoConversion(ref input.ManipulationCanceledEventArgs.SourcePose);
 			DoConversion(ref input.ManipulationCanceledEventArgs.HeadPose);
 		}
 
-		private static void ConvertNavigationStarted(ref InputEvent input)
+		private static void ConvertNavigationStarted(ref HlrInputEvent input)
 		{
 			DoConversion(ref input.NavigationStartedEventArgs.SourcePose);
 			DoConversion(ref input.NavigationStartedEventArgs.HeadPose);
 		}
 
-		private static void ConvertNavigationUpdated(ref InputEvent input)
+		private static void ConvertNavigationUpdated(ref HlrInputEvent input)
 		{
 			DoConversion(ref input.NavigationUpdatedEventArgs.SourcePose);
 			DoConversion(ref input.NavigationUpdatedEventArgs.HeadPose);
 			input.NavigationUpdatedEventArgs.NormalizedOffset.Z = -input.NavigationUpdatedEventArgs.NormalizedOffset.Z;
 		}
 
-		private static void ConvertNavigationCompleted(ref InputEvent input)
+		private static void ConvertNavigationCompleted(ref HlrInputEvent input)
 		{
 			DoConversion(ref input.NavigationCompletedEventArgs.SourcePose);
 			DoConversion(ref input.NavigationCompletedEventArgs.HeadPose);
 			input.NavigationCompletedEventArgs.NormalizedOffset.Z = -input.NavigationCompletedEventArgs.NormalizedOffset.Z;
 		}
 
-		private static void ConvertNavigationCanceled(ref InputEvent input)
+		private static void ConvertNavigationCanceled(ref HlrInputEvent input)
 		{
 			DoConversion(ref input.NavigationCanceledEventArgs.SourcePose);
 			DoConversion(ref input.NavigationCanceledEventArgs.HeadPose);

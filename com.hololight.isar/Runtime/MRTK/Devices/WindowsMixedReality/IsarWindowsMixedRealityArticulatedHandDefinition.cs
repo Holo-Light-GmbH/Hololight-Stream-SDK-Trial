@@ -14,7 +14,7 @@ using UnityEngine;
 //using Windows.UI.Input.Spatial;
 //#endif // WINDOWS_UWP
 
-namespace HoloLight.Isar.MRTK.Devices.WindowsMixedReality
+namespace HoloLight.Isar.Runtime.MRTK.Devices.WindowsMixedReality
 {
 	public class IsarWindowsMixedRealityArticulatedHandDefinition
 	{

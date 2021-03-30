@@ -9,40 +9,49 @@ namespace HoloLight.Isar.Editor
 {
 	public class MrtkConfigMenuHelper : MonoBehaviour
 	{
-		public const string DEFAULT_REMOTE_CONFIG_PROFILE = "IsarXRSDKConfigurationProfile";
+		public const string DEFAULT_ISAR_CONFIG_PROFILE = "IsarXRSDKConfigurationProfile";
 
 		// Add a menu item named "Configure MRTK" to ISAR main menu.
 		[MenuItem("ISAR/Configure MRTK")]
-		static void ConfigureMrtkRemoting()
+		static void ConfigureMrtk()
 		{
-			AddRemotingProfile();
+			AddProfile();
 		}
 
-		private static void AddRemotingProfile()
+		private static void AddProfile()
 		{
-			Debug.Log("ISAR: Trying to set configuration profile ...");
+			//Debug.Log("ISAR: Trying to set configuration profile ...");
 
-			var remotingProfile = GetDefaultRemotingConfigProfile();
-
-			MixedRealityInspectorUtility.AddMixedRealityToolkitToScene(remotingProfile);
-
-			bool hasProfile = MixedRealityToolkit.Instance.HasActiveProfile;
-			bool hasRemotingProfile = hasProfile ? MixedRealityToolkit.Instance.ActiveProfile.name == DEFAULT_REMOTE_CONFIG_PROFILE : false;
-
-			if (remotingProfile == null)
+			var isarProfile = GetDefaultIsarConfigProfile();
+			if (isarProfile == null)
 			{
-				Debug.LogWarning($"ISAR: No configuration profile {DEFAULT_REMOTE_CONFIG_PROFILE} found.");
+				Debug.LogWarning($"ISAR: Configuration profile {DEFAULT_ISAR_CONFIG_PROFILE} not found.");
 				return;
 			}
 
-			if (!hasProfile || !hasRemotingProfile)
+			if (MixedRealityToolkit.IsInitialized &&
+			    MixedRealityToolkit.Instance.ActiveProfile == isarProfile)
 			{
-				MixedRealityToolkit.Instance.ActiveProfile = remotingProfile;
-				Debug.Log($"ISAR: Configuration profile {DEFAULT_REMOTE_CONFIG_PROFILE} added successfully.");
+				Debug.Log($"ISAR: Configuration profile {DEFAULT_ISAR_CONFIG_PROFILE} is already active.");
+				return;
+			}
+
+			// NOTE: initializes MRTK if not initialized
+			MixedRealityInspectorUtility.AddMixedRealityToolkitToScene();
+
+			MixedRealityToolkit.Instance.ActiveProfile = isarProfile;
+			if (MixedRealityToolkit.Instance.ActiveProfile == isarProfile)
+			{
+				Debug.Log($"ISAR: Successfully activated configuration profile {DEFAULT_ISAR_CONFIG_PROFILE}.");
+			}
+			else
+			{
+				Debug.LogWarning($"ISAR: Unable to activate configuration profile {DEFAULT_ISAR_CONFIG_PROFILE}.");
+
 			}
 		}
 
-		public static MixedRealityToolkitConfigurationProfile GetDefaultRemotingConfigProfile()
+		public static MixedRealityToolkitConfigurationProfile GetDefaultIsarConfigProfile()
 		{
 			var allConfigProfiles =
 				ScriptableObjectExtensions.GetAllInstances<MixedRealityToolkitConfigurationProfile>();
@@ -54,7 +63,7 @@ namespace HoloLight.Isar.Editor
 		{
 			foreach (var profile in allProfiles)
 			{
-				if (profile.name == DEFAULT_REMOTE_CONFIG_PROFILE)
+				if (profile.name == DEFAULT_ISAR_CONFIG_PROFILE)
 				{
 					return profile;
 				}
