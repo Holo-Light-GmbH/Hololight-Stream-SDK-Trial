@@ -1,134 +1,164 @@
 # ISAR SDK
 
 <p align="center">
-	<img src="Docs/imgs/ISAR_Icon.png" width="180px">
+    <img src="Docs/imgs/ISAR_Icon.png" width="180px">
 </p>
 
-# What is ISAR SDK? 
+## What is ISAR SDK?
+ISAR is a Software Development Kit allowing developers to stream their entire application to an XR device with minimal integration. 
+<br>
+<em>ISAR SDK, built for Developers, by Developers.</em>
+<br>
+We’ve kicked our approach to streaming up a notch by making it *fully interactive*; capture any sensory data or telemetry and process it in your application in *real-time*. Allowing you to stay in control, crafting your own bespoke remote rendering AR solution. We diligently focused on the simplicity of integration and stability. Whether in managed environments, hosted clouds or on-premise solutions.
 
-<em>ISAR SDK – Crafted for Developers, by Developers</em><br>
-We’ve taken our approach to Interactive Streaming a step further by developing ISAR SDK. Allowing you to stay in control, crafting your own bespoke remote rendering AR solution. We’ve diligently focused on simplicity of integration and stability. Whether in managed environments, hosted clouds or on-premises solutions.
-
-# Getting Started
+## Getting Started
 
 > :warning: This **trial** will expire/renew **May 1st, 2021**.
+> :warning: We don't recommend changing any source files delivered with ISAR. If you do so, we can't guarantee support.
+> :warning: By downloading/using this trial, you agree to our  <a href="Licenses/ISAR.txt">license terms & conditions</a>
 
-> :warning: We don't recommend changing any source files delivered with Isar. If you do so, we can't guarantee support.
-
-## Prerequisites
+### Prerequisites
 
 - Minimum Unity 2019.4.x (tested with 2019.4.18f1)
-- Holo-Light ISAR SDK Package → com.hololight.isar
-- HoloLens Client Application → ISAR_Client_x.x.x.x
-- Mixed Reality Toolkit (tested with MRTK 2.5.4)
+- Mixed Reality Toolkit 2.4.x or 2.5.x (tested with MRTK 2.5.4)
 
-## Installation Guide of ISAR SDK
+### First Installation 
 
-0. Create a new Unity 3D Project (skip this, if you already have a Project)
+0. Create a new Unity 3D project (skip this if you already have a project)
 
-1. Import **MRTK** into your Project 
-	- <a target="_blank" href="https://microsoft.github.io/MixedRealityToolkit-Unity/Documentation/Installation.html#1-get-the-latest-mrtk-unity-packages">Getting Started</a>
-2. Import **ISAR SDK**
-	- Make sure you are connected to the Internet
-	- Open **Package Manager** in Unity Editor (`Window → Package Manager`)
-	- Choose **Add package from disk**. Select the file `package.json` from `com.hololight.isar`. 
-3. Continue with **Project Configration**
+1. Import **MRTK** into your project
+    - [Getting Started](https://microsoft.github.io/MixedRealityToolkit-Unity/Documentation/Installation.html#1-get-the-latest-mrtk-unity-packages)
+2. Import **ISAR SDK** into your project
+    - Make sure you are connected to the internet
+    - Open **Package Manager** in the Unity editor (`Window -> Package Manager`)
+    - Choose **Add package from disk...** and select the file `package.json` from the `com.hololight.isar` directory contained in this repo
 
-## Project Configuration
+### Updating Previous Installation
+This step only applies if you have a previous version of ISAR already installed/integrated in your project. If this is your first time installing ISAR, please skip to the next step.
+- Open ****Package Manager**** in the Unity editor (`Window -> Package Manager`)
+- Remove the current ISAR Package
+- Add the new ISAR Package
+- Restart Unity
+- Follow the steps in [Project Configuration](#project-configuration)
 
-1. Navigate to `Edit → Project Settings → XR Plug-in Management`
-	- Tick on **ISAR XR** for both Platforms
-2. Open `File → Build Settings`
-	- Supported Platforms: **PC, Mac & Linux Standalone** or **Universal Windows Platform (UWP)**
-	- Architecture: **x86_64** or **x64 (UWP)**
-3. Restart Unity, otherwise some weird behaviour could occur.
-4. In case UWP is used, assure that the following capabilites are active in the Player Settings:
-	- PrivateNetworkClientServer
-	- InternetClientServer
-	- InternetClient
-	- SpatialPerception
-	- Microphone
-	- GazeInput
-	
-5. Continue with **Scene Configuration**
+### Project Configuration
 
-## Scene Configuration
-### 1-Click Scene Config
-- Choose `ISAR → Configure MRTK` to configure your Scene to work with ISAR. It will add the neccessary objects to your Scene and configure them properly. 
-- Once this is done, you have sucessfully configured ISAR and can go on with **First Run**
+1. Navigate to `Edit -> Project Settings -> XR Plug-in Management`
+    - Enable **ISAR XR** for both platforms
+2. Open `File -> Build Settings`
+    - Ensure one of the following configurations is selected
+        - Platform: **PC, Mac & Linux Standalone** + Architecture: **x86_64**
+        - Platform: **Universal Windows Platform** + Architecture: **x64**
+3. Restart Unity (to work around known issues)
+4. In case UWP is selected, ensure that the following capabilites are active in the **Player Settings**:
+    - PrivateNetworkClientServer
+    - InternetClientServer
+    - InternetClient
+    - SpatialPerception
+    - Microphone
+    - GazeInput
 
-### Manual Config
-If you need the manual way (custom MRTK Configurations), then do the following steps.
+### Scene Configuration
 
-- Add **MixedRealityToolkit** Object to the Scene by selecting the menu option `Mixed Reality Toolkit->Add to Scene and Configure...` in top menu bar of Unity.
-- Change profile from Default to **IsarXRSDKConfigurationProfile**
+#### One-Click Scene Config
+
+- Choose `ISAR -> Configure MRTK` to configure your scene to work with ISAR. It will add the necessary objects to your scene and configure them properly.
+
+#### Manual Config
+
+To configure your scene manually (e.g. to integrate with existing MRTK configurations) follow the steps below.
+
+- Ensure your scene is configured to use **MRTK** by selecting `Mixed Reality Toolkit -> Add to Scene and Configure...` in the top menu bar of Unity.
+- Change the configuration profile to **IsarXRSDKConfigurationProfile**
 
 ### Checklist
 
-If...
+If ...
 
-- ☑️ ...MixedRealityToolkit -> Input -> **Input Data Providers** contains **ISAR XRSDK Device Manager**
+- [x] ... MixedRealityToolkit -> Input -> **Input Data Providers** contains **ISAR XRSDK Device Manager**, ...
+- [x] ... MixedRealityToolkit -> Camera -> **Camera Settigs Providers** contains **XR SDK Camera Settings** ...
+- [x] ... and you followed the steps in [Project Configuration](#project-configuration) correctly ...
+- [x] ... then you have set up everything correctly! 👍
 
-- ☑️ ...MixedRealityToolkit -> Camera -> **Camera Settigs Providers** contains **XR SDK Camera Settings**
+### First Run
 
-- ☑️ ...you followed the steps from Project Configuration correctly
+Enter play mode in the Unity editor or build a standalone application with the following settings:
 
-- ☑️ ...then you have set up everything correctly! 👍
+- Platform: **PC, Mac & Linux Standalone**
+- Target Platform: **Windows**
+- Architecture: **x86_64**
 
-## First Run
+The ISAR server application will start listening on the TCP port 9999 of your computer. The ISAR client application can then use that port to establish the streaming session. Please ensure that no firewall is blocking the connection.
 
-Enter play mode in Unity Editor or build a Standalone Application with the following settings:
+### HelloIsar Example
 
-- Platform: PC, Mac & Linux Standalone
-- Target Platform: Windows
-- Architecture: x86_64
+You can check out the preconfigured **HelloIsar** example as a reference or template for your project.
 
-The ISAR Server Application will start listening on TCP port 9999 of your computer. The HoloLens ISAR Client Application can then use that Port to establish the Streaming Session. 
+- Open the directory `HelloIsar` contained in this repo with Unity.
+- When opening the project for the first time, you may get a warning about a wrong package reference. Click on "Continue" and let the project load.
+- Then follow the steps described in the [Installation Guide](#installation-guide)
 
+## Install and run the HoloLens client application
 
-## HelloIsar Example
+(also refer to <a href="Clients\HoloLens2_Client_2.1.0.0/README.md">ISAR HoloLens Client Documentation</a>)
 
-You can check out the preconfigured Project **HelloIsar**. Navigate to the Folder HelloIsar and open it with Unity. When opening the project for the first time, you may have a issue with wrong package reference. Click on "Continue" and let the project load. Then follow the Step **2. Import ISAR SDK** from Installation Guide of ISAR SDK. 
+- Install the ISAR_Client app package on a HoloLens 2 (e.g. via Device Portal) and start the application
+- Insert the servers IP address in the client application and press "Connect".
+- Once the client connected successfully, you should see the scene on the HoloLens.
 
-# Install and run HoloLens Client Application
+## Install and run the Android client
 
-- Install the ISAR_Client app-package on HoloLens (e.g. via Device Portal) and start the Application.
-- Insert the servers IP address in the client application and press on "Connect".
-- You can as well let the Client App search for local Servers and press on the found server and press "Connect".
-- Once the client connects successfully, you should see the Objects from your Scene. 
-# Testing in the Editor
+(also refer to <a href="Clients\Android_Client_2.1.0.0/README.md">ISAR Android Client Documentation</a>)
+
+- Make sure the ISAR configuration file `remoting-config.cfg` located in `Runtime/Resources` within the ISAR package has the correct number of views (1 for single screen mobiles) and resolution for your client device (in case you are not sure which resolution to choose 1920*1080 is a good starting point). Refer to [The ISAR Configuration File](#the-isar-configuration-file) below for further information on the config file.
+- Install the ISAR Android client either from the Google Play Store or from the app package contained in this repository.
+- Insert the servers IP address in the client application and press "Connect".
+- Once the client connected successfully, you should see the scene on your Android device.
+
+## Known Issues with Android
+
+- Unity HDRP Project: Touch input not working
+- Unity HDRP Project: Rendering has dark grey artefacts close to light sources
+
+## Testing in the Editor
+
 In case you want to test your application without connecting to ISAR you need to do the following steps:
-- Uncheck "ISAR XR" and check "Mock HMD Loader" in the XR Plug-In Management of Unitys project settings. Also uncheck "Initialize XR on Startup"
-- Make sure no specific ISAR code is executed, otherwise unity crashes. This means, the MRTK Profile has to be changed to a non ISAR one (e.g "DefaultMixedRealityToolkitProfile") and in case present, the ISAR QRSupport Game Object has to be disabled.
-- Make sure to not call the ISAR class constructer anywhere.
+
+- Uncheck **ISAR XR** and check **Mock HMD Loader** in XR Plug-In Management in the Unity project settings. Also, uncheck **Initialize XR on Startup**
+- Make sure no ISAR-specific code will be executed to prevent unity from crashing. This means the active MRTK configuration profile is not allowed to contain any ISAR-specific `Data Providers`. So the easiest option is to switch to a default MRTK configuration profile, e.g. `DefaultMixedRealityToolkitProfile`.
+- Also, ensure not to call the `Isar` class constructor anywhere. In case you use the `QrSupport` script, you should disable it.
 **Congratulations! 🙌🙌🙌**
 
-## Need QR Code Support?
+### The ISAR Configuration File
 
-- <a href="Docs/qrcode.md">Check out how to easily integrate QR Code Support</a>
+The configuration file for ISAR is located within the ISAR package in `Runtime/Resources`. When running the server another copy of the file is generated in the `Assets/StreamingAssets` directory of your project. Don't change the config in `StreamingAssets` because it will be overwritten at the next run.
 
-## Having Troubles? All Good:
+- The settings `width` and `height` determine the resolution of the rendered image per view/eye. Careful: the resolution needs to be supported by the H264 hardware decoder of the client device.
+- `numViews` determines the number of views/eyes rendered on the client device. Valid values are `1` for mono rendering, e.g. on Tablets, and `2` for stereo rendering, e.g. on HoloLenses.
 
-- If the client fails to connect, check if the correct IP is written (e.g. 192.168.0.122 - WITHOUT the Port Number)
+### Need QR Code Support?
+
+Check out how to easily integrate QR code support <a href="Docs/qrcode.md">here</a>.
+
+### Troubleshooting
+
+- If the client fails to connect, check if you entered the correct IP address (e.g. 192.168.0.122 - WITHOUT the Port Number).
 - Check if the Firewall is blocking the connection (you can deactivate it for a short time to check that)
-- When using Universal Render Pipeline (URP) please check the property **Post Processing**, which you can find **Main Camera->Rendering->Post Processing** 
-- When your build target is UWP, please remember to check the following capabilities (InternetClient, InternetClientServer, PrivateNetworkClientServer, SpatialPerception, Microphone & GazeInput)
-- If the Editor crashes when trying to use my application in the Editor without ISAR and ISAR is in the Project, check if all steps stated in chapter "Testing in the Editor" above are done. Make sure to not call the ISAR class constructer anywhere.
+- When using the **Universal Render Pipeline (URP)** please check that **Post Processing** is disabled in `Main Camera -> Rendering -> Post Processing` TODO: Philipp: should it be disabled or enabled?
+- When your build target is UWP, please remember to check that all necessary capabilities mentioned in [Project Configuration](#project-configuration) are enabled.
+- If the Unity editor crashes when trying to run the app from the Unity editor and ISAR not being used but still in the project, check if all steps stated in chapter [Testing in the Editor](#testing-in-the-editor) were successful.
 - Audio doesn't work:
-	1. Make Sure your Default Communication Audio Device is the Same as the Default Audio Device in the Windows Sound Control Panel
-	2. In case your project uses UWP as target, the issue is UWP is not supporting grabbing sound from an output device. To work around this issue you can use 3d party software (e.g https://vb-audio.com/Cable/) to pass the auio output signal to a audio input device. Make sure the input device receiving this signal is the Default Communication Audio Device.
-	We are working on both issues
-
-## Issues with HelloIsar Example?
-
-- When opening the project for the first time, you might get missing reference to **com.hololight.isar**. 
-- Thats fine, just press **Continue** and wait until the project gets opened.
-- Once the project loaded click on top `Window->Package Manager` to open the Package Manager. 
-	- Click on the **+** Icon and add package from disk. 
-	- Now select the **package.json** file inside the **com.hololight.isar** folder. 
-- Now the SDK should get correctly loaded. 
+    1. Make sure your **Default Communication Audio Device** is the same as the **Default Audio Device** in the **Windows Sound Control Panel**
+    2. In case your project uses UWP as the target, the issue is likely related to UWP not supporting grabbing sound from an output device. To work around this issue you can use 3d party software (e.g <https://vb-audio.com/Cable/>) to pass the audio output signal to an audio input device. Make sure the input device receiving this signal is the **Default Communication Audio Device**.
+    We are working on both issues
+- If the `Main Camera` is not moving and you are in an **HDRP** project, remove the `SimpleCameraController` script attached to the `Main Camera`.
+- When opening the HelloIsar project for the first time, you might get a missing reference to **com.hololight.isar**.
+  - That's fine, just press **Continue** and wait until the project finishes loading.
+  - Once the project has loaded, open the Package Manager via `Window -> Package Manager`.
+  - Click on the **+** Icon and add a package from the disk.
+  - Select the `package.json` file inside the `com.hololight.isar` directory.
+  - Now, the SDK should be set up successfully.
 
 ## License 
 By downloading/using/evlatuating ISAR, you agree to our <a href="Licenses/ISAR.txt">proprietary license terms and conditions</a>.
-Licensing informations can be found in the folder "Licenses" of this repository
-
+Licensing information can be found in the folder "Licenses" of this repository
