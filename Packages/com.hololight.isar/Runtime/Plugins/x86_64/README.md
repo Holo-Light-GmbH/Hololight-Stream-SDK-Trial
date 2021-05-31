@@ -1,0 +1,1 @@
+Put the remoting_unity.dll and remoting_unity.pdb files here and restart Unity.

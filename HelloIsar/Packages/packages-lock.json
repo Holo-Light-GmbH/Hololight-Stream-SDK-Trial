@@ -1,11 +1,19 @@
 {
   "dependencies": {
     "com.hololight.isar": {
-      "version": "file:E:/UnityProjects/ISAR_TRIAL/com.hololight.isar",
+      "version": "file:E:/UnityProjects/ISAR_XR_Full_Version/Packages/com.hololight.isar",
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.unity.xr.management": "3.2.13"
+        "com.unity.xr.management": "3.2.16"
+      }
+    },
+    "com.hololight.isar.oculus": {
+      "version": "file:E:/UnityProjects/ISAR_XR_Full_Version/Packages/com.hololight.isar.oculus",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.unity.xr.management": "3.2.16"
       }
     },
     "com.microsoft.mixedreality.toolkit.foundation": {
@@ -50,7 +58,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.ide.rider": {
-      "version": "1.1.4",
+      "version": "1.2.1",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -73,7 +81,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.test-framework": {
-      "version": "1.1.20",
+      "version": "1.1.24",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -84,7 +92,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.textmeshpro": {
-      "version": "2.1.1",
+      "version": "2.1.4",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -93,10 +101,15 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.timeline": {
-      "version": "1.2.16",
+      "version": "1.2.18",
       "depth": 0,
       "source": "registry",
-      "dependencies": {},
+      "dependencies": {
+        "com.unity.modules.director": "1.0.0",
+        "com.unity.modules.animation": "1.0.0",
+        "com.unity.modules.audio": "1.0.0",
+        "com.unity.modules.particlesystem": "1.0.0"
+      },
       "url": "https://packages.unity.com"
     },
     "com.unity.ugui": {
@@ -119,7 +132,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.xr.management": {
-      "version": "3.2.17",
+      "version": "3.2.16",
       "depth": 1,
       "source": "registry",
       "dependencies": {

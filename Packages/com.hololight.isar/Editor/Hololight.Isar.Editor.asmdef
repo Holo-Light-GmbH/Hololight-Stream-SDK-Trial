@@ -1,0 +1,19 @@
+{
+    "name": "Hololight.Isar.Editor",
+    "references": [
+        "Hololight.Isar.Runtime",
+        "Unity.XR.Management.Editor",
+        "Unity.XR.Management"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

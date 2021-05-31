@@ -1,4 +1,4 @@
-# ISAR SDK
+﻿# ISAR SDK
 
 <p align="center">
     <img src="Docs/imgs/ISAR_Icon.png" width="180px">
@@ -106,6 +106,14 @@ You can check out the preconfigured **HelloIsar** example as a reference or temp
 - Insert the servers IP address in the client application and press "Connect".
 - Once the client connected successfully, you should see the scene on the HoloLens.
 
+## Install and run the Oculus Quest application
+
+- Import com.hololight.isar.oculus in your unity project
+- Set the MRTK profile to the oculus version of ISAR
+- Install the ISAR_Client app packages on a OculusQuest (e.g. via sideloading or from the LAB) and start the config application
+- Insert the servers IP address in the client application and press "Connect".
+- Once the client connected successfully, you should see the scene on the Oculus.
+
 ## Install and run the Android client
 
 (also refer to <a href="Clients\Android_Client_2.1.0.0/README.md">ISAR Android Client Documentation</a>)
@@ -136,9 +144,19 @@ The configuration file for ISAR is located within the ISAR package in `Runtime/R
 - The settings `width` and `height` determine the resolution of the rendered image per view/eye. Careful: the resolution needs to be supported by the H264 hardware decoder of the client device.
 - `numViews` determines the number of views/eyes rendered on the client device. Valid values are `1` for mono rendering, e.g. on Tablets, and `2` for stereo rendering, e.g. on HoloLenses.
 
+## Additional Features
+
 ### Need QR Code Support?
 
 Check out how to easily integrate QR code support <a href="Docs/qrcode.md">here</a>.
+
+### Need Image Tracking?
+
+That's as well an easy one! Check out <a href="Docs/imagetracking.md">here</a>.
+
+### You want to use Oculus Quest 2 as Client?
+
+We have done it for you! Check out <a href="Docs/oculusQuest.md">here</a>.
 
 ### Troubleshooting
 
@@ -158,7 +176,6 @@ Check out how to easily integrate QR code support <a href="Docs/qrcode.md">here<
   - Click on the **+** Icon and add a package from the disk.
   - Select the `package.json` file inside the `com.hololight.isar` directory.
   - Now, the SDK should be set up successfully.
-
 ## License 
 By downloading/using/evlatuating ISAR, you agree to our <a href="Licenses/ISAR.txt">proprietary license terms and conditions</a>.
 Licensing information can be found in the folder "Licenses" of this repository
