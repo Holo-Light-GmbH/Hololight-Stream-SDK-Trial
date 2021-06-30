@@ -1,4 +1,4 @@
-﻿# ISAR SDK
+# ISAR SDK
 
 <p align="center">
     <img src="Docs/imgs/ISAR_Icon.png" width="180px">
@@ -13,7 +13,7 @@ We’ve kicked our approach to streaming up a notch by making it *fully interact
 
 ## Getting Started
 
-> :warning: This **trial** will expire/renew **June 1st, 2021**.
+> :warning: This **trial** will expire/renew **August 1st, 2021**.
 > :warning: We don't recommend changing any source files delivered with ISAR. If you do so, we can't guarantee support.
 > :warning: By downloading/using this trial, you agree to our  <a href="Licenses/ISAR.txt">license terms & conditions</a>
 
@@ -105,14 +105,6 @@ You can check out the preconfigured **HelloIsar** example as a reference or temp
 - Install the ISAR_Client app package on a HoloLens 2 (e.g. via Device Portal) and start the application
 - Insert the servers IP address in the client application and press "Connect".
 - Once the client connected successfully, you should see the scene on the HoloLens.
-
-## Install and run the Oculus Quest application
-
-- Import com.hololight.isar.oculus in your unity project
-- Set the MRTK profile to the oculus version of ISAR
-- Install the ISAR_Client app packages on a OculusQuest (e.g. via sideloading or from the LAB) and start the config application
-- Insert the servers IP address in the client application and press "Connect".
-- Once the client connected successfully, you should see the scene on the Oculus.
 
 ## Install and run the Android client
 
