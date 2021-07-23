@@ -31,7 +31,7 @@ using Trace = HoloLight.Isar.Shared.Trace;
 using Assertions = HoloLight.Isar.Shared.Assertions;
 
 #if USING_UNITY
-using Unity.XR.Isar; // ISignaling
+// using Unity.XR.Isar; // ISignaling
 // using UnityEngine;
 // using UnityEngine.Assertions;
 #endif
@@ -53,7 +53,7 @@ namespace HoloLight.Isar.Signaling
 	/// </summary>
 	public class DebugSignaling
 #if USING_UNITY
-		: ISignaling
+		: Unity.XR.Isar.ISignaling
 #endif
 	{
 		public const int DEFAULT_PORT = 9999;
@@ -382,13 +382,61 @@ namespace HoloLight.Isar.Signaling
 #if TEST_THROW_XML_EXCEPTION
 		private static bool testOnce = true;
 #endif
+
+		private async Task<int> TryReadBytesAsync(byte[] dst, NetworkStream srcStream, int targetNumberOfBytes, int maxAttempts = 10)
+		{
+			Debug.Assert(dst.Length >= targetNumberOfBytes);
+
+			int numberOfBytesReadTotal = 0;
+			int numberOfAttempts = 0;
+
+			while(numberOfBytesReadTotal < targetNumberOfBytes)
+			{
+				if(numberOfAttempts == maxAttempts)
+				{
+					Debug.Log("+++> Need more than " + maxAttempts + " attempts to read from network stream.");
+					Debug.Log("TODO: return a value or exception so that the endpoint can react e.g. by restarting");
+					if (Debugger.IsAttached) Debugger.Break();
+					break;
+				}
+				numberOfAttempts += 1;
+#if VERBOSE_LOGS
+				Debug.Log("read pass " + (maxAttempts - currentAttempt));
+				Debug.Log("client?.Connected: " + _client?.Connected +
+				          " client?.Available: " + _client?.Available + " (amount of data received from the network and available to read)" +
+				          " stream.DataAvailable: " + _client?.GetStream()?.DataAvailable);
+				Debug.Log("ThreadId: " + Thread.CurrentThread.ManagedThreadId);
+#endif
+				int numberOfBytesRead = await srcStream.ReadAsync(dst, numberOfBytesReadTotal, targetNumberOfBytes - numberOfBytesReadTotal);
+				numberOfBytesReadTotal += numberOfBytesRead;
+#if VERBOSE_LOGS
+				Debug.Log("ThreadId: " + Thread.CurrentThread.ManagedThreadId);
+				Debug.Log("numberOfBytesRead: " + numberOfBytesRead);
+				if (numberOfBytesReadTotal != targetNumberOfBytes)
+					Debug.Log("bytes read so far: " + new UTF8Encoding(false, true).GetString(dst, 0, numberOfBytesReadTotal));
+#endif
+				// NOTE: await is a suspension point, which means that it is possible that the socket may be disposed or a cancellation requested while being suspended, this causes ReadAsync to return 0
+				if (numberOfBytesRead == 0)
+				{
+					break;
+				}
+
+#if VERBOSE_LOGS
+				Debug.Log($"ReadAsync: {numberOfBytesReadTotal}/{targetNumberOfBytes}");
+#endif
+			}
+			//Debug.Assert(numberOfBytesReadTotal == dst.Length, "bytesReadTotal != dst.Length");
+			return numberOfBytesReadTotal;
+		}
+
+		// TODO: cancel async calls cooperatively when all ice candidates are successfully exchanged
 		private async Task ReceiveLoopAsync()
 		{
 #if VERBOSE_LOGS
 			Debug.Log($"ReceiveLoopAsync: Task Id: {Task.CurrentId} Thread Id: {Thread.CurrentThread.ManagedThreadId}");
 #endif
 
-				var stream = _client.GetStream();
+			var stream = _client.GetStream();
 
 #if VERBOSE_LOGS
 				Debug.Log("_client?.ReceiveBufferSize: " + _client?.ReceiveBufferSize);
@@ -398,118 +446,39 @@ namespace HoloLight.Isar.Signaling
 #endif
 			while (true)
 			{
-				Debug.Log("===== recv =====");
-				byte[] lengthBuffer = new byte[sizeof(int)];
+				Debug.Log("===== Waiting for signaling messages =====");
 
-				int numberOfBytesRead = 0;
-#if VERBOSE_LOGS
-				Debug.Log("client?.Connected: " + _client?.Connected +
-				          " client?.Available: " + _client?.Available + " (amount of data received from the network and available to read)" +
-				          " stream.DataAvailable: " + _client?.GetStream()?.DataAvailable);
-#endif
-#if VERBOSE_LOGS
-				Debug.Log("ThreadId: " + Thread.CurrentThread.ManagedThreadId);
-#endif
-
-				numberOfBytesRead = await stream.ReadAsync(lengthBuffer, 0, lengthBuffer.Length)/*.ConfigureAwait(false)*/;
-
-#if VERBOSE_LOGS
-				Debug.Log("ThreadId: " + Thread.CurrentThread.ManagedThreadId);
-#endif
-#if VERBOSE_LOGS
-				Debug.Log("numberOfBytesRead: " + numberOfBytesRead);
-#endif
-
-#if VERBOSE_LOGS
-				Debug.Log("client?.Connected: " + _client?.Connected +
-				          " client?.Available: " + _client?.Available + " (amount of data received from the network and available to read)" +
-				          " stream.DataAvailable: " + _client?.GetStream()?.DataAvailable);
-#endif
-				// Note: await is a suspension point, which means that it is possible that socket is disposed or cancellation is requested while being suspended causing ReadAsync to return 0
-				if (numberOfBytesRead == 0)
+				int msgLength;
 				{
-					Trace.Log("Read 0 bytes; exiting receive loop");
-					return;
-				}
-				Debug.Assert(numberOfBytesRead == lengthBuffer.Length, "numberOfBytesRead != lengthBuffer.Length");
-
-#if VERBOSE_LOGS
-				Debug.Log("lengthBuffer: " + BitConverter.ToInt32(lengthBuffer, 0).ToString("x8") + " (== little endian of msgLength)");
-#endif
-				int msgLength = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(lengthBuffer, 0));
-
-//#if VERBOSE_LOGS
-				Debug.Log("msgLength: " + msgLength);
-//#endif
-				byte[] msgBuffer = new byte[msgLength];
-
-				// do multiple read passes if the message couldn't be read with one read
-				const int MAX_TRIES = 3;
-				int tries = MAX_TRIES;
-				numberOfBytesRead = 0;
-				int numberOfBytesReadSum = 0;
-				do
-				{
-#if VERBOSE_LOGS
-					Debug.Log("read pass " + (MAX_TRIES - tries));
-#endif
-#if VERBOSE_LOGS
-					Debug.Log("ThreadId: " + Thread.CurrentThread.ManagedThreadId);
-#endif
-
-					numberOfBytesRead = await stream.ReadAsync(msgBuffer, numberOfBytesReadSum, msgLength - numberOfBytesReadSum)/*.ConfigureAwait(false)*/;
-
-#if VERBOSE_LOGS
-					Debug.Log("ThreadId: " + Thread.CurrentThread.ManagedThreadId);
-#endif
-
-					numberOfBytesReadSum += numberOfBytesRead;
-					Trace.Log($"ReadAsync: {numberOfBytesReadSum}/{msgLength}");
-#if VERBOSE_LOGS
-					Debug.Log("numberOfBytesRead: " + numberOfBytesRead);
-#endif
-
-#if VERBOSE_LOGS
-					Debug.Log("client?.Connected: " + _client?.Connected +
-					          " client?.Available: " + _client?.Available + " (amount of data received from the network and available to read)" +
-					          " stream.DataAvailable: " + _client?.GetStream()?.DataAvailable);
-
-					if (numberOfBytesReadSum != msgLength)
-						Debug.Log("msgBuffer (so far): " + new UTF8Encoding(false, true).GetString(msgBuffer, 0, numberOfBytesReadSum));
-#endif
-					//if (numberOfBytesRead != msgLength)
-					//{
-					//	Debugger.Break();
-					//}
-
-					// Note: await is a suspension point, which means that it is possible that socket is disposed or cancellation is requested while being suspended causing ReadAsync to return 0
-					if (numberOfBytesRead == 0)
+					byte[] lengthBuffer = new byte[sizeof(int)];
+					// TODO: look into ConfigureAwait(false) to stick to one receiving thread (seems to work on hololens client but not in unity...)
+					int numberOfBytesRead = await TryReadBytesAsync(lengthBuffer, stream, lengthBuffer.Length);
+					if (numberOfBytesRead != lengthBuffer.Length)
 					{
-						Trace.Log("Read 0 bytes; exiting receive loop");
+						Trace.Log($"Unable to read entire message header ({numberOfBytesRead}/{lengthBuffer.Length})! exiting receive loop");
 						return;
 					}
-
-					tries--;
-				} while (numberOfBytesReadSum < msgLength && tries > 0);
-
-				if (tries == 0)
-				{
-					Debug.Log("+++> Need more than " + MAX_TRIES + "passes to read message. Pulling the plug, the message is too big.");
-					// TODO: return a value or exception so that the server can react e.g. by restarting
-					Debug.Log("TODO: return a value or exception so that the endpoint can react e.g. by restarting");
-					if (Debugger.IsAttached) Debugger.Break();
-					return;
+					msgLength = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(lengthBuffer, 0));
 				}
 
-				Debug.Assert(numberOfBytesReadSum == msgLength, "numberOfBytesRead != msgLength");
+//#if VERBOSE_LOGS
+				Debug.Log("message length: " + msgLength);
+//#endif
+				byte[] msgBuffer = new byte[msgLength];
+				{
+					// TODO: look into ConfigureAwait(false) to stick to one receiving thread (seems to work on hololens client but not in unity...)
+					int numberOfBytesRead = await TryReadBytesAsync(msgBuffer, stream, msgBuffer.Length);
+					if (numberOfBytesRead != msgBuffer.Length)
+					{
+						Trace.Log($"Unable to read entire message body ({numberOfBytesRead}/{msgBuffer.Length})! exiting receive loop");
+						return;
+					}
+				}
 
-				var first = (char)msgBuffer[0];
-				var last = (char)msgBuffer[msgLength - 1];
-				Assertions.Assert(first == '<' && last == '>');
-
-				var msg = new UTF8Encoding(false, true).GetString(msgBuffer, 0, msgLength);
+				Assertions.Assert((char)msgBuffer[0] == '<' && (char)msgBuffer[msgLength - 1] == '>');
 
 #if VERBOSE_LOGS
+				var msg = new UTF8Encoding(false, true).GetString(msgBuffer, 0, msgLength);
 				Trace.Log("\nreceived msg (length: " + msg.Length + "): |" + msg + "|");
 #endif
 
@@ -737,9 +706,8 @@ namespace HoloLight.Isar.Signaling
 			//message[3] = (byte) (networkLength >> 24);
 
 #if VERBOSE_LOGS
-			Debug.Log(">>> Sending(" + length + "): |" + new UTF8Encoding(false, true).GetString(message, sizeof(int), length) + "|");
+			Trace.Log(">>> Sending(" + length + "): |" + new UTF8Encoding(false, true).GetString(message, sizeof(int), length) + "|");
 #endif
-			//Trace.Log(">>> Sending(" + length + "): |" + new UTF8Encoding(false, true).GetString(message, sizeof(int), length) + "|");
 			var first = (char)message[0 + sizeof(int)];
 			var last = (char)message[length - 1 + sizeof(int)];
 			Assertions.Assert(first == '<' && last == '>');

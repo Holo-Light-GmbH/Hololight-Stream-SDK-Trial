@@ -159,7 +159,7 @@ namespace Unity.XR.Isar
 			StartSubsystem<XRInputSubsystem>();
 
 			_signaling.Listen();
-			
+
 			return true;
 		}
 
@@ -179,18 +179,37 @@ namespace Unity.XR.Isar
 			return true;
 		}
 
+		private bool HACK_isDeinitializing = false;
 		public override bool Deinitialize()
 		{
 			Debug.Log("===== Deinitialize =====");
 
-			_handle.Dispose();
 			_signaling.IceCandidateReceived -= Signaling_IceCandidateReceived;
 			_signaling.SdpAnswerReceived -= Signaling_SdpAnswerReceived;
 			_signaling.Connected -= Signaling_OnConnected;
 
+			if (IsConnected)
+			{
+				HACK_isDeinitializing = true;
+				Callbacks.OnConnectionStateChanged(HlrConnectionState.Disconnected, IntPtr.Zero);
+				HACK_isDeinitializing = false;
+			}
+
 			Callbacks.ConnectionStateChanged -= Callbacks_ConnectionStateChanged;
 			Callbacks.LocalIceCandidateCreated -= Callbacks_LocalIceCandidateCreated;
 			Callbacks.SdpCreated -= Callbacks_SdpCreated;
+			// TODO: we should call Callbacks_ConnectionStateChanged(HlrConnectionState.Disconnected); but because of our current architecture, we can't (as opposed to the hololens client)
+			//if (IsConnected)
+			//{
+			//	lock (_lockObj)
+			//	{
+			//		_connectionState = HlrConnectionState.Disconnected;
+			//	}
+			//	Debug.Log($"ISAR connection state changed to {HlrConnectionState.Disconnected}");
+			//}
+
+
+			_handle.Dispose();
 
 			DestroySubsystem<XRInputSubsystem>();
 			DestroySubsystem<XRDisplaySubsystem>();
@@ -204,8 +223,7 @@ namespace Unity.XR.Isar
 			{
 				_connectionState = newState;
 			}
-
-			Debug.Log($"ISAR connection state changed to {_connectionState}");
+			Debug.Log($"ISAR connection state changed to {newState}");
 
 			if (newState == HlrConnectionState.Connected)
 			{
@@ -213,14 +231,17 @@ namespace Unity.XR.Isar
 			}
 			else if (newState == HlrConnectionState.Disconnected)
 			{
-				//Post makes an asynchronous call the next time Unity's SynchronizationContext impl does some processing.
-				//Here's Unity's reference source:
-				//https://github.com/Unity-Technologies/UnityCsReference/blob/2019.4/Runtime/Export/Scripting/UnitySynchronizationContext.cs
-				_syncContext.Post((state) =>
+				if (!HACK_isDeinitializing)
 				{
-					Stop();
-					Start();
-				}, newState);
+					//Post makes an asynchronous call the next time Unity's SynchronizationContext impl does some processing.
+					//Here's Unity's reference source:
+					//https://github.com/Unity-Technologies/UnityCsReference/blob/2019.4/Runtime/Export/Scripting/UnitySynchronizationContext.cs
+					_syncContext.Post((state) =>
+					{
+						Stop();
+						Start();
+					}, newState);
+				}
 			}
 		}
 

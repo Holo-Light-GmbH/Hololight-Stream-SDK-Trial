@@ -13,7 +13,7 @@ We’ve kicked our approach to streaming up a notch by making it *fully interact
 
 ## Getting Started
 
-> :warning: This **trial** will expire/renew **August 1st, 2021**.
+> :warning: This **trial** will expire/renew **September 1st, 2021**.
 > :warning: We don't recommend changing any source files delivered with ISAR. If you do so, we can't guarantee support.
 > :warning: By downloading/using this trial, you agree to our  <a href="Licenses/ISAR.txt">license terms & conditions</a>
 
@@ -48,15 +48,7 @@ This step only applies if you have a previous version of ISAR already installed/
 2. Open `File -> Build Settings`
     - Ensure one of the following configurations is selected
         - Platform: **PC, Mac & Linux Standalone** + Architecture: **x86_64**
-        - Platform: **Universal Windows Platform** + Architecture: **x64**
 3. Restart Unity (to work around known issues)
-4. In case UWP is selected, ensure that the following capabilites are active in the **Player Settings**:
-    - PrivateNetworkClientServer
-    - InternetClientServer
-    - InternetClient
-    - SpatialPerception
-    - Microphone
-    - GazeInput
 
 ### Scene Configuration
 
@@ -155,11 +147,9 @@ We have done it for you! Check out <a href="Docs/oculusQuest.md">here</a>.
 - If the client fails to connect, check if you entered the correct IP address (e.g. 192.168.0.122 - WITHOUT the Port Number).
 - Check if the Firewall is blocking the connection (you can deactivate it for a short time to check that)
 - When using the **Universal Render Pipeline (URP)** please check that **Post Processing** is disabled in `Main Camera -> Rendering -> Post Processing` TODO: Philipp: should it be disabled or enabled?
-- When your build target is UWP, please remember to check that all necessary capabilities mentioned in [Project Configuration](#project-configuration) are enabled.
 - If the Unity editor crashes when trying to run the app from the Unity editor and ISAR not being used but still in the project, check if all steps stated in chapter [Testing in the Editor](#testing-in-the-editor) were successful.
 - Audio doesn't work:
     1. Make sure your **Default Communication Audio Device** is the same as the **Default Audio Device** in the **Windows Sound Control Panel**
-    2. In case your project uses UWP as the target, the issue is likely related to UWP not supporting grabbing sound from an output device. To work around this issue you can use 3d party software (e.g <https://vb-audio.com/Cable/>) to pass the audio output signal to an audio input device. Make sure the input device receiving this signal is the **Default Communication Audio Device**.
     We are working on both issues
 - If the `Main Camera` is not moving and you are in an **HDRP** project, remove the `SimpleCameraController` script attached to the `Main Camera`.
 - When opening the HelloIsar project for the first time, you might get a missing reference to **com.hololight.isar**.

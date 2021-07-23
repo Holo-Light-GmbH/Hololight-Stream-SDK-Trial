@@ -5,6 +5,7 @@
 using System;
 using HoloLight.Isar.Native;
 using HoloLight.Isar.Native.Qr;
+using Debug = HoloLight.Isar.Shared.Debug;
 
 namespace HoloLight.Isar
 {
@@ -19,7 +20,24 @@ namespace HoloLight.Isar
 		private HlrConnectionState _connectionState = HlrConnectionState.Disconnected;
 		private protected HlrHandle _handle = new HlrHandle();
 		private protected HlrSvApi _serverApi;
-		
+
+		public bool IsInitialized
+		{
+			get
+			{
+				// HOTFIX: IAR-262
+				// TODO: move this into IsarXRSettings and instantiate a static persistent instance similar to XRGeneralSettings & XRManagerSettings
+				UnityEngine.XR.Management.XRManagerSettings settings = UnityEngine.XR.Management.XRGeneralSettings.Instance.Manager;
+				if (!settings.isInitializationComplete || settings.ActiveLoaderAs<Unity.XR.Isar.IsarXRLoader>() == null)
+				{
+					Debug.Log("ISAR XR plugin is disabled.");
+					return false;
+				}
+
+				return true;
+			}
+		}
+
 		public bool IsConnected
 		{
 			get
@@ -35,13 +53,15 @@ namespace HoloLight.Isar
 
 		public Isar()
 		{
+			if (!IsInitialized) return;
+
 			_serverApi = new HlrSvApi();
 			// TODO: ensure that this is called from the main thread
 			HlrError err = HlrSvApi.Create(ref _serverApi);
 
 			if (err != HlrError.eNone)
 			{
-				throw new Exception($"Isar initialization failed with {err}");
+				throw new Exception($"ISAR initialization failed with {err}");
 			}
 
 			//KL: use native get_handle as soon as we have it instead of calling init with garbage args
@@ -51,7 +71,7 @@ namespace HoloLight.Isar
 
 			if (err != HlrError.eNone)
 			{
-				throw new Exception("Failed to init remoting lib");
+				throw new Exception("Failed to init ISAR library");
 			}
 
 			//Kinda awful that we have to do this because it's easy to forget and other safehandle types don't do this.
@@ -63,7 +83,11 @@ namespace HoloLight.Isar
 
 		public virtual void Dispose()
 		{
+			//if (!IsInitialized) return;
+			if (!HlrVersion.IsValid(_serverApi.Version)) return;
+
 			Callbacks.ConnectionStateChanged -= OnConnectionStateChanged;
+			if (IsConnected) OnConnectionStateChanged(HlrConnectionState.Disconnected);
 			_handle?.Dispose();
 		}
 
@@ -85,12 +109,16 @@ namespace HoloLight.Isar
 
 		public IsarAudio() : base()
 		{
+			if (!IsInitialized) return;
+
 			_serverApi.Connection.RegisterAudioDataHandler(_handle, Callbacks.OnAudioDataReceived, IntPtr.Zero);
 			Callbacks.AudioDataReceived += OnAudioDataReceived;
 		}
 
 		public void SetAudioTrackEnabled(bool enable)
 		{
+			if (!IsConnected) return;
+
 			HlrError err = _serverApi.Connection.SetAudioTrackEnabled(_handle, Convert.ToInt32(enable));
 			if (err != HlrError.eNone)
 			{
@@ -105,33 +133,11 @@ namespace HoloLight.Isar
 
 		public override void Dispose()
 		{
+			//if (!IsInitialized) return;
+			if (!HlrVersion.IsValid(_serverApi.Version)) return;
+
 			Callbacks.AudioDataReceived -= OnAudioDataReceived;
 			_serverApi.Connection.UnregisterAudioDataHandler(_handle, Callbacks.OnAudioDataReceived);
-
-			base.Dispose();
-		}
-	}
-
-	public class IsarViewPose : Isar
-	{
-		public delegate void IsarViewPoseCallback(in Native.Input.HlrXrPose viewPose);
-		public event IsarViewPoseCallback ViewPoseReceived;
-
-		public IsarViewPose() : base()
-		{
-			_serverApi.Connection.RegisterViewPoseHandler(_handle, Callbacks.OnViewPoseReceived, IntPtr.Zero);
-			Callbacks.ViewPoseReceived += OnViewPoseReceived;
-		}
-
-		private void OnViewPoseReceived(in Native.Input.HlrXrPose viewPose)
-		{
-			ViewPoseReceived?.Invoke(viewPose);
-		}
-
-		public override void Dispose()
-		{
-			Callbacks.ViewPoseReceived -= OnViewPoseReceived;
-			_serverApi.Connection.UnregisterViewPoseHandler(_handle, Callbacks.OnViewPoseReceived);
 
 			base.Dispose();
 		}
@@ -144,12 +150,17 @@ namespace HoloLight.Isar
 
 		public IsarCustomSend() : base()
 		{
+			if (!IsInitialized) return;
+
 			_serverApi.Connection.RegisterCustomMessageHandler(_handle, Callbacks.OnCustomMessageReceived, IntPtr.Zero);
 			Callbacks.CustomMessageReceived += OnCustomMessageReceived;
 		}
 
 		public override void Dispose()
 		{
+			//if (!IsInitialized) return;
+			if (!HlrVersion.IsValid(_serverApi.Version)) return;
+
 			Callbacks.CustomMessageReceived -= OnCustomMessageReceived;
 			_serverApi.Connection.UnregisterCustomMessageHandler(_handle, Callbacks.OnCustomMessageReceived, IntPtr.Zero);
 
@@ -158,6 +169,8 @@ namespace HoloLight.Isar
 
 		public void PushCustomMessage(HlrCustomMessage message)
 		{
+			if (!IsConnected) return;
+
 			HlrError err = _serverApi.Connection.PushCustomMessage(_handle, message);
 			if (err != HlrError.eNone)
 			{
@@ -189,6 +202,8 @@ namespace HoloLight.Isar
 
 		public IsarQr() : base()
 		{
+			if (!IsInitialized) return;
+
 			//Subscribe to C callbacks
 			QrApi.Init(_serverApi.Connection, _handle);
 			QrApi.EnumerationCompleted += QrApi_OnEnumerationCompleted;
@@ -204,24 +219,30 @@ namespace HoloLight.Isar
 
 		public void Start()
 		{
+			if (!IsConnected) return;
+
 			HlrError err = QrApi.Start();
 			if (err != HlrError.eNone)
 			{
-				throw new Exception($"Failed to start QR code API, error: {err}");
+				throw new Exception($"Failed to start QR code watcher with error: {err}");
 			}
 		}
 
 		public void Stop()
 		{
+			if (!IsConnected) return;
+
 			HlrError err = QrApi.Stop();
 			if (err != HlrError.eNone)
 			{
-				throw new Exception($"Failed to stop QR code API, error: {err}");
+				throw new Exception($"Failed to stop QR code watcher with error: {err}");
 			}
 		}
 
 		public void IsSupported()
 		{
+			if (!IsConnected) return;
+
 			HlrError err = QrApi.IsSupported();
 			if (err != HlrError.eNone)
 			{
@@ -231,6 +252,8 @@ namespace HoloLight.Isar
 
 		public void RequestAccess()
 		{
+			if (!IsConnected) return;
+
 			HlrError err = QrApi.RequestAccess();
 			if (err != HlrError.eNone)
 			{
@@ -240,17 +263,25 @@ namespace HoloLight.Isar
 
 		public void ProcessMessages()
 		{
+			if (!IsConnected) return;
+
 			QrApi.ProcessMessages();
 		}
 
 		public override void Dispose()
 		{
+			//if (!IsInitialized) return;
+			if (!HlrVersion.IsValid(_serverApi.Version)) return;
+
 			QrApi.EnumerationCompleted -= QrApi_OnEnumerationCompleted;
 			QrApi.IsSupportedReceived -= QrApi_OnIsSupportedReceived;
 			QrApi.AccessStatusReceived -= QrApi_OnAccessStatusReceived;
 			QrApi.Added -= QrApi_OnAdded;
 			QrApi.Updated -= QrApi_OnUpdated;
 			QrApi.Removed -= QrApi_OnRemoved;
+			// TODO: we currently have a lot of state duplication, this has the benefit of less resource contention but creates a synchronization problem
+			// we should think about ways to make synchronization fool proof so that people can't forget about it
+			QrApi.Init(new HlrSvConnectionApi(), new HlrHandle());
 
 			base.Dispose();
 		}

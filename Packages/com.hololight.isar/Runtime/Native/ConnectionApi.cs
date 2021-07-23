@@ -16,6 +16,7 @@ namespace HoloLight.Isar.Native
 		public HlrInit Init;
 		public HlrClose Close;
 		public HlrSvReset Reset;
+		[Obsolete("This is handled by XR SDK.")]
 		public HlrSvInitVideoTrack InitVideoTrack;
 		public HlrSvPushFrame PushFrame;
 		public HlrPushCustomMessage PushCustomMessage;
