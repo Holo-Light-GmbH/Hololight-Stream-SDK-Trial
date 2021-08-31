@@ -8,6 +8,7 @@ using UnityEngine;
 using System.Runtime.InteropServices;
 using HoloLight.Isar.Native;
 using System;
+using UnityEngine.Rendering;
 
 namespace HoloLight.Isar.Runtime.MRTK
 {
@@ -42,15 +43,35 @@ namespace HoloLight.Isar.Runtime.MRTK
 		private List<Touch> _isarTouches = new List<Touch>();
 		private Camera _camera;
 		private IsarCustomSend _isar;
-		private const int DATA_LENGTH = 3;
+		private const int DATA_LENGTH = 5;
 		private float[] _parsedData = new float[DATA_LENGTH];
+		private IsarViewPose _isarViewPose;
+		private PipelineType _pipelineType;
+		private Matrix4x4 _projectionIsar;
+
+		private float _horizontalFactor = 1;
+		private float _verticalFactor = 1;
 
 		public override void Enable()
 		{
 			base.Enable();
+			_pipelineType = DetectPipeline();
 			_isar = new IsarCustomSend();
+			_isarViewPose = new IsarViewPose();
+
+			_isarViewPose.ViewPoseReceived += OnViewPoseReceived;
 			_isar.CustomMessageReceived += OnCustomMessageReceived;
 			_camera = Camera.main;
+			_projectionIsar = _camera.projectionMatrix;
+		}
+
+		private void OnViewPoseReceived(in Native.Input.HlrXrPose viewPose)
+		{
+			if (_isarTouches.Count > 0 && (_pipelineType == PipelineType.HDPipeline || _pipelineType == PipelineType.UniversalPipeline))
+			{
+				// only when client is Android (using Touch) and using HDRP or URP...
+				_projectionIsar = HoloLight.Isar.Utils.Convert.ToUnity(viewPose.projLeft);
+			}
 		}
 
 		private void OnCustomMessageReceived(in HlrCustomMessage message)
@@ -78,6 +99,8 @@ namespace HoloLight.Isar.Runtime.MRTK
 			float type = _parsedData[0]; // in future this will be an int/enum
 			float x = _parsedData[1];
 			float y = _parsedData[2];
+			_horizontalFactor = _parsedData[3];
+			_verticalFactor = _parsedData[4];
 
 			Touch touchInfo = new Touch();
 
@@ -118,9 +141,31 @@ namespace HoloLight.Isar.Runtime.MRTK
 				for (int i = 0; i < touchCount; i++)
 				{
 					Touch touch = _isarTouches[i];
+					Ray ray = new Ray();
+					Matrix4x4 proj;
+					if (_pipelineType == PipelineType.HDPipeline || _pipelineType == PipelineType.UniversalPipeline)
+					{
+						proj = _projectionIsar;
+					} else
+                    {
+						proj = _camera.GetStereoProjectionMatrix(Camera.StereoscopicEye.Left);
+					}
+						
+					Matrix4x4 origProj = proj;
+					proj.m00 *= _horizontalFactor;
+					proj.m11 *= _verticalFactor;
+					_camera.projectionMatrix = proj;
 
-					// Construct a ray from the current touch coordinates
-					Ray ray = _camera.ViewportPointToRay(new Vector3(_isarTouches[i].position.x, _isarTouches[i].position.y, 0), Camera.MonoOrStereoscopicEye.Left);
+					if (_pipelineType == PipelineType.HDPipeline || _pipelineType == PipelineType.UniversalPipeline)
+					{
+						ray = _camera.ViewportPointToRay(touch.position, Camera.MonoOrStereoscopicEye.Mono);
+					}
+					else
+					{
+						ray = _camera.ViewportPointToRay(touch.position);
+					}
+
+					_camera.projectionMatrix = origProj;
 
 					switch (touch.phase)
 					{
@@ -146,23 +191,31 @@ namespace HoloLight.Isar.Runtime.MRTK
 		public override void Disable()
 		{
 			base.Disable();
-
-			foreach (var controller in ActiveTouches)
+			try
 			{
-				if (controller.Value == null || Service == null) { continue; }
-
-				foreach (var inputSource in Service.DetectedInputSources)
+				foreach (var controller in ActiveTouches)
 				{
-					if (inputSource.SourceId == controller.Value.InputSource.SourceId)
+					if (controller.Value == null || Service == null) { continue; }
+
+					foreach (var inputSource in Service.DetectedInputSources)
 					{
-						Service.RaiseSourceLost(controller.Value.InputSource, controller.Value);
+						if (inputSource.SourceId == controller.Value.InputSource.SourceId)
+						{
+							Service.RaiseSourceLost(controller.Value.InputSource, controller.Value);
+						}
 					}
 				}
+				ActiveTouches.Clear();
 			}
-
-			ActiveTouches.Clear();
-
-			_isar?.Dispose();
+			catch (Exception ex)
+            {
+				
+            }
+			finally
+            {
+				_isarViewPose?.Dispose();
+				_isar?.Dispose();
+			}
 		}
 
 		private static readonly ProfilerMarker AddTouchControllerPerfMarker = new ProfilerMarker("[MRTK] IsarXRSDKTouchManager.AddTouchController");
@@ -249,6 +302,45 @@ namespace HoloLight.Isar.Runtime.MRTK
 				// Remove from the active collection
 				ActiveTouches.Remove(touch.fingerId);
 			}
+		}
+
+		private enum PipelineType
+		{
+			Unsupported,
+			BuiltInPipeline,
+			UniversalPipeline,
+			HDPipeline
+		}
+
+		/// <summary>
+		/// Returns the type of renderpipeline that is currently running
+		/// </summary>
+		/// <returns></returns>
+		private static PipelineType DetectPipeline()
+		{
+#if UNITY_2019_1_OR_NEWER
+			if (GraphicsSettings.renderPipelineAsset != null)
+			{
+				// SRP
+				var srpType = GraphicsSettings.renderPipelineAsset.GetType().ToString();
+				if (srpType.Contains("HDRenderPipelineAsset"))
+				{
+					return PipelineType.HDPipeline;
+				}
+				else if (srpType.Contains("UniversalRenderPipelineAsset") || srpType.Contains("LightweightRenderPipelineAsset"))
+				{
+					return PipelineType.UniversalPipeline;
+				}
+				else return PipelineType.Unsupported;
+			}
+#elif UNITY_2017_1_OR_NEWER
+            if (GraphicsSettings.renderPipelineAsset != null) {
+                // SRP not supported before 2019
+                return PipelineType.Unsupported;
+            }
+#endif
+			// no SRP
+			return PipelineType.BuiltInPipeline;
 		}
 	}
 }

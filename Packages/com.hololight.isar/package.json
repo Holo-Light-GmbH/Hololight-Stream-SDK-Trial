@@ -2,7 +2,7 @@
 
   "name": "com.hololight.isar",
   "displayName": "Isar XR Plugin",
-  "version": "2.1.1",
+  "version": "2.1.3",
   "unity": "2019.4",
   "description": "Holo-Light ISAR helps to create AR applications that utilize remote rendering on high performance computers and send the rendered scene as a video stream to AR-devices like Microsoft HoloLens.",
   "keywords": [

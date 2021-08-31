@@ -101,7 +101,30 @@ namespace HoloLight.Isar
 			ConnectionStateChanged?.Invoke(state);
 		}
 	}
+	public class IsarViewPose : Isar
+	{
+		public delegate void IsarViewPoseCallback(in Native.Input.HlrXrPose viewPose);
+		public event IsarViewPoseCallback ViewPoseReceived;
 
+		public IsarViewPose() : base()
+		{
+			_serverApi.Connection.RegisterViewPoseHandler(_handle, Callbacks.OnViewPoseReceived, IntPtr.Zero);
+			Callbacks.ViewPoseReceived += OnViewPoseReceived;
+		}
+
+		private void OnViewPoseReceived(in Native.Input.HlrXrPose viewPose)
+		{
+			ViewPoseReceived?.Invoke(viewPose);
+		}
+
+		public override void Dispose()
+		{
+			Callbacks.ViewPoseReceived -= OnViewPoseReceived;
+			_serverApi.Connection.UnregisterViewPoseHandler(_handle, Callbacks.OnViewPoseReceived);
+
+			base.Dispose();
+		}
+	}
 	public class IsarAudio : Isar
 	{
 		public delegate void IsarAudioDataCallback(in HlrAudioData audioData);
