@@ -31,6 +31,7 @@ We’ve kicked our approach to streaming up a notch by making it *fully interact
 2. Import **ISAR SDK** into your project
     - Make sure you are connected to the internet
     - Open **Package Manager** in the Unity editor (`Window -> Package Manager`)
+    - Locate the package named 'Version Control' and uninstall it by clicking *Remove*
     - Choose **Add package from disk...** and select the file `package.json` from the `com.hololight.isar` directory contained in this repo
 
 ### Updating Previous Installation
