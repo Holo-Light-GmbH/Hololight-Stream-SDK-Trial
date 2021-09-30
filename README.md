@@ -31,7 +31,9 @@ We’ve kicked our approach to streaming up a notch by making it *fully interact
 2. Import **ISAR SDK** into your project
     - Make sure you are connected to the internet
     - Open **Package Manager** in the Unity editor (`Window -> Package Manager`)
+    - Check if the package named 'Version Control' is installed and uninstall it by clicking *Remove* (if it's not there in the first place you're all good)
     - Choose **Add package from disk...** and select the file `package.json` from the `com.hololight.isar` directory contained in this repo
+    - When implementing ISAR SDK for Oculus: Choose **Add package from disk...** and select the file `package.json` from the `com.hololight.isar` directory as well as the `package.json` from the `com.hololight.isar.oculus` directory
 
 ### Updating Previous Installation
 This step only applies if you have a previous version of ISAR already installed/integrated in your project. If this is your first time installing ISAR, please skip to the next step.
@@ -158,6 +160,7 @@ We have done it for you! Check out <a href="Docs/oculusQuest.md">here</a>.
   - Click on the **+** Icon and add a package from the disk.
   - Select the `package.json` file inside the `com.hololight.isar` directory.
   - Now, the SDK should be set up successfully.
+- If rainbow-colored streaks appear over the imported 3D models, configurations must be adjusted. For this you have to follow the path `C:\"your path to ISAR"\ISAR-SDK-Trial-main\Packages\com.hololight.isar\Runtime\Resources` and look for the file with the name `remoting-config`. Open the file with a text editor and enter **1920** for `width` and `height`. This step should be done before importing the ISAR package; the Oculus file does not need to be adjusted.
 ## License 
 By downloading/using/evlatuating ISAR, you agree to our <a href="Licenses/ISAR.txt">proprietary license terms and conditions</a>.
 Licensing information can be found in the folder "Licenses" of this repository
