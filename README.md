@@ -13,7 +13,7 @@ We’ve kicked our approach to streaming up a notch by making it *fully interact
 
 ## Getting Started
 
-> :warning: This **trial** will expire/renew **September 1st, 2021**.
+> :warning: This **trial** will expire/renew **November 1st, 2021**.
 > :warning: We don't recommend changing any source files delivered with ISAR. If you do so, we can't guarantee support.
 > :warning: By downloading/using this trial, you agree to our  <a href="Licenses/ISAR.txt">license terms & conditions</a>
 
