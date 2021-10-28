@@ -42,7 +42,7 @@ namespace HoloLight.Isar
 			if (!_isRegistered) return;
 			if (_server == null) return; // assert?
 
-			if (_server.IsConnected) // TODO: this shouldn't be necessary, it should be safe to unregister multiple times
+			if (_server.IsConnected)
 			{
 				OnDisconnected();
 			}

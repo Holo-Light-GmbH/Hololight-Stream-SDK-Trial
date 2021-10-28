@@ -1,37 +1,39 @@
-# Image Tracking (Android Clients only)
+# Image Tracking Support
 
 <p align="center">
-	<img src="imgs/isar_imagetracking.png" width="380px">
+	<img src="images/isar_imagetracking.png" width="380px">
 </p>
 
 ## Overview
-Image Tracking is supported by ISAR for **Android Clients**. You can have multiple images tracked parallel. Use the **ImageTracker** Component. 
+The ISAR SDK provides Image Tracking functionality for single or multiple images in parallel. The **Image Tracker** component included in **ISAR Core** should be used for image tracking.
+
+> :warning: Image Tracking is currently only available on the **ISAR Android Client**
 
 ## How To Use **ImageTracker**
 
-- Add the Component `ImageTracker` to your GameObject by searching "Image Tracker":
+- Add the Component `ImageTracker` to a GameObject by searching "Image Tracker":
 <p align="center">
-	<img src="imgs/imagetracking0.png" width="580px">
+	<img src="images/imagetracking0.png" width="580px">
 </p>
 
 
-- It should look like this
+- Once added, it will appear within the scene:
 <p align="center">
-	<img src="imgs/imagetracking1.png" width="580px">
+	<img src="images/imagetracking1.png" width="580px">
 </p>
 
-- Next we need to reference the **Image Target** (You can add any sprite from your Assets)
-- Now your **ImageTracker** is ready to work
-- Press Play, connect with an Android Client, and aim your Camera to your Image Target, a Cube at that place should appear.
+- Add a sprite to the **Image Target** to specify the image to track
+- Press Play, connect with the Android Client, and aim the Camera at an image target
+- A cube will appear at the target
 
 ### Image Tracker Settings 
 
 **Image Target** - The image/texture that should be tracked.
 
-**Object To Follow** - Can be set to any GameObject. If not set, it will automatically create a cube that will show up where your Image Target is found
+**Object To Follow** - Can be set to any GameObject. If not set, it will automatically create a cube that will show up where the **Image Target** is found.
 
-**Image Width** - If you give a positive number then it'll be used to improve tracking. It should be the physical width of the image in meters.
+**Image Width** - Physical width of the image in meters. Positive numbers will be used to improve tracking.
 
-**Image Type** - If your physical image can be moved around, then set it to moving. If your image is fixed on a place, set it to static.
+**Image Type** - Moving images should be set to MOVING, fixed images should be set to STATIC.
 
-**Adjust Scale** - Set it to true, if you want your **Object To Follow** to be scaled down/up to the physical image size.
+**Adjust Scale** - True if the **Object To Follow** should be be scaled down/up to the physical image size, false if not.

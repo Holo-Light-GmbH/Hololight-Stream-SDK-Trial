@@ -68,4 +68,29 @@ namespace HoloLight.Isar.Native.Input
 		[FieldOffset(8)] public HlrInputEventDataNavigationCompleted NavigationCompletedEventArgs;
 		[FieldOffset(8)] public HlrInputEventDataNavigationCanceled NavigationCanceledEventArgs;
 	}
+
+	enum HlrInputType : uint
+	{
+		SourceDetected = 0,
+		SourceLost,
+		SourcePressed,
+		SourceUpdated,
+		SourceReleased
+	}
+
+	[StructLayout(LayoutKind.Explicit)]
+	public struct HlrSpatialInputData
+	{
+		[FieldOffset(0)] HlrSpatialInputDataInteractionSourceDetected sourceDetected;
+		[FieldOffset(0)] HlrSpatialInputDataInteractionSourceLost sourceLost;
+		[FieldOffset(0)] HlrSpatialInputDataInteractionSourcePressed sourcePressed;
+		[FieldOffset(0)] HlrSpatialInputDataInteractionSourceUpdated sourceUpdated;
+		[FieldOffset(0)] HlrSpatialInputDataInteractionSourceReleased sourceReleased;
+	}
+
+	public struct HlrSvSpatialInput
+	{
+		HlrInputType type;
+		HlrSpatialInputData data;
+	}
 }

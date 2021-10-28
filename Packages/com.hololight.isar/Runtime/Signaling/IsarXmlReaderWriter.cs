@@ -27,6 +27,9 @@ namespace HoloLight.Isar.Signaling
 		public const string ICE_CANDIDATE = "IceCandidate";
 		public const string ICE_MID = "sdp-mid";
 		public const string ICE_MLINE_INDEX = "mline-index";
+
+		// feature support
+		public const string DEPTH_ALPHA = "DepthAlphaEnabled";
 	}
 
 	internal class XmlElement
@@ -86,15 +89,16 @@ namespace HoloLight.Isar.Signaling
 #endif
 		///////////////////// static variants
 
-		public static void ReadVersion(XmlReader reader, out uint version)
+		public static void ReadVersion(XmlReader reader, out uint version, out bool supportDepthAlpha)
 		{
-			//string bullshit = reader.GetAttribute(Tokens.VERSION_REMOTING_LIB); // TODO: can throw
+			string supportDepthAlphaStr = reader.GetAttribute(Tokens.DEPTH_ALPHA); // TODO: can throw
 			string versionStr = reader.ReadElementContentAsString(); // TODO: can throw
 			Debug.Assert(!string.IsNullOrEmpty(versionStr));
 #if ENABLE_LOGGING
-			Debug.Log($"Parsed <{Tokens.VERSION}>{versionStr}</{Tokens.VERSION}>");
+			Debug.Log($"Parsed <{Tokens.VERSION} {Tokens.DEPTH_ALPHA}=\"{supportDepthAlphaStr}\">{versionStr}</{Tokens.VERSION}>");
 #endif
 			version = uint.Parse(versionStr); // TODO: can throw
+			supportDepthAlpha = supportDepthAlphaStr == "1";
 		}
 
 		public static void ReadSdp(XmlReader reader, out string type, out string sdp)
@@ -103,7 +107,7 @@ namespace HoloLight.Isar.Signaling
 			sdp = reader.ReadElementContentAsString(); // TODO: can throw
 			//Debug.WriteLine($"Received SDP message {{type: {type}, content: {sdp}}}");
 #if ENABLE_LOGGING
-			Debug.Log($"Parsed <{Tokens.SDP} {Tokens.SDP_TYPE}\"{type}\">{sdp}</{Tokens.SDP}>");
+			Debug.Log($"Parsed <{Tokens.SDP} {Tokens.SDP_TYPE}=\"{type}\">{sdp}</{Tokens.SDP}>");
 #endif
 		}
 
@@ -125,13 +129,15 @@ namespace HoloLight.Isar.Signaling
 
 	internal static class IsarXmlWriter
 	{
-		public static void WriteVersion(uint version, Stream stream)
+		public static void WriteVersion(uint version, bool supportDepthAlpha, Stream stream)
 		{
 			var element = new XmlElement
 			{
 				Name = Tokens.VERSION,
 				Content = version.ToString(CultureInfo.InvariantCulture)
 			};
+			var supportDepthAlphaStr = supportDepthAlpha ? "1" : "0";
+			element.Attributes.Add(new XmlAttribute { Name = "DepthAlphaEnabled", Value = supportDepthAlphaStr });
 
 			WriteElement(element, stream);
 		}

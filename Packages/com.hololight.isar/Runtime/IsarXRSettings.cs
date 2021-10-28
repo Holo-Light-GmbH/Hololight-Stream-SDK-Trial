@@ -14,11 +14,14 @@ namespace Unity.XR.Isar
 	public class IsarXRSettings : ScriptableObject
 	{
 
-		[SerializeField, Tooltip("Choose how Unity should render. This can impact performance.")]
+		[Tooltip("Choose how Unity should render. This can impact performance.")]
 		public RenderingMode RenderingMode;
 
-		[SerializeField, Tooltip("An implementation of ISignaling to be instantiated and used by the XR loader (via reflection). Make sure to use the fully-qualified type name.")]
+		[Tooltip("An implementation of ISignaling to be instantiated and used by the XR loader (via reflection). Make sure to use the fully-qualified type name.")]
 		public string SignalingImplementationType = typeof(DebugSignaling).FullName;
+
+		[Tooltip("Send depth/alpha data for stabilization/reprojection")]
+		public bool SendDepthAlpha;
 
 		//Copy-pasted from WindowsMRSettings.
 		//At runtime this is basically a singleton. IsarXRBuildProcessor (or rather its base class) takes care

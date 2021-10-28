@@ -17,8 +17,8 @@ namespace HoloLight.Isar.Shared
 	internal static class Debug
 	{
 		public static void Log(string message,
-		                       [CallerFilePath] string file = "",
 		                       [CallerMemberName] string func = "",
+		                       [CallerFilePath] string file = "",
 		                       [CallerLineNumber] int line = 0)
 		{
 #if USING_UNITY
@@ -31,14 +31,14 @@ namespace HoloLight.Isar.Shared
 		}
 
 		public static void LogWarning(string message,
-		                              [CallerFilePath] string file = "",
 		                              [CallerMemberName] string func = "",
+		                              [CallerFilePath] string file = "",
 		                              [CallerLineNumber] int line = 0)
 		{
+			System.Diagnostics.Debug.WriteLine(Fmt.LogFormat, file, line, func, "Warning: " + message + "\n" + System.Environment.StackTrace);
 #if USING_UNITY
 			UnityEngine.Debug.LogWarning(message);
 #endif
-			System.Diagnostics.Debug.WriteLine(Fmt.LogFormat, file, line, func, "Warning: " + message + "\n" + System.Environment.StackTrace);
 		}
 
 		public static void LogError(string message,
@@ -50,7 +50,7 @@ namespace HoloLight.Isar.Shared
 			System.Diagnostics.Debug.WriteLine(Fmt.LogFormat, "Error: " + message + "\n" + System.Environment.StackTrace);
 			UnityEngine.Debug.LogError(message);
 #else
-			System.Diagnostics.Debug.Fail(System.String.Format(Fmt.LogFormat, file, line, func, "Fail: " + message + "\n" + System.Environment.StackTrace));
+			System.Diagnostics.Debug.Fail(System.String.Format(Fmt.LogFormat, file, line, func, "Error: " + message + "\n" + System.Environment.StackTrace));
 #endif
 		}
 
@@ -107,37 +107,35 @@ namespace HoloLight.Isar.Shared
 	internal static class Trace
 	{
 		public static void Log(string message,
-		                       [CallerFilePath] string file = "",
 		                       [CallerMemberName] string func = "",
+		                       [CallerFilePath] string file = "",
 		                       [CallerLineNumber] int line = 0)
 		{
+			System.Diagnostics.Trace.WriteLine(System.String.Format(Fmt.LogFormat, /*Path.GetFileName(*/file/*)*/, line, func, message + "\n" + System.Environment.StackTrace));
 #if USING_UNITY
-			System.Diagnostics.Trace.WriteLine(Fmt.LogFormat, message + "\n" + System.Environment.StackTrace);
-			UnityEngine.Debug.Log(message); // TODO
+			UnityEngine.Debug.Log(message);
 #endif
-			System.Diagnostics.Trace.WriteLine(System.String.Format(Fmt.LogFormat, /*Path.GetFileName(*/file/*)*/, line, func, message));
 		}
 
 		public static void LogWarning(string message,
-		                       [CallerFilePath] string file = "",
 		                       [CallerMemberName] string func = "",
+		                       [CallerFilePath] string file = "",
 		                       [CallerLineNumber] int line = 0)
 		{
+			System.Diagnostics.Trace.WriteLine(System.String.Format(Fmt.LogFormat, /*Path.GetFileName(*/file/*)*/, line, func, "Warning: " + message + "\n" + System.Environment.StackTrace));
 #if USING_UNITY
-			System.Diagnostics.Trace.WriteLine(Fmt.LogFormat, "Warning: " + message + "\n" + System.Environment.StackTrace);
-			UnityEngine.Debug.Log(message); // TODO
+			UnityEngine.Debug.Log(message);
 #endif
-			System.Diagnostics.Trace.WriteLine(System.String.Format(Fmt.LogFormat, /*Path.GetFileName(*/file/*)*/, line, func, "Warning: " + message));
 		}
 
 		public static void LogError(string message,
-		                       [CallerFilePath] string file = "",
 		                       [CallerMemberName] string func = "",
+		                       [CallerFilePath] string file = "",
 		                       [CallerLineNumber] int line = 0)
 		{
 #if USING_UNITY
-			System.Diagnostics.Trace.WriteLine(Fmt.LogFormat, "Error: " + message + "\n" + System.Environment.StackTrace);
-			UnityEngine.Debug.LogError(message); // TODO
+			System.Diagnostics.Trace.WriteLine(System.String.Format(Fmt.LogFormat, /*Path.GetFileName(*/file/*)*/, line, func, "Error: " + message + "\n" + System.Environment.StackTrace));
+			UnityEngine.Debug.LogError(message);
 #else
 			System.Diagnostics.Trace.Fail(System.String.Format(Fmt.LogFormat, /*Path.GetFileName(*/file/*)*/, line, func, "Fail: " + message));
 #endif

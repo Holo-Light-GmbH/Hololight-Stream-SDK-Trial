@@ -12,7 +12,7 @@ public class QrCodeExample : MonoBehaviour
 
 	void OnConnectionStateChanged(HlrConnectionState state)
 	{
-		if (state == HlrConnectionState.Disconnected)
+		if (state == HlrConnectionState.Disconnected || state == HlrConnectionState.Failed)
 		{
 			isWatching = false;
 		}
@@ -44,21 +44,8 @@ public class QrCodeExample : MonoBehaviour
 		}
 	}
 
-	private void OnEnable()
-	{
-		_isar = new IsarQr();
-		_isar.ConnectionStateChanged += OnConnectionStateChanged;
-		_isar.QrCodeAdded += QrApi_OnAdded;
-		_isar.QrCodeUpdated += QrApi_OnUpdated;
-		_isar.QrCodeRemoved += QrApi_OnRemoved;
-		_isar.QrCodeEnumerationCompleted += QrApi_OnEnumerationCompleted;
-		_isar.QrCodeAccessStatusReceived += QrApi_OnAccessStatusReceived;
-		_isar.QrCodeIsSupportedReceived += QrApi_OnIsSupportedReceived;
-	}
-
 	private void Start()
-	{
-		if (_isar != null) return;
+    {
 		_isar = new IsarQr();
 		_isar.ConnectionStateChanged += OnConnectionStateChanged;
 		_isar.QrCodeAdded += QrApi_OnAdded;
@@ -67,24 +54,10 @@ public class QrCodeExample : MonoBehaviour
 		_isar.QrCodeEnumerationCompleted += QrApi_OnEnumerationCompleted;
 		_isar.QrCodeAccessStatusReceived += QrApi_OnAccessStatusReceived;
 		_isar.QrCodeIsSupportedReceived += QrApi_OnIsSupportedReceived;
-	}
-
-	private void OnDisable()
-	{
-		_isar.ConnectionStateChanged -= OnConnectionStateChanged;
-		_isar.QrCodeAdded -= QrApi_OnAdded;
-		_isar.QrCodeUpdated -= QrApi_OnUpdated;
-		_isar.QrCodeRemoved -= QrApi_OnRemoved;
-		_isar.QrCodeEnumerationCompleted -= QrApi_OnEnumerationCompleted;
-		_isar.QrCodeAccessStatusReceived -= QrApi_OnAccessStatusReceived;
-		_isar.QrCodeIsSupportedReceived -= QrApi_OnIsSupportedReceived;
-		_isar.Dispose();
-		_isar = null;
 	}
 
 	private void OnDestroy()
 	{
-		if (_isar == null) return;
 		_isar.ConnectionStateChanged -= OnConnectionStateChanged;
 		_isar.QrCodeAdded -= QrApi_OnAdded;
 		_isar.QrCodeUpdated -= QrApi_OnUpdated;
@@ -93,14 +66,13 @@ public class QrCodeExample : MonoBehaviour
 		_isar.QrCodeAccessStatusReceived -= QrApi_OnAccessStatusReceived;
 		_isar.QrCodeIsSupportedReceived -= QrApi_OnIsSupportedReceived;
 		_isar.Dispose();
-		_isar = null;
 	}
 
 	private void Update()
 	{
 		if (_isar.IsConnected)
 		{
-			_isar.ProcessMessages();
+			_isar.ProcessMessages(); // TODO: this should only be called in one location of the entire app; use SynchronisationContext
 		}
 	}
 
@@ -126,7 +98,7 @@ public class QrCodeExample : MonoBehaviour
 				try
 				{
 					_isar.Start();
-					isWatching = true;
+					isWatching = true; 
 				}
 				catch (Exception)
 				{

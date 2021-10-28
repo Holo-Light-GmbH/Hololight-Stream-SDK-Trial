@@ -1,32 +1,17 @@
 # QR Code Support
 
 <p align="center">
-	<img src="imgs/isar_qrcode.png" width="380px">
+	<img src="images/isar_qrcode.png" width="380px">
 </p>
 
 ## Overview
-The QR Code Tracking supported by ISAR works differently compared to local QR Code Tracking Implementation. Based on the fact, that networking is between client and server, the API is event based. 
-The important class to handle all QR Code events is **IsarQr**. 
+The ISAR SDK provides functionality to scan QR Codes in the physical environment and receive the information within Unity to be processed.
 
-Example Implementations can be found in **	Isar XR Plugin/Runtime/Examples/QrCodeExample.cs**
-This example implements and uses **IsarQr** and simplyfies for you to use it. Adapt it and use it to your needs.
+The `IsarQr` class, included with the **ISAR Core** package, provides an easy access method to retreive QR Code data. For information on how to use this class, follow the description below. It is recommended to follow the **QrCodeExample** for best example usage of this class.
 
-## How To Use **QrCodeExample**
+## How To Use `IsarQr`
 
-- Add the `QrCodeExample` to an GameObject in your Scene like this:
-<p align="center">
-	<img src="imgs/qrcode.png" width="580px">
-</p>
-
-- Call **RequestAccess()** to request Users Permission (need to do this only one time - until you reinstall the App or delete App Data). 	 
-- Then you just need to call **StartWatching()**.
-
-When QR Codes are found, the functions QrApi_OnAdded, QrApi_OnUpdated, etc. will be triggered. There you can read the content and do what ever you like. 
-
-## How To Use **IsarQr**
-
-If you want to create your own wrapper around IsarQr, feel free to do so. Check out how QrCodeExample is done.
-It is very similar to the <a href="https://docs.microsoft.com/en-us/uwp/api/Windows.Devices.Enumeration.DeviceWatcher?view=winrt-19041">DeviceWatcher class</a> from Microsoft.
+The `IsarQr` class contained within **ISAR Core/Runtime** provides an easy access implementation for receiving QR Codes. This class operates similar to the <a href="https://docs.microsoft.com/en-us/uwp/api/Windows.Devices.Enumeration.DeviceWatcher?view=winrt-19041">DeviceWatcher class</a> from Microsoft, triggering events to be consumed when a QR Code appears within the physical environment. This class can be used as is, or overridden to implement more advanced functionality.
 
 Create an instance of IsarQr and register for the events.
 ```csharp
@@ -40,16 +25,14 @@ _isar.QrCodeAccessStatusReceived += QrApi_OnAccessStatusReceived;
 _isar.QrCodeIsSupportedReceived += QrApi_OnIsSupportedReceived;
 ```
 
+Call `IsarQr.RequestAccess()` to request permission from user to scan for QR Codes. 
+The user's permission is requested once and saved for use across all app session lifecycles.
 
-Call **IsarQr.Start()** to tell the HoloLens to start searching for QR Codes.
-When it has found some, it will trigger the corresponding events.
+Call `IsarQr.Start()` to start scanning for QR Codes. When a code is found, an event will trigger passing the scanned data.
 
-Call **IsarQr.RequestAccess()** to ask Permission from User to scan for QR Codes. 
-This is needed only one time for the first use. The Status is saved through different App Session cycles. 
+Call `IsarQr.Stop()` to stop scanning for codes.
 
-Call **IsarQr.Stop()** if you don't need to track the QR Codes anymore.
-
-Inside the update function call **IsarQr.ProcessMessages()**
+Within the Unity `Update()` method, call `IsarQr.ProcessMessages()` to process QR Codes on the server.
 ```csharp
 private void Update()
 	{
@@ -60,4 +43,20 @@ private void Update()
 	}
 ```
 
-That's basically it. Please have a look at the implementation of **QrCodeExample.cs** if you encounter issues.
+For more information regarding usage of the `IsarQr` class, see example implementation **Isar Core/Runtime/Examples/QrCodeExample.cs**.
+
+## How To Use **QrCodeExample.cs**
+
+The QR Code example demonstrates how to use the `IsarQr` class to retrieve Qr Code data. It is recommended to copy and adapt this example for personal usage.
+
+The following instructions explain how to setup the project to scan and retrieve QR Codes:
+- Add the `QrCodeExample` to a GameObject in the Scene:
+<p align="center">
+	<img src="images/qrcode.png" width="580px">
+</p>
+
+- Call **RequestAccess()** to request Users Permission on the client (only required first run). 	 
+- Call **StartWatching()** to begin watching for QR codes within the environment.
+
+When a QR Code is found, the events `QrApi_OnAdded`, `QrApi_OnUpdated`, etc. will be triggered. The QR Code content can be parsed and processed within the event handler. 
+

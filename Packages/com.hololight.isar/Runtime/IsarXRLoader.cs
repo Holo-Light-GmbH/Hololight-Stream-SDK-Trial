@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using HoloLight.Isar.Native;
@@ -49,18 +48,23 @@ namespace Unity.XR.Isar
 			}
 		}
 
+		// This exists because signaling callbacks can be executed on threads other than Unity's script thread (async etc.),
+		// so we can't call GetXRSettings in OnConnected.
+		bool _sendDepthAlpha = false;
+
 		/// <summary>
 		/// Settings that need to be passed into the plugin BEFORE any initialization.
 		/// </summary>
 		[StructLayout(LayoutKind.Sequential)]
 		struct UserDefinedSettings
 		{
-			public UserDefinedSettings(string configPath, HlrSdpCreatedCallback sdpCb, HlrLocalIceCandidateCreatedCallback iceCb, RenderingMode renderingMode)
+			public UserDefinedSettings(string configPath, HlrSdpCreatedCallback sdpCb, HlrLocalIceCandidateCreatedCallback iceCb, RenderingMode renderingMode, int sendDepthAlpha)
 			{
 				this.configPath = configPath;
 				this.sdpCreatedCb = sdpCb;
 				this.localIceCandidateCreatedCb = iceCb;
 				this.renderingMode = renderingMode;
+				this.sendDepthAlpha = sendDepthAlpha;
 			}
 
 			[MarshalAs(UnmanagedType.LPWStr)]
@@ -68,11 +72,16 @@ namespace Unity.XR.Isar
 			public HlrSdpCreatedCallback sdpCreatedCb;
 			public HlrLocalIceCandidateCreatedCallback localIceCandidateCreatedCb;
 			public RenderingMode renderingMode;
+			//This is treated as a bool, but those are not blittable (need marshaling) and I didn't want to
+			//go there at the time of writing.
+			public int sendDepthAlpha;
 		}
 
 		[DllImport("remoting_unity")]
 		static extern void SetUserDefinedSettings(UserDefinedSettings settings);
 
+		[DllImport("remoting_unity")]
+		public static extern void SetBitrate(Int64 bitrate);
 		private static List<XRDisplaySubsystemDescriptor> s_DisplaySubsystemDescriptors = new List<XRDisplaySubsystemDescriptor>();
 		private static List<XRInputSubsystemDescriptor> s_InputSubsystemDescriptors = new List<XRInputSubsystemDescriptor>();
 
@@ -108,9 +117,11 @@ namespace Unity.XR.Isar
 				mode = xrSettings.RenderingMode;
 			}
 
+			_sendDepthAlpha = xrSettings.SendDepthAlpha;
+
 			_signaling = (ISignaling)Activator.CreateInstance(Type.GetType(xrSettings.SignalingImplementationType));
 
-			UserDefinedSettings settings = new UserDefinedSettings(configPath, sdpCallback, iceCallback, mode);
+			UserDefinedSettings settings = new UserDefinedSettings(configPath, sdpCallback, iceCallback, mode, Convert.ToInt32(_sendDepthAlpha));
 			SetUserDefinedSettings(settings);
 
 			CreateSubsystem<XRDisplaySubsystemDescriptor, XRDisplaySubsystem>(s_DisplaySubsystemDescriptors, "ISAR Display");
@@ -159,6 +170,7 @@ namespace Unity.XR.Isar
 			StartSubsystem<XRInputSubsystem>();
 
 			_signaling.Listen();
+			//OnStarted();
 
 			return true;
 		}
@@ -167,18 +179,25 @@ namespace Unity.XR.Isar
 		{
 			Debug.Log("===== Stop =====");
 
+			var input = GetLoadedSubsystem<XRInputSubsystem>();
+			if (input != null && input.running)
+			{
+				StopSubsystem<XRInputSubsystem>();
+			}
+
 			var display = GetLoadedSubsystem<XRDisplaySubsystem>();
 			if (display != null && display.running)
 			{
+				//OnStopping();
 				_signaling.Dispose();
+				StopSubsystem<XRDisplaySubsystem>();
+				//OnStopped();
 			}
-
-			StopSubsystem<XRInputSubsystem>();
-			StopSubsystem<XRDisplaySubsystem>();
 
 			return true;
 		}
 
+		// TODO: move signaling & flow control out of loader and into user code (allow automatic & custom xr loading)
 		private bool HACK_isDeinitializing = false;
 		public override bool Deinitialize()
 		{
@@ -187,6 +206,7 @@ namespace Unity.XR.Isar
 			_signaling.IceCandidateReceived -= Signaling_IceCandidateReceived;
 			_signaling.SdpAnswerReceived -= Signaling_SdpAnswerReceived;
 			_signaling.Connected -= Signaling_OnConnected;
+			//OnDeinitialized(); ?
 
 			if (IsConnected)
 			{
@@ -208,7 +228,6 @@ namespace Unity.XR.Isar
 			//	Debug.Log($"ISAR connection state changed to {HlrConnectionState.Disconnected}");
 			//}
 
-
 			_handle.Dispose();
 
 			DestroySubsystem<XRInputSubsystem>();
@@ -219,29 +238,57 @@ namespace Unity.XR.Isar
 
 		private void Callbacks_ConnectionStateChanged(HlrConnectionState newState)
 		{
+			HlrConnectionState prevState;
 			lock (_lockObj)
 			{
+				prevState = _connectionState;
 				_connectionState = newState;
 			}
 			Debug.Log($"ISAR connection state changed to {newState}");
 
-			if (newState == HlrConnectionState.Connected)
+			switch (newState)
 			{
-				_signaling.Dispose();
-			}
-			else if (newState == HlrConnectionState.Disconnected)
-			{
-				if (!HACK_isDeinitializing)
-				{
-					//Post makes an asynchronous call the next time Unity's SynchronizationContext impl does some processing.
-					//Here's Unity's reference source:
-					//https://github.com/Unity-Technologies/UnityCsReference/blob/2019.4/Runtime/Export/Scripting/UnitySynchronizationContext.cs
-					_syncContext.Post((state) =>
+				case HlrConnectionState.Connected:
+					_signaling.Dispose();
+					//OnConnected();
+					break;
+				case HlrConnectionState.Disconnected:
+					if (!HACK_isDeinitializing)
 					{
-						Stop();
-						Start();
-					}, newState);
-				}
+						//Post makes an asynchronous call the next time Unity's SynchronizationContext impl does some processing.
+						//Here's Unity's reference source:
+						//https://github.com/Unity-Technologies/UnityCsReference/blob/2019.4/Runtime/Export/Scripting/UnitySynchronizationContext.cs
+						_syncContext.Post((state) =>
+						{
+							Stop();
+							Start();
+						}, newState);
+					}
+					//OnDisconnected();
+					break;
+				case HlrConnectionState.Failed:
+					if (prevState==HlrConnectionState.Connected)
+					{
+						if (!HACK_isDeinitializing)
+						{
+							//Post makes an asynchronous call the next time Unity's SynchronizationContext impl does some processing.
+							//Here's Unity's reference source:
+							//https://github.com/Unity-Technologies/UnityCsReference/blob/2019.4/Runtime/Export/Scripting/UnitySynchronizationContext.cs
+							_syncContext.Post((state) =>
+							{
+								Stop();
+								Start();
+							}, newState);
+						}
+					}
+					else if (prevState==HlrConnectionState.Disconnected)
+					{
+						_signaling.Dispose();
+					}
+					break;
+				default:
+					Debug.LogError("Unhandled ConnectionState");
+					break;
 			}
 		}
 
@@ -277,14 +324,10 @@ namespace Unity.XR.Isar
 			}
 		}
 
-		private async Task Signaling_OnConnected()
+		private void Signaling_OnConnected()
 		{
-			//This whole versioning thing still doesn't fit inside my head. What happens when
-			//the client doesn't support ours? Do we ever get notified?
-			//Answer: not right now, but this is one of signaling's responsibilities in a production app.
-			await _signaling.SendVersionAsync(_serverApi.Version.PackedValue);
+			Task.Run(async () => await _signaling.SendVersionAsync(_serverApi.Version.PackedValue, _sendDepthAlpha)).Wait();
 
-			//This leads to Callbacks_SdpCreated if successful
 			HlrError err = _serverApi.Signaling.CreateOffer(_handle);
 
 			if (err != HlrError.eNone)

@@ -16,7 +16,6 @@ namespace HoloLight.Isar.Native
 		public HlrInit Init;
 		public HlrClose Close;
 		public HlrSvReset Reset;
-		[Obsolete("This is handled by XR SDK.")]
 		public HlrSvInitVideoTrack InitVideoTrack;
 		public HlrSvPushFrame PushFrame;
 		public HlrPushCustomMessage PushCustomMessage;
@@ -28,6 +27,8 @@ namespace HoloLight.Isar.Native
 		public HlrSvUnregisterViewPoseHandler UnregisterViewPoseHandler;
 		public HlrSvRegisterInputEventHandler RegisterInputEventHandler;
 		public HlrSvUnregisterInputEventHandler UnregisterInputEventHandler;
+		public HlrSvRegisterSpatialInputHandler RegisterSpatialInputHandler;
+		public HlrSvUnregisterSpatialInputHandler UnregisterSpatialInputHandler;
 		public HlrRegisterCustomMessageHandler RegisterCustomMessageHandler;
 		public HlrUnregisterCustomMessageHandler UnregisterCustomMessageHandler;
 		public HlrRegisterAudioDataHandler RegisterAudioDataHandler;
@@ -120,6 +121,8 @@ namespace HoloLight.Isar.Native
 	internal delegate void HlrSvUnregisterViewPoseHandler(HlrHandle handle, HlrSvViewPoseReceivedCallback cb);
 	internal delegate void HlrSvRegisterInputEventHandler(HlrHandle handle, HlrSvInputEventReceivedCallback cb, IntPtr userData);
 	internal delegate void HlrSvUnregisterInputEventHandler(HlrHandle handle, HlrSvInputEventReceivedCallback cb);
+	internal delegate void HlrSvRegisterSpatialInputHandler(HlrHandle handle, HlrSvSpatialInputReceivedCallback cb, IntPtr userData);
+	internal delegate void HlrSvUnregisterSpatialInputHandler(HlrHandle handle, HlrSvSpatialInputReceivedCallback cb);
 	internal delegate void HlrRegisterCustomMessageHandler(HlrHandle handle, HlrCustomMessageCallback cb, IntPtr userData);
 	internal delegate void HlrUnregisterCustomMessageHandler(HlrHandle handle, HlrCustomMessageCallback cb, IntPtr userData);
 	internal delegate void HlrRegisterAudioDataHandler(HlrHandle handle, HlrSvAudioDataReceivedCallback cb, IntPtr userData);
@@ -128,6 +131,7 @@ namespace HoloLight.Isar.Native
 	// Callback delegates
 	internal delegate void HlrSvViewPoseReceivedCallback(in HlrXrPose pose, IntPtr userData);
 	internal delegate void HlrSvInputEventReceivedCallback(in HlrInputEvent pose, IntPtr userData);
+	internal delegate void HlrSvSpatialInputReceivedCallback(in HlrSvSpatialInput spatialInput, IntPtr userData);
 	internal delegate void HlrCustomMessageCallback(in HlrCustomMessage message, IntPtr userData);
 	internal delegate void HlrSvAudioDataReceivedCallback(in HlrAudioData audioData, IntPtr userData);
 

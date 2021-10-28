@@ -307,4 +307,46 @@ namespace HoloLight.Isar.Native.Input
 	}
 
 	#endregion GestureRecognizer
+
+	public struct HlrSpatialInputDataInteractionSourceDetected
+	{
+		HlrInteractionSourceState interactionSourceState;
+	}
+
+	public struct HlrSpatialInputDataInteractionSourceLost
+	{
+		HlrInteractionSourceState interactionSourceState;
+	}
+	public struct HlrSpatialInputDataInteractionSourcePressed
+	{
+		HlrInteractionSourceState interactionSourceState;
+	}
+	public struct HlrSpatialInputDataInteractionSourceUpdated
+	{
+		HlrInteractionSourceState interactionSourceState;
+	}
+	public struct HlrSpatialInputDataInteractionSourceReleased
+	{
+		HlrInteractionSourceState interactionSourceState;
+	}
+
+	public struct HlrInteractionSourceState
+	{
+		HlrControllerData controllerData;
+	}
+
+	struct HlrControllerData
+	{
+		uint controllerIdentifier;
+		int handedNess; //do enums later
+		HlrHeadPose headPose;
+		HlrPose controllerPose;
+		HlrHandPose handData;
+		IntPtr buttons;
+		uint buttonsLength;
+		IntPtr axis1D;
+		uint axis1DLength;
+		IntPtr axis2D;
+		uint axis2DLength;
+	}
 }

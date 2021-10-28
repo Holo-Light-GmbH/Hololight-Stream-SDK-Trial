@@ -1,8 +1,7 @@
 {
-
   "name": "com.hololight.isar",
-  "displayName": "Isar XR Plugin",
-  "version": "2.1.3",
+  "displayName": "ISAR Core",
+  "version": "2.3.0",
   "unity": "2019.4",
   "description": "Holo-Light ISAR helps to create AR applications that utilize remote rendering on high performance computers and send the rendered scene as a video stream to AR-devices like Microsoft HoloLens.",
   "keywords": [
@@ -16,9 +15,21 @@
     "name": "Holo-Light GmbH",
     "url": "https://www.holo-light.com/"
   },
-
-
+  "nosamples": [
+    {
+      "displayName": "HelloISAR",
+      "description": "Tutorial application demonstrating how to use ISAR. The gesture input is handled only by Unity event system.",
+      "path": "TutorialSamples/HelloISAR",
+      "type": "sample"
+    },
+    {
+      "displayName": "HelloMRTK",
+      "description": "Tutorial application demonstrating how to use ISAR in combination with Microsoft's Mixed Reality Toolkit.",
+      "path": "TutorialSamples/HelloMRTK",
+      "type": "sample"
+    }
+  ],
   "dependencies": {
-    "com.unity.xr.management": "3.2.16"
+    "com.unity.xr.management": "3.2.13"
   }
 }

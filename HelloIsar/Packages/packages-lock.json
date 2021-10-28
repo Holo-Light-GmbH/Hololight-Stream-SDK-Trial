@@ -1,19 +1,20 @@
 {
   "dependencies": {
     "com.hololight.isar": {
-      "version": "file:E:/UnityProjects/ISAR_XR_Full_Version/Packages/com.hololight.isar",
+      "version": "file:../../Packages/com.hololight.isar",
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.unity.xr.management": "3.2.16"
+        "com.unity.xr.management": "3.2.13"
       }
     },
-    "com.hololight.isar.oculus": {
-      "version": "file:E:/UnityProjects/ISAR_XR_Full_Version/Packages/com.hololight.isar.oculus",
+    "com.hololight.isar.mrtk": {
+      "version": "file:C:/ISAR_Full_Version/Packages/com.hololight.isar.mrtk",
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.unity.xr.management": "3.2.16"
+        "com.unity.xr.management": "3.2.13",
+        "com.hololight.isar": "2.3.0"
       }
     },
     "com.microsoft.mixedreality.toolkit.foundation": {
@@ -44,7 +45,7 @@
       "url": "https://pkgs.dev.azure.com/aipmr/MixedReality-Unity-Packages/_packaging/Unity-packages/npm/registry"
     },
     "com.unity.collab-proxy": {
-      "version": "1.2.16",
+      "version": "1.10.2",
       "depth": 0,
       "source": "registry",
       "dependencies": {},
@@ -67,7 +68,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.ide.vscode": {
-      "version": "1.2.3",
+      "version": "1.2.4",
       "depth": 0,
       "source": "registry",
       "dependencies": {},
@@ -81,7 +82,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.test-framework": {
-      "version": "1.1.24",
+      "version": "1.1.29",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -122,7 +123,7 @@
       }
     },
     "com.unity.xr.legacyinputhelpers": {
-      "version": "2.1.7",
+      "version": "2.1.8",
       "depth": 2,
       "source": "registry",
       "dependencies": {
@@ -132,11 +133,14 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.xr.management": {
-      "version": "3.2.16",
+      "version": "4.0.1",
       "depth": 1,
       "source": "registry",
       "dependencies": {
-        "com.unity.xr.legacyinputhelpers": "2.1.2",
+        "com.unity.modules.subsystems": "1.0.0",
+        "com.unity.modules.vr": "1.0.0",
+        "com.unity.modules.xr": "1.0.0",
+        "com.unity.xr.legacyinputhelpers": "2.1.7",
         "com.unity.subsystemregistration": "1.0.6"
       },
       "url": "https://packages.unity.com"

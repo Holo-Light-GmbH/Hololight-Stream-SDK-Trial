@@ -14,7 +14,7 @@ namespace Unity.XR.Isar
 		/// a socket has been connected and messages can be exchanged. XR loader listens for this and reacts
 		/// by calling CreateOffer.
 		/// </summary>
-		event Func<Task> Connected;
+		event Action Connected;
 
 		/// <summary>
 		/// Tells a subscriber that we received an SDP answer.
@@ -31,7 +31,7 @@ namespace Unity.XR.Isar
 		/// </summary>
 		/// <param name="serverApiVersion"></param>
 		/// <returns></returns>
-		Task SendVersionAsync(uint serverApiVersion);
+		Task SendVersionAsync(uint serverApiVersion, bool hasDepthAlpha); // TODO: get rid of this an let the implementors send a byte array to allow arbitrary user data
 
 		/// <summary>
 		/// Sends an SDP offer to the client side.

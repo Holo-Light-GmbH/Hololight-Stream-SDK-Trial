@@ -22,19 +22,12 @@ using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using Debug = HoloLight.Isar.Shared.Debug;
 using Trace = HoloLight.Isar.Shared.Trace;
 using Assertions = HoloLight.Isar.Shared.Assertions;
-
-#if USING_UNITY
-// using Unity.XR.Isar; // ISignaling
-// using UnityEngine;
-// using UnityEngine.Assertions;
-#endif
 
 namespace HoloLight.Isar.Signaling
 {
@@ -65,20 +58,20 @@ namespace HoloLight.Isar.Signaling
 		// TODO
 		// private MemoryStream _memStream = new MemoryStream(1024);
 
-		private Task _connectAndReceiveTask;
-		private Task _connectAndReceiveTask2;
+		private Task _connectAndReceiveTask; // TODO: delete
+		private Task _connectAndReceiveTask2; // TODO: delete
 
 		/// <summary>
 		/// Invoked when a signaling connection has been established.
 		/// </summary>
-		public event Func<Task> Connected;
-		protected async Task OnConnected()
+		public event Action Connected;
+		protected void OnConnected()
 		{
 			try
 			{
 				if (Connected != null)
 				{
-					await Connected.Invoke();
+					Connected.Invoke();
 				}
 			}
 			catch (Exception e)
@@ -107,12 +100,12 @@ namespace HoloLight.Isar.Signaling
 		/// Invoked when the remote endpoint version was received. Only needed on the client
 		/// </summary>
 		/// <param name="version">ISAR protocol version sent from remote endpoint</param>
-		public event Action<uint> VersionReceived;
-		protected void OnVersionReceived(uint version)
+		public event Action<uint, bool> VersionReceived;
+		protected void OnVersionReceived(uint version, bool hasDepthAlpha)
 		{
 			try
 			{
-				VersionReceived?.Invoke(version);
+				VersionReceived?.Invoke(version, hasDepthAlpha);
 			}
 			catch (Exception e)
 			{
@@ -176,7 +169,7 @@ namespace HoloLight.Isar.Signaling
 		// TODO: move this into IsarSignalingSubsystem or whatever (ScriptableObject entirely created by the user)
 		// basically what RemoteCamera used to be
 		private IPAddress _signalingServerIpAddress = IPAddress.Any;
-		private int _signalingServerPort = DebugSignaling.DEFAULT_PORT;
+		private int _signalingServerPort = DEFAULT_PORT;
 
 		// HACK: ISignaling
 		public async void Listen()
@@ -186,7 +179,9 @@ namespace HoloLight.Isar.Signaling
 			{
 				//for (int tries = 3; tries > 0; tries--)
 				//{
-					listenTask = /*_signaling.*/Listen(_signalingServerIpAddress, _signalingServerPort)/*.ConfigureAwait(false)*/;
+				listenTask = Task.Run(async () => await ListenAsync(_signalingServerIpAddress, _signalingServerPort));
+					//listenTask = /*_signaling.*/Listen(_signalingServerIpAddress, _signalingServerPort)/*.ConfigureAwait(false)*/;
+					///*await*/ listenTask.Wait();
 					await listenTask;
 				//}
 			}
@@ -266,6 +261,7 @@ namespace HoloLight.Isar.Signaling
 				Debug.Log($"{nameof(_connectAndReceiveTask2)}.Id: {_connectAndReceiveTask2.Id}");
 #endif
 				await _connectAndReceiveTask2.ConfigureAwait(false);
+				Debug.Log($"Task Id: {Task.CurrentId ?? -1} Thread Id: {Thread.CurrentThread.ManagedThreadId}");
 			});
 			await _connectAndReceiveTask.ConfigureAwait(false);
 #if VERBOSE_LOGS
@@ -283,7 +279,7 @@ namespace HoloLight.Isar.Signaling
 		public async Task ListenAsync(IPAddress ipAddress, int port)
 		{
 #if VERBOSE_LOGS
-			Debug.Log($"Task Id: {Task.CurrentId} Thread Id: {Thread.CurrentThread.ManagedThreadId}");
+			Debug.Log($"Task Id: {Task.CurrentId ?? -1} Thread Id: {Thread.CurrentThread.ManagedThreadId}");
 #endif
 			Debug.Assert(_tcpListener == null);
 			_tcpListener = new TcpListener(ipAddress, port);
@@ -303,7 +299,7 @@ namespace HoloLight.Isar.Signaling
 			//if (_client!= null) _client.LingerState = new LingerOption(true, 1);
 
 			Trace.Log("==========> Signaling Connected! <==========");
-			await OnConnected();
+			OnConnected();
 
 			try
 			{
@@ -359,14 +355,14 @@ namespace HoloLight.Isar.Signaling
 
 			Trace.Log("==========> Signaling Connecting. <==========");
 
-			await _client.ConnectAsync(ipAddress, port)/*.ConfigureAwait(false)*/;
+			await _client.ConnectAsync(ipAddress, port).ConfigureAwait(false);
 
 			Trace.Log("==========> Signaling Connected! <==========");
-			await OnConnected();
+			OnConnected();
 
 			try
 			{
-				await ReceiveLoopAsync()/*.ConfigureAwait(false)*/;
+				await ReceiveLoopAsync().ConfigureAwait(false);
 			}
 			finally
 			{
@@ -401,16 +397,16 @@ namespace HoloLight.Isar.Signaling
 				}
 				numberOfAttempts += 1;
 #if VERBOSE_LOGS
-				Debug.Log("read pass " + (maxAttempts - currentAttempt));
+				Debug.Log("read pass " + numberOfAttempts);
 				Debug.Log("client?.Connected: " + _client?.Connected +
 				          " client?.Available: " + _client?.Available + " (amount of data received from the network and available to read)" +
 				          " stream.DataAvailable: " + _client?.GetStream()?.DataAvailable);
-				Debug.Log("ThreadId: " + Thread.CurrentThread.ManagedThreadId);
+				Debug.Log($"ReadAsync: Begin: Task Id: {Task.CurrentId ?? -1} Thread Id: {Thread.CurrentThread.ManagedThreadId}");
 #endif
 				int numberOfBytesRead = await srcStream.ReadAsync(dst, numberOfBytesReadTotal, targetNumberOfBytes - numberOfBytesReadTotal);
 				numberOfBytesReadTotal += numberOfBytesRead;
 #if VERBOSE_LOGS
-				Debug.Log("ThreadId: " + Thread.CurrentThread.ManagedThreadId);
+				Debug.Log($"ReadAsync: End: Task Id: {Task.CurrentId ?? -1} Thread Id: {Thread.CurrentThread.ManagedThreadId}");
 				Debug.Log("numberOfBytesRead: " + numberOfBytesRead);
 				if (numberOfBytesReadTotal != targetNumberOfBytes)
 					Debug.Log("bytes read so far: " + new UTF8Encoding(false, true).GetString(dst, 0, numberOfBytesReadTotal));
@@ -433,16 +429,16 @@ namespace HoloLight.Isar.Signaling
 		private async Task ReceiveLoopAsync()
 		{
 #if VERBOSE_LOGS
-			Debug.Log($"ReceiveLoopAsync: Task Id: {Task.CurrentId} Thread Id: {Thread.CurrentThread.ManagedThreadId}");
+			Debug.Log($"ReceiveLoopAsync: Task Id: {Task.CurrentId ?? -1} Thread Id: {Thread.CurrentThread.ManagedThreadId}");
 #endif
 
 			var stream = _client.GetStream();
 
 #if VERBOSE_LOGS
-				Debug.Log("_client?.ReceiveBufferSize: " + _client?.ReceiveBufferSize);
-				Debug.Log("_client?.ReceiveTimeout: " + _client?.ReceiveTimeout);
-				Debug.Log("_client?.SendBufferSize: " + _client?.SendBufferSize);
-				Debug.Log("_client?.SendTimeout: " + _client?.SendTimeout);
+			Debug.Log("_client?.ReceiveBufferSize: " + _client?.ReceiveBufferSize);
+			Debug.Log("_client?.ReceiveTimeout: " + _client?.ReceiveTimeout);
+			Debug.Log("_client?.SendBufferSize: " + _client?.SendBufferSize);
+			Debug.Log("_client?.SendTimeout: " + _client?.SendTimeout);
 #endif
 			while (true)
 			{
@@ -512,8 +508,8 @@ namespace HoloLight.Isar.Signaling
 					switch (reader.Name)
 					{
 						case Tokens.VERSION:
-							IsarXmlReader.ReadVersion(reader, out var version);
-							OnVersionReceived(version);
+							IsarXmlReader.ReadVersion(reader, out var version, out var caps);
+							OnVersionReceived(version, caps);
 							break;
 						case Tokens.SDP:
 							IsarXmlReader.ReadSdp(reader, out var type, out var sdp);
@@ -561,19 +557,10 @@ namespace HoloLight.Isar.Signaling
 			if (_lastSendTask == null)
 			{
 				_lastSendTask = task;
-#if VERBOSE_LOGS
-				Debug.Log("===== Send pre await Thread Id: " + Thread.CurrentThread.ManagedThreadId);
-#endif
 				await _lastSendTask;
-#if VERBOSE_LOGS
-				Debug.Log("===== Send post await Thread Id: " + Thread.CurrentThread.ManagedThreadId);
-#endif
 			}
 			else
 			{
-				//#if VERBOSE_LOGS
-				//				Debug.Log("pre await Thread Id: " + Thread.CurrentThread.ManagedThreadId);
-				//#endif
 #if false
 				var previousTask = _lastSendTask;
 				_lastSendTask = task;
@@ -596,9 +583,6 @@ namespace HoloLight.Isar.Signaling
 				_lastSendTask = continuation;
 				await _lastSendTask;
 #endif
-			//#if VERBOSE_LOGS
-			//				Debug.Log("post await Thread Id: " + Thread.CurrentThread.ManagedThreadId);
-			//#endif
 			}
 			//Trace.Log("===== finished with send task " + sendCount);
 			//sendCount++;
@@ -611,19 +595,19 @@ namespace HoloLight.Isar.Signaling
 			await SendAsync(_msgBuffer, length);
 		}
 
-		public async Task SendVersionAsync(uint version) => await SendQueuedAsync(SendVersionAsync_Stream(version));
-		public async Task SendVersionAsync_Stream(uint version) =>
-			await SendMessageAsync(stream => IsarXmlWriter.WriteVersion(version, stream), 4);
+		public async Task SendVersionAsync(uint version, bool supportDepthAlpha) => await SendQueuedAsync(SendVersionAsync_Stream(version, supportDepthAlpha));
+		public async Task SendVersionAsync_Stream(uint version, bool supportDepthAlpha) =>
+			await SendMessageAsync(stream => IsarXmlWriter.WriteVersion(version, supportDepthAlpha, stream), 4);
 
 		// HACK: ISignaling
 		public async Task SendOfferAsync(string sdp)
 		{
 #if VERBOSE_LOGS
-			Debug.Log("pre await Thread Id: " + Thread.CurrentThread.ManagedThreadId);
+			Debug.Log($"SendQueuedAsync: Begin: Task Id: {Task.CurrentId ?? -1} Thread Id: {Thread.CurrentThread.ManagedThreadId}");
 #endif
 			await SendQueuedAsync(SendSdpAsync(Tokens.SDP_TYPE_OFFER, sdp));
 #if VERBOSE_LOGS
-			Debug.Log("post await Thread Id: " + Thread.CurrentThread.ManagedThreadId);
+			Debug.Log($"SendQueuedAsync: End: Task Id: {Task.CurrentId ?? -1} Thread Id: {Thread.CurrentThread.ManagedThreadId}");
 #endif
 		}
 
@@ -656,11 +640,11 @@ namespace HoloLight.Isar.Signaling
 		public async Task SendIceCandidateAsync(string mId, int mLineIndex, string candidate)
 		{
 #if VERBOSE_LOGS
-			Debug.Log("pre await Thread Id: " + Thread.CurrentThread.ManagedThreadId);
+			Debug.Log($"SendQueuedAsync: Begin: Task Id: {Task.CurrentId ?? -1} Thread Id: {Thread.CurrentThread.ManagedThreadId}");
 #endif
 			await SendQueuedAsync(SendIceCandidateAsync_OG(mId, mLineIndex, candidate));
 #if VERBOSE_LOGS
-			Debug.Log("post await Thread Id: " + Thread.CurrentThread.ManagedThreadId);
+			Debug.Log($"SendQueuedAsync: End: Task Id: {Task.CurrentId ?? -1} Thread Id: {Thread.CurrentThread.ManagedThreadId}");
 #endif
 		}
 
