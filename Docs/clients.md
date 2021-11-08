@@ -4,11 +4,11 @@ ISAR SDK currently supports the clients listed in the sections below.
 
 Before running the client, configure [The ISAR Configuration File](../README.md#the-isar-configuration-file) for the specific client. The below table contains the default suggested configuration for each client.
 
-| Client | Width | Height | NumViews | Bandwidth |
---- | --- | --- | --- | --- |
-HoloLens 2 | 1440 | 936 | 2 | 35000
-Oculus Quest 2 | 1920 | 1920 | 2 | 50000
-Android | 1920 | 1080 | 1 | 35000
+| Client | Width | Height | NumViews | Bandwidth | Version |
+--- | --- | --- | --- | --- | --- |
+HoloLens 2 | 1440 | 936 | 2 | 35000 | Stable
+Oculus Quest 2 | 1920 | 1920 | 2 | 50000 | Stable
+Android | 1920 | 1080 | 1 | 35000 | BETA Version
 
 
 ## HoloLens
