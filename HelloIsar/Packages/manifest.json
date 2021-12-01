@@ -11,7 +11,7 @@
   ],
   "dependencies": {
     "com.hololight.isar": "file:../../Packages/com.hololight.isar",
-    "com.hololight.isar.mrtk": "file:C:/ISAR_Full_Version/Packages/com.hololight.isar.mrtk",
+    "com.hololight.isar.mrtk": "file:../../Packages/com.hololight.isar.mrtk",
     "com.microsoft.mixedreality.toolkit.foundation": "2.5.4",
     "com.microsoft.mixedreality.toolkit.tools": "2.5.4",
     "com.unity.collab-proxy": "1.10.2",

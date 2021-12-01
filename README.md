@@ -9,7 +9,7 @@ ISAR (Interactive Streaming for Augmented Reality) is a Software Development Kit
 The following documentation specifically references usage with the Unity Game Engine, however the ISAR SDK can be used independently of Unity. For more support regarding usage outside of Unity, see the [Support](https://support.holo-light.com/hc/en-us) section of our website.
 
 ## Getting Started
-> :warning: This **trial** will expire/renew **December 1st, 2021**.
+> :warning: This **trial** will expire/renew **March 1st, 2022**.
 > :warning: It is recommended not to change any source files delivered with ISAR. Support cannot be guaranteed if changes are made.
 > :warning: By downloading/using this trail, you agree to our <a href="Licenses/Isar.txt">license terms & conditions</a>
 
