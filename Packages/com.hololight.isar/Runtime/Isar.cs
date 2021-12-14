@@ -17,9 +17,10 @@ namespace HoloLight.Isar
 
 		private object _lockObj = new object();
 		private HlrConnectionState _connectionState = HlrConnectionState.Disconnected;
+		protected HlrConnectionState _previousConnectionState = HlrConnectionState.Disconnected; // HACK
 		private protected HlrHandle _handle = new HlrHandle();
 		private protected HlrSvApi _serverApi;
-		
+
 		public bool IsConnected
 		{
 			get
@@ -71,8 +72,9 @@ namespace HoloLight.Isar
 		{
 			lock (_lockObj)
 			{
-				ConnectionStateChanged?.Invoke(state);
+				_previousConnectionState = _connectionState;
 				_connectionState = state;
+				ConnectionStateChanged?.Invoke(state);
 			}
 		}
 	}
@@ -129,7 +131,7 @@ namespace HoloLight.Isar
 		{
 			Callbacks.AudioDataReceived -= OnAudioDataReceived;
 			_serverApi.Connection.UnregisterAudioDataHandler(_handle, Callbacks.OnAudioDataReceived);
-			
+
 			base.Dispose();
 		}
 	}

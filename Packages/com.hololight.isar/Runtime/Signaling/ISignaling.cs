@@ -7,7 +7,7 @@ namespace Unity.XR.Isar
 	/// An interface for different signaling implementations. IsarXRLoader instantiates one of them via reflection and
 	/// calls its functions/listens for events. IDisposable.Dispose is called during the XR loader's lifecycle Stop().
 	/// </summary>
-	interface ISignaling : IDisposable
+	public interface ISignaling : IDisposable
 	{
 		/// <summary>
 		/// Call this when signaling is ready to start the offer/answer exchange. This can be for example when
