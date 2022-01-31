@@ -75,7 +75,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
+[![Product Name Screen Shot][product-screenshot]](https://holo-light.com/products/isar-sdk/)
 
 The following documentation specifically references usage with the Unity Game Engine, however the ISAR SDK can be used independently of Unity. For more support regarding usage outside of Unity, see the Support section of our website. 
 
@@ -270,6 +270,6 @@ Project Link: [https://github.com/Holo-Light-GmbH/ISAR-SDK-Trial](https://github
 [license-url]: https://github.com/Holo-Light-GmbH/ISAR-SDK-Trial/blob/main/Licenses/License.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://www.linkedin.com/company/hololightgmbh
-[product-screenshot]: https://github.com/Holo-Light-GmbH/ISAR-SDK-Trial/Docs/images/ISAR_Architecture.png
+[product-screenshot]: https://github.com/Holo-Light-GmbH/ISAR-SDK-Trial/blob/main/Docs/images/ISAR_Architecture.png
 
 
