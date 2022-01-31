@@ -12,7 +12,7 @@
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
+[![Proprietary License][license-shield]][license-url]
 [![LinkedIn][linkedin-shield]][linkedin-url]
 
 
@@ -29,10 +29,10 @@
   <p align="center">
     Interactive Streaming for Augmented Reality (or just ISAR) is a plugin, allowing interactive (data/telemetry being transmitted both ways) streaming of ANY application to XR devices.
     <br />
-    <a href="https://github.com/Holo-Light-GmbH/ISAR-SDK-Trial/Docs"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/Holo-Light-GmbH/ISAR-SDK-Trial/tree/main/Docs"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://youtu.be/pddfBpwvFPI">View Demo</a>
+    <a href="https://youtu.be/pddfBpwvFPI?t=542">View Demo</a>
     ·
     <a href="https://www.youtube.com/watch?v=-CKM4XonzI0">View Integration</a>
     ·
@@ -267,7 +267,7 @@ Project Link: [https://github.com/Holo-Light-GmbH/ISAR-SDK-Trial](https://github
 [issues-shield]: https://img.shields.io/github/issues/Holo-Light-GmbH/ISAR-SDK-Trial.svg?style=for-the-badge
 [issues-url]: https://github.com/Holo-Light-GmbH/ISAR-SDK-Trial/issues
 [license-shield]: https://img.shields.io/github/license/Holo-Light-GmbH/ISAR-SDK-Trial.svg?style=for-the-badge
-[license-url]: https://github.com/Holo-Light-GmbH/ISAR-SDK-Trial/blob/main/Licenses/License.txt
+[license-url]: https://github.com/Holo-Light-GmbH/ISAR-SDK-Trial/blob/main/Licenses/LICENSE.md
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://www.linkedin.com/company/hololightgmbh
 [product-screenshot]: https://github.com/Holo-Light-GmbH/ISAR-SDK-Trial/blob/main/Docs/images/ISAR_Architecture.png
