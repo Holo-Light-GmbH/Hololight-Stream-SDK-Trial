@@ -6,12 +6,17 @@
 	"displays": [
 		{
 			"id": "ISAR Display",
-			"disablesLegacyVr":  true
+			"disablesLegacyVr": true
 		}
 	],
 	"inputs": [
 		{
 			"id": "ISAR Input"
+		}
+	],
+	"meshings": [
+		{
+			"id": "ISAR Meshing"
 		}
 	]
 }

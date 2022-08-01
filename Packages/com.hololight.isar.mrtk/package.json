@@ -1,9 +1,9 @@
 {
   "name": "com.hololight.isar.mrtk",
-  "displayName": "ISAR MRTK Extensions",
-  "version": "2.4.0",
+  "displayName": "ISAR Extension for MRTK",
+  "version": "2.5.0",
   "unity": "2019.4",
-  "description": "MRTK Extensions for use with ISAR",
+  "description": "ISAR Extension for use with MRTK",
   "keywords": [
     "Holographic Remoting",
     "AR Streaming",
@@ -18,6 +18,6 @@
   },
   "dependencies": {
     "com.unity.xr.management": "3.2.13",
-    "com.hololight.isar": "2.4.0"
+    "com.hololight.isar": "2.5.0"
   }
 }

@@ -2,6 +2,7 @@
  * Copyright 2019 Holo-Light GmbH. All Rights Reserved.
  */
 
+using System;
 using System.Runtime.InteropServices;
 
 namespace HoloLight.Isar.Native
@@ -26,5 +27,17 @@ namespace HoloLight.Isar.Native
 
 		[DllImport(Constants.REMOTING_DLL_NAME, EntryPoint = "hlr_sv_create_remoting_api")]
 		internal static extern HlrError Create(ref /*out*/ HlrSvApi serverApi);
+
+		[DllImport(Constants.REMOTING_DLL_NAME, EntryPoint = "isar_dequeue_camera_frame")]
+		internal static extern int CameraDequeue(IntPtr pData, long lDataLen, ref long frame_id);
+
+		//[DllImport(Constants.REMOTING_DLL_NAME, EntryPoint = "isar_camera_get_native_frame")]
+		//internal static extern HlrError Camera_GetNativeFrame(ref byte pData, long lDataLen);
+
+
+
+
+		//HLR_API(bool) isar_camera_get_native_frame(void** gfx_context, void **texture_ptr, int64_t* metadata)
+
 	}
 }

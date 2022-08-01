@@ -7,6 +7,7 @@ using Unity.Profiling;
 using UnityEngine;
 using System.Runtime.InteropServices;
 using HoloLight.Isar.Native;
+using HoloLight.Isar.Native.CustomMessage;
 using System;
 using UnityEngine.Rendering;
 
@@ -43,8 +44,7 @@ namespace HoloLight.Isar.Runtime.MRTK
 		private List<Touch> _isarTouches = new List<Touch>();
 		private Camera _camera;
 		private IsarCustomSend _isar;
-		private const int DATA_LENGTH = 5;
-		private float[] _parsedData = new float[DATA_LENGTH];
+		private const int DATA_LENGTH = 5 * 4;
 		private IsarViewPose _isarViewPose;
 		private PipelineType _pipelineType;
 		private Matrix4x4 _projectionIsar;
@@ -76,31 +76,27 @@ namespace HoloLight.Isar.Runtime.MRTK
 
 		private void OnCustomMessageReceived(in HlrCustomMessage message)
 		{
-			// currently, we send only 3 float values => 12 bytes
-			if (message.Length != DATA_LENGTH * 4)
-			{
-				return;
-			}
+			IntPtr readPtr = message.Data;
+			HoloLight.Isar.Shared.Assertions.Assert(message.Length >= Marshal.SizeOf<Int32>());
+			MessageType messageType = (MessageType)Marshal.ReadInt32(readPtr);
+			if (messageType != MessageType.TOUCH_DATA) return;
+			readPtr = IntPtr.Add(readPtr, Marshal.SizeOf<Int32>());
 
-			Marshal.Copy(message.Data, _parsedData, 0, _parsedData.Length);
-
-			// Parsing Data
-			for (int i = 0; i < _parsedData.Length; i++)
-			{
-				if (BitConverter.IsLittleEndian)
-				{
-					byte[] bytes = BitConverter.GetBytes(_parsedData[i]);
-					Array.Reverse(bytes, 0, bytes.Length);
-					_parsedData[i] = BitConverter.ToSingle(bytes, 0);
-				}
-			}
+			if (message.Length < DATA_LENGTH) return;
 
 			// Creating Touch Data out of parsed Values
-			float type = _parsedData[0]; // in future this will be an int/enum
-			float x = _parsedData[1];
-			float y = _parsedData[2];
-			_horizontalFactor = _parsedData[3];
-			_verticalFactor = _parsedData[4];
+			byte[] data = new byte[DATA_LENGTH];
+			Marshal.Copy(readPtr, data, 0, DATA_LENGTH);
+			int index = 0;
+			float type = BitConverter.ToSingle(data, index);
+			index += sizeof(float);
+			float x = BitConverter.ToSingle(data, index);
+			index += sizeof(float);
+			float y = BitConverter.ToSingle(data, index);
+			index += sizeof(float);
+			_horizontalFactor = BitConverter.ToSingle(data, index);
+			index += sizeof(float);
+			_verticalFactor = BitConverter.ToSingle(data, index);
 
 			Touch touchInfo = new Touch();
 
@@ -200,7 +196,7 @@ namespace HoloLight.Isar.Runtime.MRTK
 				{
 					if (controller.Value == null) { continue; }
 
-					foreach (var inputSource in Service.DetectedInputSources)
+					foreach (var inputSource in Service.DetectedInputSources.ToReadOnlyCollection<IMixedRealityInputSource>())
 					{
 						if (inputSource.SourceId == controller.Value.InputSource.SourceId)
 						{

@@ -46,7 +46,7 @@ namespace HoloLight.Isar.Signaling
 	/// </summary>
 	public class DebugSignaling
 #if USING_UNITY
-		: Unity.XR.Isar.ISignaling
+		: ISignaling
 #endif
 	{
 		public const int DEFAULT_PORT = 9999;

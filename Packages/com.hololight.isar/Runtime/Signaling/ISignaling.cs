@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Unity.XR.Isar
+namespace HoloLight.Isar.Signaling
 {
 	/// <summary>
 	/// An interface for different signaling implementations. IsarXRLoader instantiates one of them via reflection and

@@ -21,6 +21,10 @@ namespace HoloLight.Isar.Runtime.MRTK
 		public MixedRealityInputAction SelectAction = MixedRealityInputAction.None;
 
 		private static readonly HandFinger[] handFingers = Enum.GetValues(typeof(HandFinger)) as HandFinger[];
+
+		// This is copy-pasted from WindowsMixedRealityXRSDKArticulatedHand
+		// The rotation offset between the reported grip pose of a hand and the palm joint orientation.
+		// These values were calculated by comparing the platform's reported grip pose and palm pose.
 		private static readonly Quaternion rightPalmOffset = new Quaternion(Mathf.Sqrt(0.125f), Mathf.Sqrt(0.125f), -Mathf.Sqrt(1.5f) / 2.0f, Mathf.Sqrt(1.5f) / 2.0f);
 		private static readonly Quaternion leftPalmOffset = new Quaternion(Mathf.Sqrt(0.125f), -Mathf.Sqrt(0.125f), Mathf.Sqrt(1.5f) / 2.0f, Mathf.Sqrt(1.5f) / 2.0f);
 
@@ -84,7 +88,7 @@ namespace HoloLight.Isar.Runtime.MRTK
 						// Unity doesn't provide a palm joint, so we synthesize one here.
 						// This is copy-pasted from WindowsMixedRealityXRSDKArticulatedHand
 						MixedRealityPose palmPose = CurrentControllerPose;
-						palmPose.Rotation *= (ControllerHandedness == Handedness.Left ? leftPalmOffset : rightPalmOffset);
+						//palmPose.Rotation *= (ControllerHandedness == Handedness.Left ? leftPalmOffset : rightPalmOffset);
 						unityJointPoses[TrackedHandJoint.Palm] = palmPose;
 					}
 				}
@@ -217,8 +221,8 @@ namespace HoloLight.Isar.Runtime.MRTK
 			switch (interactionMapping.InputType)
 			{
 				case DeviceInputType.SpatialPointer:
-					InputFeatureUsage<Vector3> pointerPosUsage = new InputFeatureUsage<Vector3>("HL2-like pointer position");
-					InputFeatureUsage<Quaternion> pointerRotUsage = new InputFeatureUsage<Quaternion>("HL2-like pointer rotation");
+					InputFeatureUsage<Vector3> pointerPosUsage = new InputFeatureUsage<Vector3>("PointerPosition"); // CustomUsages.PointerPosition
+					InputFeatureUsage<Quaternion> pointerRotUsage = new InputFeatureUsage<Quaternion>("PointerRotation"); // CustomUsages.PointerRotation
 
 					Vector3 pointerPos = Vector3.zero;
 					Quaternion pointerRot = Quaternion.identity;

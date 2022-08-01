@@ -1,0 +1,18 @@
+{
+    "name": "HoloLight.Isar.Examples",
+    "references": [
+        "GUID:7fd6d53986233194c95fa945899ad7f6"
+    ],
+    "includePlatforms": [
+        "Editor",
+        "WindowsStandalone64"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

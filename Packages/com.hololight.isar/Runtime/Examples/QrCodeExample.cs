@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using HoloLight.Isar;
 using HoloLight.Isar.Native;
 using HoloLight.Isar.Native.Qr;
@@ -10,11 +11,20 @@ public class QrCodeExample : MonoBehaviour
 	IsarQr _isar;
 	bool isWatching;
 
+	private readonly string REMOTING_CONFIG_FILE_NAME = "remoting-config.cfg";
+	private string _remotingConfigPath;
+	private enum ConnectedDeviceType { HMD, Handheld};
+	private ConnectedDeviceType _connectedDeviceType;
+
 	void OnConnectionStateChanged(HlrConnectionState state)
 	{
 		if (state == HlrConnectionState.Disconnected || state == HlrConnectionState.Failed)
 		{
 			isWatching = false;
+		}
+		else
+		{
+			StartWatching();
 		}
 	}
 
@@ -24,23 +34,45 @@ public class QrCodeExample : MonoBehaviour
 
 	void UpdatePose(Transform _transform, in HoloLight.Isar.Native.HlrPose pose, float halfLength)
 	{
-		if (!float.IsNaN(pose.Position.X))
+		// We get different updates right now from Handheld devices (Android/iOS) and from HMDs like Hololens. This section maps them to the same Unity coordinate space.
+		if (_connectedDeviceType == ConnectedDeviceType.HMD)
 		{
-			var position = pose.Position;
-			positionU = HoloLight.Isar.Utils.Convert.ToUnity(position);
+			if (!float.IsNaN(pose.Position.X))
+			{
+				var position = pose.Position;
+				positionU = HoloLight.Isar.Utils.Convert.ToUnity(position);
 
-			var offset = new UnityEngine.Vector3(halfLength, halfLength, 0.0f);
-			// TODO: do Conversion before passing values to user
-			positionU.z *= -1;
+				var offset = new UnityEngine.Vector3(halfLength, halfLength, 0.0f);
+				// TODO: do Conversion before passing values to user
+				positionU.z *= -1;
 
-			var orientation = pose.Orientation;
-			orientationU = HoloLight.Isar.Utils.Convert.ToUnity(orientation);
-			// TODO: do Conversion before passing values to user
-			orientationU.x *= -1;
-			orientationU.y *= -1;
+				var orientation = pose.Orientation;
+				orientationU = HoloLight.Isar.Utils.Convert.ToUnity(orientation);
+				// TODO: do Conversion before passing values to user
+				orientationU.x *= -1;
+				orientationU.y *= -1;
 
-			_transform.SetPositionAndRotation(positionU, orientationU);
-			_transform.Translate(offset, Space.Self);
+				_transform.SetPositionAndRotation(positionU, orientationU);
+				_transform.Translate(offset, Space.Self);
+				_transform.Rotate(Vector3.right, 90);
+			}
+		}
+		else
+		{
+			// Handheld update
+			if (!float.IsNaN(pose.Position.X))
+			{
+				var position = pose.Position;
+				positionU = HoloLight.Isar.Utils.Convert.ToUnity(position);
+				positionU.z *= -1;
+
+				var orientation = pose.Orientation;
+				orientationU = HoloLight.Isar.Utils.Convert.ToUnity(orientation);
+				orientationU.z *= -1;
+				orientationU.w *= -1; 
+
+				_transform.SetPositionAndRotation(positionU, orientationU);
+			}
 		}
 	}
 
@@ -59,6 +91,7 @@ public class QrCodeExample : MonoBehaviour
 	private void Start()
 	{
 		if (_isar != null) return;
+
 		_isar = new IsarQr();
 		_isar.ConnectionStateChanged += OnConnectionStateChanged;
 		_isar.QrCodeAdded += QrApi_OnAdded;
@@ -126,6 +159,16 @@ public class QrCodeExample : MonoBehaviour
 				try
 				{
 					_isar.Start();
+					_remotingConfigPath = Path.Combine(Application.streamingAssetsPath, REMOTING_CONFIG_FILE_NAME);
+					IsarRemotingConfig config = IsarRemotingConfig.CreateFromJSON(File.ReadAllText(_remotingConfigPath));
+					if (config.renderConfig.numViews == 2)
+					{
+						_connectedDeviceType = ConnectedDeviceType.HMD;
+					}
+					else
+					{
+						_connectedDeviceType = ConnectedDeviceType.Handheld;
+					}
 					isWatching = true;
 				}
 				catch (Exception)
@@ -209,17 +252,10 @@ public class QrCodeExample : MonoBehaviour
 		var id = args.Code.Id;
 		Debug.Log($"QrCode Id: {id}");
 
-		var plane = GameObject.CreatePrimitive(PrimitiveType.Cube);
-		UpdatePose(plane.transform, args.Code.Pose, args.Code.PhysicalSideLength / 2);
-
-		plane.transform.localScale = new UnityEngine.Vector3(args.Code.PhysicalSideLength / 10.0f, args.Code.PhysicalSideLength / 10.0f, 0.1f);
-		var newGlobalScale = new UnityEngine.Vector3(args.Code.PhysicalSideLength, args.Code.PhysicalSideLength, 0.001f);
-		plane.transform.localScale = UnityEngine.Vector3.one;
-		plane.transform.localScale = new UnityEngine.Vector3(
-			newGlobalScale.x / plane.transform.lossyScale.x,
-			newGlobalScale.y / plane.transform.lossyScale.y,
-			newGlobalScale.z / plane.transform.lossyScale.z);
-		qrCodes[id] = plane;
+			var plane = GameObject.CreatePrimitive(PrimitiveType.Plane);
+			UpdatePose(plane.transform, args.Code.Pose, args.Code.PhysicalSideLength / 2);
+			plane.transform.localScale = new UnityEngine.Vector3(args.Code.PhysicalSideLength / 10.0f, 1, args.Code.PhysicalSideLength / 10.0f);
+			qrCodes[id] = plane;	
 	}
 
 	private void QrApi_OnUpdated(in QrUpdatedEventArgs args)

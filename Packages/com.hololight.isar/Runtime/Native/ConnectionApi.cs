@@ -18,6 +18,7 @@ namespace HoloLight.Isar.Native
 		public HlrSvReset Reset;
 		public HlrSvInitVideoTrack InitVideoTrack;
 		public HlrSvPushFrame PushFrame;
+		public HlrSvPushAudioData PushAudioData;
 		public HlrPushCustomMessage PushCustomMessage;
 		public HlrSvSetAudioTrackEnabled SetAudioTrackEnabled;
 
@@ -87,6 +88,24 @@ namespace HoloLight.Isar.Native
 
 	#endregion Connection
 
+	#region Audio
+	// TODO: use nuint from C# 9 once we drop Unity 2019
+	// ref: https://stackoverflow.com/questions/32906774/what-is-equal-to-the-c-size-t-in-c-sharp
+	// ref: https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/nint-nuint
+	// ref:
+	public struct HlrAudioData
+	{
+		public IntPtr Data;
+		public int BitsPerSample;
+		public int SampleRate;
+		public UIntPtr /*size_t*/ NumberOfChannels;
+		public UIntPtr /*size_t*/ SamplesPerChannel;
+	}
+
+	internal delegate HlrError HlrSvPushAudioData(HlrHandle connectionHandle, HlrAudioData audioData);
+
+	#endregion
+
 	#region Video
 
 	internal delegate HlrError HlrSvInitVideoTrack(HlrHandle connectionHandle, HlrGraphicsApiConfig gfxConfig);
@@ -103,15 +122,6 @@ namespace HoloLight.Isar.Native
 	{
 		public uint Length;
 		public IntPtr Data;
-	}
-
-	public struct HlrAudioData
-	{
-		public IntPtr Data;
-		public int BitsPerSample;
-		public int SampleRate;
-		public UIntPtr NumberOfChannels;
-		public UIntPtr SamplesPerChannel;
 	}
 
 	// Callback registration delegates

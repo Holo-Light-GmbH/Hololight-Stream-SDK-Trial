@@ -12,6 +12,10 @@ public class VideoToggleExample : MonoBehaviour, ISerializationCallbackReceiver
 	[SerializeField]
 	private bool toggle;
 	private bool togglePreDeserialized;
+
+	private const int ENABLE_CAMERA_MESSAGE_IDENTIFIER = 18;
+	private const int DISABLE_CAMERA_MESSAGE_IDENTIFIER = 19;
+
 	public bool Toggle
 	{
 		get => toggle;
@@ -32,7 +36,7 @@ public class VideoToggleExample : MonoBehaviour, ISerializationCallbackReceiver
 	{
 		if (state == HlrConnectionState.Connected)
 		{
-			if (toggle) { SendToClient("enable_video"); }
+			if (toggle) { SendToClient(ENABLE_CAMERA_MESSAGE_IDENTIFIER); }
 		}
 	}
 
@@ -64,12 +68,24 @@ public class VideoToggleExample : MonoBehaviour, ISerializationCallbackReceiver
 		Toggle = false;
 	}
 
-	public void ToggleVideo() { if (_isar == null) return; if (toggle) { SendToClient("enable_video"); } else { SendToClient("disable_video"); } }
+	public void ToggleVideo() 
+	{
+		if (_isar == null) return; 
 
-	public void SendToClient(string messageStr)
+		if (toggle) 
+		{ 
+			SendToClient(ENABLE_CAMERA_MESSAGE_IDENTIFIER); 
+		} 
+		else 
+		{
+			SendToClient(DISABLE_CAMERA_MESSAGE_IDENTIFIER); 
+		} 
+	}
+
+	public void SendToClient(int msgId)
 	{
 		if (!_isar.IsConnected) return;
-		byte[] messageBytes = Encoding.ASCII.GetBytes(messageStr);
+		byte[] messageBytes = BitConverter.GetBytes(msgId);
 
 		IntPtr unmanaged = Marshal.AllocHGlobal(messageBytes.Length);
 		Marshal.Copy(messageBytes, 0, unmanaged, messageBytes.Length);

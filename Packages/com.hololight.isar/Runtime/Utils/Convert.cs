@@ -8,44 +8,54 @@ namespace HoloLight.Isar.Utils
 		// TODO: this will be moved into the unity <-> .Net bindings layer
 		// TODO: should we actually support .Net in general? maybe that's just unnecessary bloat
 		// TODO: if anyone needs .Net they can duplicate our c# code and replace UnityEngine types (Matrix4x4, Vector3, etc)
+		public static void FlipHandedness(ref UnityEngine.Vector2 value)
+		{
+			value.y *= -1;
+		}
+
+		public static UnityEngine.Vector2 FlipHandedness(UnityEngine.Vector2 value)
+		{
+			var result = value;
+			FlipHandedness(ref result);
+			return result;
+		}
+
 		public static UnityEngine.Vector3 ToUnity(/*this*/ HlrVector3 value)
 		{
 			return new UnityEngine.Vector3(value.X, value.Y, value.Z);
 		}
 
-		//public static void FlipHandedness( ref /*this*/ UnityEngine.Vector3 value)
-		//{
-		//	value.z *= -1;
-		//}
+		public static void FlipHandedness(ref UnityEngine.Vector3 value)
+		{
+			value.z *= -1;
+		}
 
-		//public static UnityEngine.Vector3 FlippedHandedness( /*this*/ UnityEngine.Vector3 value)
-		//{
-		//	var result = value;
-		//	FlipHandedness(ref result);
-		//	return result;
-		//}
+		public static UnityEngine.Vector3 FlipHandedness(UnityEngine.Vector3 value)
+		{
+			var result = value;
+			FlipHandedness(ref result);
+			return result;
+		}
 
 		// quaternions have no coord system handedness
 		// the conversion from a quaternion to a matrix implies a specific coordinate system
-		public static UnityEngine.Quaternion ToUnity(/*this*/ HlrQuaternion value)
+		public static UnityEngine.Quaternion ToUnity(HlrQuaternion value)
 		{
 			return new UnityEngine.Quaternion(value.X, value.Y, value.Z, value.W);
 		}
 
-		//public static void FlipHandedness( ref /*this*/ UnityEngine.Quaternion value)
-		//{
-		//	value.x *= -1;
-		//	value.y *= -1;
-		//	//return new UnityEngine.Quaternion(-value.x, -value.y, value.z, value.w);
-		//}
+		public static void FlipHandedness(ref UnityEngine.Quaternion value)
+		{
+			value.x *= -1;
+			value.y *= -1;
+		}
 
-		//public static UnityEngine.Quaternion FlippedHandedness( /*this*/ UnityEngine.Quaternion value)
-		//{
-			//var result = value;
-			//FlipHandedness(ref result);
-			//return result;
-			////return new UnityEngine.Quaternion(-value.x, -value.y, value.z, value.w);
-		//}
+		public static UnityEngine.Quaternion FlipHandedness(UnityEngine.Quaternion value)
+		{
+			var result = value;
+			FlipHandedness(ref result);
+			return result;
+		}
 
 		// This does no coordinate system conversion
 		public static UnityEngine.Matrix4x4 ToUnity(/*this*/ HlrMatrix4x4 value)

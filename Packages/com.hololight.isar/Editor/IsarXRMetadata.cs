@@ -3,13 +3,13 @@ using UnityEditor;
 using UnityEditor.XR.Management.Metadata;
 using UnityEngine;
 
-namespace Unity.XR.Isar
+namespace HoloLight.Isar
 {
 	public class IsarXRLoaderMetadata : IXRLoaderMetadata
 	{
 		public string loaderName => "ISAR XR";
 
-		public string loaderType => "Unity.XR.Isar.IsarXRLoader";
+		public string loaderType => "HoloLight.Isar.IsarXRLoader";
 
 		public List<BuildTargetGroup> supportedBuildTargets => new List<BuildTargetGroup> { BuildTargetGroup.Standalone, BuildTargetGroup.WSA };
 	}
@@ -20,7 +20,7 @@ namespace Unity.XR.Isar
 
 		public string packageId => "com.hololight.isar";
 
-		public string settingsType => "Unity.XR.Isar.IsarXRSettings";
+		public string settingsType => "HoloLight.Isar.IsarXRSettings";
 
 		public List<IXRLoaderMetadata> loaderMetadata => new List<IXRLoaderMetadata>() { new IsarXRLoaderMetadata() };
 	}

@@ -93,7 +93,7 @@ The following documentation specifically references usage with the Unity Game En
 
 Since this is a trial of the ISAR SDK, it comes with an expiration date. We always update the package/repo prior to the date running out. Your application will no longer stream once the trial expires! So keep an eye out for udpates.
 
-<center>⚠️<strong> This trial will expire/renew September 1st, 2022 </strong> ⚠️</center>
+<center>⚠️<strong> This trial will expire/renew October 30th, 2022 </strong> ⚠️</center>
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -103,6 +103,10 @@ Since this is a trial of the ISAR SDK, it comes with an expiration date. We alwa
 ## Getting Started
 
 Now with that out of the way, let's get you started on rolling with ISAR SDK. We recommend you check out the [quick integration tutorial video](https://www.youtube.com/watch?v=-CKM4XonzI0) as well as an [overview of the architecture](https://youtu.be/pddfBpwvFPI).
+
+### Release Notes
+
+- Check out the latest [Release Notes](https://support.holo-light.com/portal/en/kb/articles/isar-sdk-2-5-0-0-release-notes)
 
 ### Prerequisites
 

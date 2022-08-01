@@ -1,0 +1,25 @@
+{
+  "name": "com.hololight.isar.arsubsystems",
+  "displayName": "ISAR Extension for AR Subsystems",
+  "version": "2.5.0",
+  "unity": "2019.4",
+  "description": "Holo-Light ISAR helps to create AR applications that utilize remote rendering on high performance computers and send the rendered scene as a video stream to AR-devices like Microsoft HoloLens. \nThe ISAR Extension for AR Subsystems package provides the required functionality for developing an AR application. This package can be used with the AR Foundation package to develop augmented reality functionality in a multi-platform way.",
+  "keywords": [
+    "Holographic Remoting",
+    "AR Streaming",
+    "Remote Rendering",
+    "AR Foundation",
+    "AR Subsystems"
+  ],
+  "category": "AR",
+  "author": {
+    "name": "Holo-Light GmbH",
+    "url": "https://www.holo-light.com/"
+  },
+  "dependencies": {
+    "com.unity.xr.arsubsystems": "4.1.7",
+    "com.hololight.isar": "2.5.0",
+    "com.unity.inputsystem": "1.0.2"
+  },
+  "unityRelease": "15f1"
+}

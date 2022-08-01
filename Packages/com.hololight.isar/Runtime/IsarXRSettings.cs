@@ -2,11 +2,11 @@
 using UnityEngine;
 using UnityEngine.XR.Management;
 
-namespace Unity.XR.Isar
+namespace HoloLight.Isar
 {
-	static class Constants
+	public static class Constants
 	{
-		public const string ISAR_XR_SETTINGS_KEY = "Unity.XR.HoloLight.ISAR";
+		public const string ISAR_XR_SETTINGS_KEY = "HoloLight.ISAR.Settings";
 	}
 
 	//This attribute makes the data here appear inside "Project Settings > XR Plug-in Management > ISAR"
@@ -20,8 +20,8 @@ namespace Unity.XR.Isar
 		[Tooltip("An implementation of ISignaling to be instantiated and used by the XR loader (via reflection). Make sure to use the fully-qualified type name.")]
 		public string SignalingImplementationType = typeof(DebugSignaling).FullName;
 
-		[Tooltip("Send depth/alpha data for stabilization/reprojection")]
-		public bool SendDepthAlpha;
+		[Tooltip("Send depth/alpha data for stabilization/reprojection (Beta Version)")]
+		public bool SendDepthAlpha_Preview;
 
 		//Copy-pasted from WindowsMRSettings.
 		//At runtime this is basically a singleton. IsarXRBuildProcessor (or rather its base class) takes care
@@ -29,12 +29,12 @@ namespace Unity.XR.Isar
 		//instance in Awake() and can be sure it exists later when we want to use it (in IsarXRLoader).
 		//For the editor there's an extra settings API that we can query if we want the current value.
 #if !UNITY_EDITOR
-        internal static IsarXRSettings s_Settings;
+		internal static IsarXRSettings s_Settings;
 
-        public void Awake()
-        {
-            s_Settings = this;
-        }
+		public void Awake()
+		{
+			s_Settings = this;
+		}
 #endif
 	}
 
