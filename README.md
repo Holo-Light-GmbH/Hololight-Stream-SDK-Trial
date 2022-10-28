@@ -75,8 +75,6 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![Product Name Screen Shot][product-screenshot]](https://holo-light.com/products/isar-sdk/)
-
 The following documentation specifically references usage with the Unity Game Engine, however the ISAR SDK can be used independently of Unity. For more support regarding usage outside of Unity, see the Support section of our website. 
 
 <p align="right">(<a href="#top">back to top</a>)</p>
@@ -96,7 +94,6 @@ Since this is a trial of the ISAR SDK, it comes with an expiration date. We alwa
 <center>⚠️<strong> This trial will expire/renew January 31st, 2023 </strong> ⚠️</center>
 
 <p align="right">(<a href="#top">back to top</a>)</p>
-
 
 
 <!-- GETTING STARTED -->
