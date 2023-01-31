@@ -91,7 +91,7 @@ The following documentation specifically references usage with the Unity Game En
 
 Since this is a trial of the ISAR SDK, it comes with an expiration date. We always update the package/repo prior to the date running out. Your application will no longer stream once the trial expires! So keep an eye out for udpates.
 
-<center>⚠️<strong> This trial will expire/renew January 31st, 2023 </strong> ⚠️</center>
+<center>⚠️<strong> This trial will expire/renew March 1st, 2023 </strong> ⚠️</center>
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
