@@ -14,7 +14,7 @@ The following documentation specifically references usage with the Unity Game En
 
 ### Prerequisites
 
-- Minimum Unity 2019.4.x (tested with 2019.4.21f1)
+- Minimum Unity 2020.3.x (tested with 2020.3.23)
 
 ### First Installation
 
