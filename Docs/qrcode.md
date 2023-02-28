@@ -43,7 +43,7 @@ private void Update()
 	}
 ```
 
-For more information regarding usage of the `IsarQr` class, see example implementation **Isar Core/Runtime/Examples/QrCodeExample.cs**.
+For more information regarding usage of the `IsarQr` class, see example implementation **Isar Examples/QrCode/QrCodeExample.cs**.
 
 ## How To Use **QrCodeExample.cs**
 

@@ -29,6 +29,10 @@ using Debug = HoloLight.Isar.Shared.Debug;
 using Trace = HoloLight.Isar.Shared.Trace;
 using Assertions = HoloLight.Isar.Shared.Assertions;
 
+#if USING_UNITY
+using UnityEngine.XR.Management;
+#endif
+
 namespace HoloLight.Isar.Signaling
 {
 	/// <summary>
@@ -169,12 +173,16 @@ namespace HoloLight.Isar.Signaling
 		// TODO: move this into IsarSignalingSubsystem or whatever (ScriptableObject entirely created by the user)
 		// basically what RemoteCamera used to be
 		private IPAddress _signalingServerIpAddress = IPAddress.Any;
-		private int _signalingServerPort = DEFAULT_PORT;
+		private int _signalingServerPort;
 
 		// HACK: ISignaling
 		public async void Listen()
 		{
 			Task listenTask = null;
+
+			var loader = (BaseIsarLoader)XRGeneralSettings.Instance.Manager.activeLoader;
+			_signalingServerPort = loader.RemotingConfig.signalingConfig.port;
+
 			try
 			{
 				//for (int tries = 3; tries > 0; tries--)
@@ -731,7 +739,8 @@ namespace HoloLight.Isar.Signaling
 //					throw;
 //				}
 
-			try {
+			try
+			{
 				// TODO:
 				//_client.Close();
 				_client?.Dispose();

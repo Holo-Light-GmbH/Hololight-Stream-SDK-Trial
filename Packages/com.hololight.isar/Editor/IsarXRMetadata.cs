@@ -11,7 +11,7 @@ namespace HoloLight.Isar
 
 		public string loaderType => "HoloLight.Isar.IsarXRLoader";
 
-		public List<BuildTargetGroup> supportedBuildTargets => new List<BuildTargetGroup> { BuildTargetGroup.Standalone, BuildTargetGroup.WSA };
+		public List<BuildTargetGroup> supportedBuildTargets => new List<BuildTargetGroup> { BuildTargetGroup.Standalone};
 	}
 
 	public class IsarXRPackageMetadata : IXRPackageMetadata

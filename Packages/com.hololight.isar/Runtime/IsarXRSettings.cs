@@ -6,7 +6,7 @@ namespace HoloLight.Isar
 {
 	public static class Constants
 	{
-		public const string ISAR_XR_SETTINGS_KEY = "HoloLight.ISAR.Settings";
+		public const string ISAR_XR_SETTINGS_KEY = "HoloLight.Isar.Settings";
 	}
 
 	//This attribute makes the data here appear inside "Project Settings > XR Plug-in Management > ISAR"

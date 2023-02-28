@@ -1,8 +1,8 @@
 {
-    "name": "Hololight.Isar.Editor.MRTK",
+    "name": "HoloLight.Isar.Editor.MRTK",
     "references": [
-        "Hololight.Isar.Runtime",
-        "Hololight.Isar.Runtime.MRTK",
+        "HoloLight.Isar.Runtime",
+        "HoloLight.Isar.Runtime.MRTK",
         "Microsoft.MixedReality.Toolkit",
         "Microsoft.MixedReality.Toolkit.Editor.Inspectors",
         "Microsoft.MixedReality.Toolkit.Editor.ClassExtensions"

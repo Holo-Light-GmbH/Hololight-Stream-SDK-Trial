@@ -57,6 +57,11 @@ namespace HoloLight.Isar.Native
 		}
 	}
 
+	public enum HlrTextureFormat : int
+	{
+		RGBA32,
+	}
+
 	public enum HlrSdpType : int
 	{
 		Offer = 0,

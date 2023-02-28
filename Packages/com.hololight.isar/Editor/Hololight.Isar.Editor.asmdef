@@ -1,7 +1,8 @@
 {
-    "name": "Hololight.Isar.Editor",
+    "name": "HoloLight.Isar.Editor",
+    "rootNamespace": "",
     "references": [
-        "Hololight.Isar.Runtime",
+        "HoloLight.Isar.Runtime",
         "Unity.XR.Management.Editor",
         "Unity.XR.Management"
     ],

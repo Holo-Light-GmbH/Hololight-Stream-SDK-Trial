@@ -37,29 +37,10 @@ namespace HoloLight.Isar.Native
 			}
 		}
 
-		public HlrSvConnectionApi ConnectionApi
-		{
-			private get;
-			set;
-		}
-
 		[ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 		protected override bool ReleaseHandle()
 		{
-			Assert.AreNotEqual(handle, IntPtr.Zero);
-			Assert.AreNotEqual(handle, new IntPtr(API_HANDLE_INVALID));
-
-			int tmpHandle = (int)handle;
-
-			HlrError error = ConnectionApi.Close(ref handle);
-
-			if (error != HlrError.eNone)
-			{
-				UnityEngine.Debug.LogError(
-					$"ConnectionApi.Close({nameof(HlrHandle)}: {tmpHandle}) failed with {error}.");
-			}
-
-			return error == HlrError.eNone;
+			return true;
 		}
 	}
 }

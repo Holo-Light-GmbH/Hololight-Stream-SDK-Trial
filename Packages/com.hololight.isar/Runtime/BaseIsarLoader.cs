@@ -7,6 +7,8 @@ using System.Threading;
 using HoloLight.Isar.Native;
 using System.Runtime.InteropServices;
 using System;
+using System.IO;
+using AOT;
 using System.Threading.Tasks;
 using HoloLight.Isar.Signaling;
 
@@ -21,7 +23,155 @@ namespace HoloLight.Isar
 	/// </summary>
 	public abstract class BaseIsarLoader : XRLoaderHelper
 	{
+		#region Callbacks
+
+		// using ref instead of pointers.
+		// https://manski.net/2012/06/pinvoke-tutorial-passing-parameters-part-3/#marshalling-structs
+		// [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		// internal delegate void ViewPoseReceivedCallback(ref StereoViewPose pose, IntPtr userData);
+
+		// [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		// internal delegate void InputEventReceivedCallback(ref InputEvent pose, IntPtr userData);
+
+		public delegate void ConnectionStateChangedCallback(HlrConnectionState newState);
+		public event ConnectionStateChangedCallback ConnectionStateChanged;
+		[MonoPInvokeCallback(typeof(HlrConnectionStateChangedCallback))]
+		private static void Native_OnConnectionStateChanged(HlrConnectionState newState, IntPtr userData)
+		{
+			try
+			{
+				// TODO: dispatch on unity thread eg. using UnityMainThreadDispatcher?
+				var loader = (BaseIsarLoader)GCHandle.FromIntPtr(userData).Target;
+				loader.ConnectionStateChanged?.Invoke(newState);
+			}
+			catch (Exception ex)
+			{
+				Debug.LogException(ex);
+			}
+		}
+
+
+		/// <summary>
+		/// Fired when the local session description is created.
+		/// </summary>
+		public delegate void SdpCreatedCallback(HlrSdpType type, string sdp);
+		public event SdpCreatedCallback SdpCreated;
+		[MonoPInvokeCallback(typeof(HlrSdpCreatedCallback))]
+		private static void Native_OnSdpCreated(HlrSdpType type, string sdp, IntPtr userData)
+		{
+			try
+			{
+				var loader = (BaseIsarLoader)GCHandle.FromIntPtr(userData).Target;
+				loader.SdpCreated?.Invoke(type, sdp);
+			}
+			catch (Exception ex)
+			{
+				Debug.LogException(ex);
+			}
+		}
+
+		/// <summary>
+		/// Fired when a local ICE candidate is created.
+		/// </summary>
+		public delegate void LocalIceCandidateCreatedCallback(string sdpMline, int mlineIndex, string sdpizedCandidate);
+		public event LocalIceCandidateCreatedCallback LocalIceCandidateCreated;
+		[MonoPInvokeCallback(typeof(HlrLocalIceCandidateCreatedCallback))]
+		private static void Native_OnLocalIceCandidateCreated(string mId, int mLineIndex, string candidate, IntPtr userData)
+		{
+			try
+			{
+				var loader = (BaseIsarLoader)GCHandle.FromIntPtr(userData).Target;
+				loader.LocalIceCandidateCreated?.Invoke(mId, mLineIndex, candidate);
+			}
+			catch (Exception ex)
+			{
+				Debug.LogException(ex);
+			}
+		}
+
+		/// <summary>
+		/// Fired when we receive a new XR pose from the client.
+		/// </summary>
+		internal delegate void ViewPoseHandler(in Native.Input.HlrXrPose viewPose);
+		internal event ViewPoseHandler ViewPoseReceived;
+		[MonoPInvokeCallback(typeof(HlrSvViewPoseReceivedCallback))]
+		internal static void Native_OnViewPoseReceived(in Native.Input.HlrXrPose pose, IntPtr userData)
+		{
+			try
+			{
+				var loader = (BaseIsarLoader)GCHandle.FromIntPtr(userData).Target;
+				loader.ViewPoseReceived?.Invoke(in pose);
+			}
+			catch (Exception ex)
+			{
+				Debug.LogException(ex);
+			}
+		}
+
+		/// <summary>
+		/// Fired when we receive a new XR pose from the client.
+		/// </summary>
+		internal delegate void InputEventHandler(in Native.Input.HlrInputEvent inputEvent);
+		internal event InputEventHandler InputEventReceived;
+		[MonoPInvokeCallback(typeof(HlrSvInputEventReceivedCallback))]
+		internal static void Native_OnInputEventReceived(in Native.Input.HlrInputEvent input, IntPtr userData)
+		{
+			try
+			{
+				var loader = (BaseIsarLoader)GCHandle.FromIntPtr(userData).Target;
+				loader.InputEventReceived?.Invoke(in input);
+			}
+			catch (Exception ex)
+			{
+				Debug.LogException(ex);
+			}
+		}
+
+		/// <summary>
+		/// Fired when we receive a custom message over DataChannel.
+		/// </summary>
+		public delegate void CustomMessageCallback(in HlrCustomMessage message);
+		public event CustomMessageCallback CustomMessageReceived;
+		[MonoPInvokeCallback(typeof(HlrCustomMessageCallback))]
+		internal static void Native_OnCustomMessageReceived(in HlrCustomMessage message, IntPtr userData)
+		{
+			try
+			{
+				var loader = (BaseIsarLoader)GCHandle.FromIntPtr(userData).Target;
+				loader.CustomMessageReceived?.Invoke(message);
+			}
+			catch (Exception ex)
+			{
+				Debug.LogException(ex);
+			}
+		}
+
+		/// <summary>
+		/// Fired when we receive audio data from the client.
+		/// </summary>
+		public delegate void AudioDataReceivedCallback(in HlrAudioData audioData);
+		public event AudioDataReceivedCallback AudioDataReceived;
+		[MonoPInvokeCallback(typeof(HlrSvAudioDataReceivedCallback))]
+		internal static void Native_OnAudioDataReceived(in HlrAudioData audioData, IntPtr userData)
+		{
+			try
+			{
+				var loader = (BaseIsarLoader)GCHandle.FromIntPtr(userData).Target;
+				loader.AudioDataReceived?.Invoke(audioData);
+			}
+			catch (Exception ex)
+			{
+				Debug.LogException(ex);
+			}
+		}
+
+		#endregion Callbacks
+
 		#region MemberVariables
+
+		GCHandle thisHandle;
+		IntPtr thisPtr;
+
 		//KL: we could use Isar class instance here for init/close instead of raw API.
 
 		//Used to post calls on Unity's main thread. Useful when we want to call into remoting lib while in a native callback.
@@ -31,7 +181,17 @@ namespace HoloLight.Isar
 
 		private ISignaling _signaling;
 		private HlrSvApi _serverApi;
-		private HlrHandle _handle = new HlrHandle();
+		private HlrHandle _hlrHandle;
+		internal HlrHandle HlrHandle
+		{
+			get { return _hlrHandle; }
+		}
+
+		public IsarRemotingConfig RemotingConfig
+		{
+			get;
+			private set;
+		}
 
 		private HlrConnectionState _connectionState;
 		private object _connectionStateLock = new object();
@@ -70,35 +230,44 @@ namespace HoloLight.Isar
 		#endregion
 
 		#region Structures
-		/// <summary>
-		/// Settings that need to be passed into the plugin BEFORE any initialization.
-		/// </summary>
 		[StructLayout(LayoutKind.Sequential)]
-		struct UserDefinedSettings
+		struct RenderSettings
 		{
-			public UserDefinedSettings(string configPath, HlrSdpCreatedCallback sdpCb, HlrLocalIceCandidateCreatedCallback iceCb, RenderingMode renderingMode, int sendDepthAlpha)
+			public int sendDepthAlpha;
+			public RenderingMode renderingMode;
+			public RenderConfigStruct config;
+
+			public RenderSettings(int sendDepthAlpha, RenderingMode renderingMode, RenderConfigStruct config)
 			{
-				this.configPath = configPath;
-				this.sdpCreatedCb = sdpCb;
-				this.localIceCandidateCreatedCb = iceCb;
-				this.renderingMode = renderingMode;
 				this.sendDepthAlpha = sendDepthAlpha;
+				this.renderingMode = renderingMode;
+				this.config = config;
 			}
 
-			[MarshalAs(UnmanagedType.LPWStr)]
-			public string configPath;
-			public HlrSdpCreatedCallback sdpCreatedCb;
-			public HlrLocalIceCandidateCreatedCallback localIceCandidateCreatedCb;
-			public RenderingMode renderingMode;
-			//This is treated as a bool, but those are not blittable (need marshaling) and I didn't want to
-			//go there at the time of writing.
-			public int sendDepthAlpha;
+			public RenderSettings(bool sendDepthAlpha, RenderingMode renderingMode, RenderConfigStruct config)
+			{
+				this.sendDepthAlpha = sendDepthAlpha ? 1 : 0;
+				this.renderingMode = renderingMode;
+				this.config = config;
+			}
 		}
+		
 		#endregion
 
 		#region DllImports
-		[DllImport("remoting_unity")]
-		static extern void SetUserDefinedSettings(UserDefinedSettings settings);
+		[DllImport("remoting_unity", CallingConvention = CallingConvention.Cdecl)]
+		static extern HlrError InitialiseIsar(RenderSettings rendersettings,
+			RemotingConfigStruct remotingSettings, 
+			HlrConnectionCallbacks connectionCallbacks,
+			IceServerSettings[] iceServerSettings,
+			UInt32 iceServerSettingsSize,
+			ref HlrHandle handle);
+
+		[DllImport("remoting_unity", CallingConvention = CallingConvention.Cdecl)]
+		static extern HlrError ResetIsar(ref HlrHandle handle);
+
+		[DllImport("remoting_unity", CallingConvention = CallingConvention.Cdecl)]
+		static extern HlrError DeinitaliseIsar(ref HlrHandle handle);
 
 		[DllImport("remoting_unity")]
 		public static extern void SetBitrate(Int64 bitrate);
@@ -121,72 +290,63 @@ namespace HoloLight.Isar
 
 		public sealed override bool Initialize()
 		{
-			//bool retVal = true;
-
 			Debug.Log("===== Initialize =====");
-
+			_hlrHandle = new HlrHandle();
 			_syncContext = SynchronizationContext.Current;
-
-			string configPath = Application.streamingAssetsPath + "/remoting-config.cfg";
-			HlrSdpCreatedCallback sdpCallback = Callbacks.OnSdpCreated;
-			HlrLocalIceCandidateCreatedCallback iceCallback = Callbacks.OnLocalIceCandidateCreated;
 
 			IsarXRSettings xrSettings = GetXRSettings();
 			if (xrSettings == null)
 			{
-				//throw new Exception("Failed to get XR settings");
+				Debug.LogError("Failed to get XR settings");
 				return false;
 			}
 
+			string configPath = Application.streamingAssetsPath + "/remoting-config.cfg";
+			RemotingConfig = IsarRemotingConfig.CreateFromJSON(File.ReadAllText(configPath));
+			RemotingConfig.GetStructs(out RenderConfigStruct renderConfigStruct, out RemotingConfigStruct remotingConfigStruct, out IceServerSettings[] iceServerSettingsArray);
 			_sendDepthAlpha = xrSettings.SendDepthAlpha_Preview;
+			RenderSettings renderSettings = new RenderSettings(_sendDepthAlpha, xrSettings.RenderingMode, renderConfigStruct);
 
-			_signaling = (ISignaling)Activator.CreateInstance(Type.GetType(xrSettings.SignalingImplementationType));
+			thisHandle = GCHandle.Alloc(this);
+			thisPtr = GCHandle.ToIntPtr(thisHandle);
+			HlrSdpCreatedCallback sdpCallback = Native_OnSdpCreated;
+			HlrLocalIceCandidateCreatedCallback iceCallback = Native_OnLocalIceCandidateCreated;
+			HlrConnectionCallbacks callbacks = new HlrConnectionCallbacks(null, sdpCallback, iceCallback, thisPtr);
 
-			UserDefinedSettings settings = new UserDefinedSettings(configPath, sdpCallback, iceCallback, xrSettings.RenderingMode, Convert.ToInt32(_sendDepthAlpha));
-			SetUserDefinedSettings(settings);
+			_serverApi = new HlrSvApi();
+			HlrError err = HlrSvApi.Create(ref _serverApi);
+			if (err != HlrError.eNone)
+			{
+				Debug.LogError("Failed to create isar server api");
+				return false;
+			}
+
+			err = InitialiseIsar(renderSettings, remotingConfigStruct, callbacks, iceServerSettingsArray, (uint)iceServerSettingsArray.Length, ref _hlrHandle);
+			if (err != HlrError.eNone)
+			{
+				Debug.LogError("Failed to initalise isar server");
+				return false;
+			}
 
 			if (!CreateSubsystems())
 			{
-				//throw new Exception("Failed to create subsystems");
+				Debug.LogError("Failed to create isar subsystems");
 				return false;
 			}
 
+			_signaling = (ISignaling)Activator.CreateInstance(Type.GetType(xrSettings.SignalingImplementationType));
 			_signaling.Connected += Signaling_OnConnected;
 			_signaling.SdpAnswerReceived += Signaling_SdpAnswerReceived;
 			_signaling.IceCandidateReceived += Signaling_IceCandidateReceived;
 
-			//Init remoting library (or rather get its struct, because XR display already initialized it when we called CreateSubsystem)
-			_serverApi = new HlrSvApi();
-			HlrError err = HlrSvApi.Create(ref _serverApi);
+			_serverApi.Connection.RegisterConnectionStateHandler(HlrHandle, Native_OnConnectionStateChanged, thisPtr);
+			_serverApi.Connection.RegisterViewPoseHandler(HlrHandle, Native_OnViewPoseReceived, thisPtr);
+			_serverApi.Connection.RegisterCustomMessageHandler(HlrHandle, Native_OnCustomMessageReceived, thisPtr);
+			_serverApi.Connection.RegisterAudioDataHandler(HlrHandle, Native_OnAudioDataReceived, thisPtr);
 
-			if (err != HlrError.eNone)
-			{
-				throw new Exception("Failed to create API struct");
-			}
-
-			HlrGraphicsApiConfig gfx = new HlrGraphicsApiConfig();
-			HlrConnectionCallbacks cb = new HlrConnectionCallbacks();
-			err = _serverApi.Connection.Init(null, gfx, cb, ref _handle);
-
-			if (err != HlrError.eNone)
-			{
-				throw new Exception("Failed to init remoting lib");
-			}
-
-			//Kinda awful that we have to do this because it's easy to forget and other safehandle types don't do this.
-			//Maybe something for the "nice" C# layer if we want one. Right now it's raw bindings in here.
-			_handle.ConnectionApi = _serverApi.Connection;
-
-			_serverApi.Connection.RegisterConnectionStateHandler(_handle, Callbacks.OnConnectionStateChanged, IntPtr.Zero);
-			// TODO
-			//_serverApi.Connection.RegisterCustomMessageHandler(_handle, Callbacks.OnCustomMessageReceived, IntPtr.Zero);
-
-			Callbacks.SdpCreated += Callbacks_SdpCreated;
-			Callbacks.LocalIceCandidateCreated += Callbacks_LocalIceCandidateCreated;
-			Callbacks.ConnectionStateChanged += Callbacks_ConnectionStateChanged;
-
-			// NOTE: this should not be necessary
-			//lock (_isRunningLock) { _isRunning = false; }
+			SdpCreated += OnSdpCreated;
+			LocalIceCandidateCreated += OnLocalIceCandidateCreated;
+			ConnectionStateChanged += OnConnectionStateChanged;
 
 			return true;
 		}
@@ -233,14 +393,14 @@ namespace HoloLight.Isar
 			if (ConnectionState == HlrConnectionState.Connected)
 			{
 				HACK_isDeinitializing = true;
-				Callbacks.OnConnectionStateChanged(HlrConnectionState.Disconnected, IntPtr.Zero);
+				Native_OnConnectionStateChanged(HlrConnectionState.Disconnected, thisPtr);
 				HACK_isDeinitializing = false;
 			}
 
-			Callbacks.ConnectionStateChanged -= Callbacks_ConnectionStateChanged;
-			Callbacks.LocalIceCandidateCreated -= Callbacks_LocalIceCandidateCreated;
-			Callbacks.SdpCreated -= Callbacks_SdpCreated;
-			// TODO: we should call Callbacks_ConnectionStateChanged(HlrConnectionState.Disconnected); but because of our current architecture, we can't (as opposed to the hololens client)
+			ConnectionStateChanged -= OnConnectionStateChanged;
+			LocalIceCandidateCreated -= OnLocalIceCandidateCreated;
+			SdpCreated -= OnSdpCreated;
+			// TODO: we should call OnConnectionStateChanged(HlrConnectionState.Disconnected); but because of our current architecture, we can't (as opposed to the hololens client)
 			//if (IsConnected)
 			//{
 			//	lock (_lockObj)
@@ -250,9 +410,20 @@ namespace HoloLight.Isar
 			//	Debug.Log($"ISAR connection state changed to {HlrConnectionState.Disconnected}");
 			//}
 
-			_handle.Dispose();
+			_serverApi.Connection.UnregisterAudioDataHandler2(HlrHandle, Native_OnAudioDataReceived, thisPtr);
+			_serverApi.Connection.UnregisterCustomMessageHandler(HlrHandle, Native_OnCustomMessageReceived, thisPtr);
+			_serverApi.Connection.UnregisterViewPoseHandler2(HlrHandle, Native_OnViewPoseReceived, thisPtr);
+			_serverApi.Connection.UnregisterConnectionStateHandler2(HlrHandle, Native_OnConnectionStateChanged, thisPtr);
 
-			return DestroySubsystems();
+			var retVal = DestroySubsystems();
+
+			DeinitaliseIsar(ref _hlrHandle);
+
+			thisHandle.Free();
+
+			HlrHandle.Dispose();
+
+			return retVal;
 		}
 
 		protected abstract bool CreateSubsystems();
@@ -265,7 +436,7 @@ namespace HoloLight.Isar
 		/// Callback indicating the connection state has changed
 		/// </summary>
 		/// <param name="newState">States whether connected or disconnected</param>
-		private void Callbacks_ConnectionStateChanged(HlrConnectionState newState)
+		private void OnConnectionStateChanged(HlrConnectionState newState)
 		{
 			HlrConnectionState prevState;
 			// atomic.exchange
@@ -295,6 +466,7 @@ namespace HoloLight.Isar
 								if (_isRunning)
 								{
 									Stop();
+									ResetIsar(ref _hlrHandle);
 									Start();
 								}
 							}
@@ -317,6 +489,7 @@ namespace HoloLight.Isar
 									if (_isRunning)
 									{
 										Stop();
+										ResetIsar(ref _hlrHandle);
 										Start();
 									}
 								}
@@ -340,7 +513,7 @@ namespace HoloLight.Isar
 		/// <param name="type">Offer or answer</param>
 		/// <param name="sdp">Connection description</param>
 		/// <param name="userData"></param>
-		private async void Callbacks_SdpCreated(HlrSdpType type, string sdp, IntPtr userData)
+		private async void OnSdpCreated(HlrSdpType type, string sdp)
 		{
 			await _signaling.SendOfferAsync(sdp);
 		}
@@ -352,7 +525,7 @@ namespace HoloLight.Isar
 		/// <param name="mLineIndex"></param>
 		/// <param name="candidate"></param>
 		/// <param name="userData"></param>
-		private async void Callbacks_LocalIceCandidateCreated(string mId, int mLineIndex, string candidate, IntPtr userData)
+		private async void OnLocalIceCandidateCreated(string mId, int mLineIndex, string candidate)
 		{
 			await _signaling.SendIceCandidateAsync(mId, mLineIndex, candidate);
 		}
@@ -367,7 +540,7 @@ namespace HoloLight.Isar
 		/// <param name="candidate"></param>
 		private void Signaling_IceCandidateReceived(string mId, int mLineIndex, string candidate)
 		{
-			var err = _serverApi.Signaling.AddIceCandidate(_handle, mId, mLineIndex, candidate);
+			var err = _serverApi.Signaling.AddIceCandidate(HlrHandle, mId, mLineIndex, candidate);
 
 			if (err != HlrError.eNone)
 			{
@@ -383,7 +556,7 @@ namespace HoloLight.Isar
 		{
 			Debug.Log($"Received answer SDP: {sdp}");
 
-			var err = _serverApi.Signaling.SetRemoteAnswer(_handle, sdp);
+			var err = _serverApi.Signaling.SetRemoteAnswer(HlrHandle, sdp);
 
 			if (err != HlrError.eNone)
 			{
@@ -399,7 +572,7 @@ namespace HoloLight.Isar
 		{
 			Task.Run(async () => await _signaling.SendVersionAsync(_serverApi.Version.PackedValue, _sendDepthAlpha)).Wait();
 
-			HlrError err = _serverApi.Signaling.CreateOffer(_handle);
+			HlrError err = _serverApi.Signaling.CreateOffer(HlrHandle);
 
 			if (err != HlrError.eNone)
 			{

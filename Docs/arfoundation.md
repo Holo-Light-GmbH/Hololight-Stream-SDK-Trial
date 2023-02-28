@@ -1,51 +1,36 @@
 # AR Foundation
 
-ISAR supports Unity's [AR Foundation](https://docs.unity3d.com/Packages/com.unity.xr.arfoundation@4.2/manual/index.html) for use with the Android Client via the **ISAR AR Subsystems** package. This package contains the implementation of Unity's AR Subsystems which provide the functionality requested by AR Foundation. The currently supported AR Foundation features with this package are listed in the table below. 
+ISAR supports Unity's [AR Foundation](https://docs.unity3d.com/Packages/com.unity.xr.arfoundation@4.2/manual/index.html) for use with the Android Client. Isar contains the implementation of Unity's AR Subsystems which provide the functionality requested by AR Foundation. The currently supported AR Foundation features with this package are listed in the table below. 
 
-Combined with the AR Foundation support, ISAR also provides touch input with the new input system. This functionality is provided as a part of the **ISAR AR Subsystems** package.
+Combined with the AR Foundation support, ISAR also provides touch input with the new input system.
 
-| Feature 					| Is Supported |
-| :--- 						| :---: |
-| Device tracking 			| ✓ | 
-| Plane tracking 	  		| ✓	|	
-| Point clouds				|  	|		
-| Anchors					|  	|	
-| Light estimation			|  	|	
-| Enviroment Probes			|  	|		
-| Face tracking				|  	|	
-| 2D Image tracking			| ✓	|	
-| 3D Object tracking		|  	|	
-| Meshing					|  	|
-| 2D & 3D body tracking		|  	|
-| Collaborative participants|  	|
-| Human segmentation		|  	|
-| Raycast					| ✓	|
-| Pass-through video		|  	|
-| Session management		|  	|
-| Occlusion					|  	|
+| Feature 					| Is Supported | Client |
+| :--- 						| :---:        | :--- |
+| Device tracking 			| ✓ | HoloLens 2<br />Quest 2<br />Android | 
+| Plane tracking 	  		| ✓	| Android |
+| Point clouds				|  	| |		
+| Anchors					| ✓ | HoloLens 2 OpenXR Client[^1] |
+| Light estimation			|  	| |	
+| Enviroment Probes			|  	| |		
+| Face tracking				|  	| |	
+| 2D Image tracking			| ✓	| |	
+| 3D Object tracking		|  	| |	
+| Meshing					|  	| |
+| 2D & 3D body tracking		|  	| |
+| Collaborative participants|  	| |
+| Human segmentation		|  	| |
+| Raycast					| ✓	| |
+| Pass-through video		|  	| |
+| Session management		|  	| |
+| Occlusion					|  	| |
 
+[^1]:The Anchor subsystem is only supported for the HoloLens 2 OpenXR Client. For more information, [make a request](https://holo-light.com/contact).
 
 ## Getting Started
 ### Prerequisites
 
 - [Prerequisites](../README.md#prerequisites)
 - Minimum AR Foundation 4.1.7
-
-### First Installation
-
-1. Follow the steps listed in [First Installation](../README.md#first-installation)
-2. Import **ISAR AR Subsystems** into the project
-    - Open **Package Manager** in the Unity editor (`Window -> Package Manager`)
-    - Click the **+** then **Add package from disk...** and select the file `package.json` from the `com.hololight.isar.arsubsystems` directory contained in this repository
-
-### Project Configuration
-
-1. Navigate to `Edit -> Project Settings -> XR Plug-in Management`
-    - Disable all plugins
-    - Enable **ISAR AR Subsystems**
-2. Open `File -> Build Settings...`
-    - Ensure the following configuration is selected:
-        - Platform: **PC, Mac & Linux Standalone** + Architecture: **x86_64**
 
 ### Scene Configuration
 
@@ -110,6 +95,27 @@ The raycast feature supports the following functionality. Currently, the raycast
 | Viewpoint Raycasts		|   | 
 | World Based Raycasts		| ✓ |	
 | Tracked Raycasts			|  	|
+
+## Anchor
+
+The package provides the anchor feature which allows developers to place anchors in the schene to be tracked by the client device. 
+
+For more information about the Anchor Subsystem, see here [Spatial Anchors](spatial-anchors.md).
+
+### Supported Functionality
+
+Spatial anchor system in ISAR currently supports following functionality and extensions:
+
+| Functionality					| Supported |
+| :--- 							| :---: |
+| Creation & Deletion of Spatial Anchors	| ✓ | 
+| Trackable attachments		|  |	
+
+| Extensions					| Supported |
+| :--- 							| :---: |
+| Exporting & Importing Spatial Anchor Data		| ✓ | 
+| Persisting Spatial Anchors on HoloLens 2 Device per Application		| ✓ | 
+| Azure Cloud Anchors				|  |
 
 ## Examples
 

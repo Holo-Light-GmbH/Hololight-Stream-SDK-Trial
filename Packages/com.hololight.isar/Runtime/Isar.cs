@@ -8,6 +8,7 @@ using HoloLight.Isar.Native;
 using HoloLight.Isar.Native.CustomMessage;
 using HoloLight.Isar.Native.Qr;
 using UnityEngine.XR.Management;
+using UnityEngine;
 
 namespace HoloLight.Isar
 {
@@ -16,12 +17,11 @@ namespace HoloLight.Isar
 	/// </summary>
 	public class Isar : IDisposable
 	{
-		public event Action<HlrConnectionState> ConnectionStateChanged;
-
+		public event BaseIsarLoader.ConnectionStateChangedCallback ConnectionStateChanged; // TODO: get rid of this and use loaders events directly
+		public BaseIsarLoader loader;
 		private object _lockObj = new object();
 		private HlrConnectionState _connectionState = HlrConnectionState.Disconnected;
 		protected HlrConnectionState _previousConnectionState = HlrConnectionState.Disconnected; // HACK
-		private protected HlrHandle _handle = new HlrHandle();
 		private protected HlrSvApi _serverApi;
 
 		public bool IsConnected
@@ -37,51 +37,45 @@ namespace HoloLight.Isar
 			}
 		}
 
+		// TODO: maybe don't throw exceptions in ctors and create an init method
+		// ref: https://stackoverflow.com/questions/77639/when-is-it-right-for-a-constructor-to-throw-an-exception
 		public Isar()
 		{
 			// ISAR XR loader check
-			var loader = XRGeneralSettings.Instance.Manager.activeLoader as BaseIsarLoader;
+			loader = XRGeneralSettings.Instance.Manager.activeLoader as BaseIsarLoader;
 			if (loader == null)
 			{
-				throw new InvalidOperationException("There is no ISAR loader active." +
+				throw new NullReferenceException("There is no ISAR loader active." +
 					" ISAR cannot be used. " +
 					"Make sure to enable an ISAR Loader " +
 					"through Edit -> Project Settings ->" +
 					"XR Plug-in Management before using this class.");
 			}
 
+
 			_serverApi = new HlrSvApi();
 			// TODO: ensure that this is called from the main thread
 			HlrError err = HlrSvApi.Create(ref _serverApi);
 
+			// TODO: improve exception handling; don't throw base "Exception"s
+			// ref: https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/creating-and-throwing-exceptions#things-to-avoid-when-throwing-exceptions
 			if (err != HlrError.eNone)
 			{
 				throw new Exception($"Isar initialization failed with {err}");
 			}
-
-			//KL: use native get_handle as soon as we have it instead of calling init with garbage args
-			HlrGraphicsApiConfig gfx = new HlrGraphicsApiConfig();
-			HlrConnectionCallbacks cb = new HlrConnectionCallbacks();
-			err = _serverApi.Connection.Init(null, gfx, cb, ref _handle);
 
 			if (err != HlrError.eNone)
 			{
 				throw new Exception("Failed to init remoting lib");
 			}
 
-			//Kinda awful that we have to do this because it's easy to forget and other safehandle types don't do this.
-			//Good thing nobody else has to do this now that this class exists :)
-			_handle.ConnectionApi = _serverApi.Connection;
-
 			_connectionState = loader.ConnectionState;
-
-			Callbacks.ConnectionStateChanged += OnConnectionStateChanged;
+			loader.ConnectionStateChanged += OnConnectionStateChanged;
 		}
 
 		public virtual void Dispose()
 		{
-			Callbacks.ConnectionStateChanged -= OnConnectionStateChanged;
-			_handle?.Dispose();
+			loader.ConnectionStateChanged -= OnConnectionStateChanged;
 		}
 
 		private void OnConnectionStateChanged(HlrConnectionState state)
@@ -102,8 +96,7 @@ namespace HoloLight.Isar
 
 		public IsarViewPose() : base()
 		{
-			_serverApi.Connection.RegisterViewPoseHandler(_handle, Callbacks.OnViewPoseReceived, IntPtr.Zero);
-			Callbacks.ViewPoseReceived += OnViewPoseReceived;
+			loader.ViewPoseReceived += OnViewPoseReceived;
 		}
 
 		private void OnViewPoseReceived(in Native.Input.HlrXrPose viewPose)
@@ -113,62 +106,53 @@ namespace HoloLight.Isar
 
 		public override void Dispose()
 		{
-			Callbacks.ViewPoseReceived -= OnViewPoseReceived;
-			_serverApi.Connection.UnregisterViewPoseHandler(_handle, Callbacks.OnViewPoseReceived);
-
+			loader.ViewPoseReceived -= OnViewPoseReceived;
 			base.Dispose();
 		}
 	}
 
 	public class IsarAudio : Isar
 	{
-		public delegate void IsarAudioDataCallback(in HlrAudioData audioData);
-		public event IsarAudioDataCallback AudioDataReceived;
+		public event BaseIsarLoader.AudioDataReceivedCallback AudioDataReceived;
 
 		public IsarAudio() : base()
 		{
-			_serverApi.Connection.RegisterAudioDataHandler(_handle, Callbacks.OnAudioDataReceived, IntPtr.Zero);
-			Callbacks.AudioDataReceived += OnAudioDataReceived;
+			loader.AudioDataReceived += OnAudioDataReceived;
 		}
 
 		public void SetAudioTrackEnabled(bool enable)
 		{
-			HlrError err = _serverApi.Connection.SetAudioTrackEnabled(_handle, Convert.ToInt32(enable));
+			HlrError err = _serverApi.Connection.SetAudioTrackEnabled(loader.HlrHandle, Convert.ToInt32(enable));
 			if (err != HlrError.eNone)
 			{
 				throw new InvalidOperationException($"Failed to set audio track to {enable}");
 			}
 		}
 
-		private void OnAudioDataReceived(in HlrAudioData audioData, IntPtr userData)
+		private void OnAudioDataReceived(in HlrAudioData audioData)
 		{
 			AudioDataReceived?.Invoke(audioData);
 		}
 
 		public override void Dispose()
 		{
-			Callbacks.AudioDataReceived -= OnAudioDataReceived;
-			_serverApi.Connection.UnregisterAudioDataHandler(_handle, Callbacks.OnAudioDataReceived);
-
+			loader.AudioDataReceived -= OnAudioDataReceived;
 			base.Dispose();
 		}
 	}
 
 	public class IsarCustomSend : Isar
 	{
-		public delegate void IsarCustomMessageCallback(in HlrCustomMessage message);
-		public event IsarCustomMessageCallback CustomMessageReceived;
+		public event BaseIsarLoader.CustomMessageCallback CustomMessageReceived;
 
 		public IsarCustomSend() : base()
 		{
-			_serverApi.Connection.RegisterCustomMessageHandler(_handle, Callbacks.OnCustomMessageReceived, IntPtr.Zero);
-			Callbacks.CustomMessageReceived += Callbacks_OnCustomMessageReceived;
+			loader.CustomMessageReceived += OnCustomMessageReceived;
 		}
 
 		public override void Dispose()
 		{
-			Callbacks.CustomMessageReceived -= Callbacks_OnCustomMessageReceived;
-			_serverApi.Connection.UnregisterCustomMessageHandler(_handle, Callbacks.OnCustomMessageReceived, IntPtr.Zero);
+			loader.CustomMessageReceived -= OnCustomMessageReceived;
 
 			base.Dispose();
 		}
@@ -180,32 +164,38 @@ namespace HoloLight.Isar
 			byte[] typeBytes = BitConverter.GetBytes((int)type);
 			int messageLength = typeBytes.Length + (bytes != null ? bytes.Length : 0);
 
-			IntPtr unmanagedPtr = Marshal.AllocHGlobal(messageLength);
-			Marshal.Copy(typeBytes, 0, unmanagedPtr, typeBytes.Length);
-			if (bytes != null)
+			IntPtr unmanagedPtr = IntPtr.Zero;
+			try
 			{
-				Marshal.Copy(bytes, 0, unmanagedPtr + typeBytes.Length, bytes.Length);
+				unmanagedPtr = Marshal.AllocHGlobal(messageLength);
+				Marshal.Copy(typeBytes, 0, unmanagedPtr, typeBytes.Length);
+				if (bytes != null)
+				{
+					Marshal.Copy(bytes, 0, unmanagedPtr + typeBytes.Length, bytes.Length);
+				}
+
+				HlrCustomMessage message = new HlrCustomMessage();
+				message.Length = (uint)messageLength;
+				message.Data = unmanagedPtr;
+
+				PushCustomMessage(message);
 			}
-
-			HlrCustomMessage message = new HlrCustomMessage();
-			message.Length = (uint)messageLength;
-			message.Data = unmanagedPtr;
-
-			PushCustomMessage(message);
-
-			Marshal.FreeHGlobal(unmanagedPtr);
+			finally
+			{
+				Marshal.FreeHGlobal(unmanagedPtr);
+			}
 		}
 
 		public void PushCustomMessage(HlrCustomMessage message)
 		{
-			HlrError err = _serverApi.Connection.PushCustomMessage(_handle, message);
+			HlrError err = _serverApi.Connection.PushCustomMessage(loader.HlrHandle, message);
 			if (err != HlrError.eNone)
 			{
 				throw new Exception($"Failed to send custom message with error {err}");
 			}
 		}
 
-		private void Callbacks_OnCustomMessageReceived(in HlrCustomMessage message, IntPtr userData)
+		private void OnCustomMessageReceived(in HlrCustomMessage message)
 		{
 			CustomMessageReceived?.Invoke(message);
 		}
@@ -289,9 +279,9 @@ namespace HoloLight.Isar
 		{
 			HlrAudioData audioData;
 			audioData = new HlrAudioData();
-			audioData.SamplesPerChannel = (System.UIntPtr)KHZ_48_NUM_SAMPLES;
+			audioData.SamplesPerChannel = (UIntPtr)KHZ_48_NUM_SAMPLES;
 			audioData.BitsPerSample = BITS_16_PER_SAMPLE;
-			audioData.NumberOfChannels = (System.UIntPtr)STEREO_NUM_CHANNELS;
+			audioData.NumberOfChannels = (UIntPtr)STEREO_NUM_CHANNELS;
 			audioData.SampleRate = KHZ48_VAL;
 
 			GCHandle handle = GCHandle.Alloc(audioBuffer, GCHandleType.Pinned);
@@ -311,6 +301,9 @@ namespace HoloLight.Isar
 
 		public void PushAudioData(float[] data)
 		{
+			if (!IsConnected)
+				return;
+
 			if (_bufferSize == BUFFER_SIZE_512)
 			{
 				PushAudioFrames(data);
@@ -342,7 +335,7 @@ namespace HoloLight.Isar
 
 		public void SendAudioData(HlrAudioData audioData)
 		{
-			_serverApi.Connection.PushAudioData(_handle, audioData);
+			_serverApi.Connection.PushAudioData(loader.HlrHandle, audioData);
 		}
 
 		public static bool IsAudioSettingsSupported(int sampleRate, int speakerModeNumChannels)
@@ -383,7 +376,7 @@ namespace HoloLight.Isar
 		public IsarQr() : base()
 		{
 			//Subscribe to C callbacks
-			QrApi.Init(_serverApi.Connection, _handle);
+			QrApi.Init(_serverApi.Connection, loader.HlrHandle);
 			QrApi.EnumerationCompleted += QrApi_OnEnumerationCompleted;
 			QrApi.IsSupportedReceived += QrApi_OnIsSupportedReceived;
 			QrApi.AccessStatusReceived += QrApi_OnAccessStatusReceived;
@@ -392,7 +385,7 @@ namespace HoloLight.Isar
 			QrApi.Removed += QrApi_OnRemoved;
 
 			var msgCallbacks = new HlrSvMessageCallbacks(null, null, QrApi.OnIsSupported, QrApi.OnRequestAccess, QrApi.OnAdded, QrApi.OnUpdated, QrApi.OnRemoved, QrApi.OnEnumerationCompleted);
-			_serverApi.Connection.RegisterMessageCallbacks(_handle, ref msgCallbacks);
+			_serverApi.Connection.RegisterMessageCallbacks(loader.HlrHandle, ref msgCallbacks);
 		}
 
 		public void Start()
@@ -479,30 +472,168 @@ namespace HoloLight.Isar
 		}
 	}
 
+	public class IsarStatsCollector : Isar
+	{
+		public delegate void IsarStatsCallback(in IntPtr stats);
+		public event IsarStatsCallback StatsDelivered;
+
+		//public class AsyncOperationBase : CustomYieldInstruction
+		//{
+		//	public bool IsError { get; internal set; }
+		//	public bool IsDone { get; internal set; }
+
+		//	public override bool keepWaiting
+		//	{
+		//		get
+		//		{
+		//			if (IsDone)
+		//			{
+		//				return false;
+		//			}
+		//			else
+		//			{
+		//				return true;
+		//			}
+		//		}
+		//	}
+
+		//	internal void Done()
+		//	{
+		//		IsDone = true;
+		//	}
+		//}
+
+		//public class RTCStatsReportAsyncOperation : AsyncOperationBase
+		//{
+		//	public IntPtr Value { get; private set; }
+
+		//	internal RTCStatsReportAsyncOperation(IsarStatsCollector collector)
+		//	{
+		//		collector.OnStatsDelivered = ptr =>
+		//		{
+		//			Value = ptr;
+		//			IsError = false;
+		//			this.Done();
+		//		};
+		//	}
+		//}
+
+		public IsarStatsCollector() : base()
+		{
+			_serverApi.Connection.RegisterStatsCallbackHandler(loader.HlrHandle, Callbacks.OnStatsReceived, IntPtr.Zero);
+			Callbacks.StatsReceived += OnStatsReceived;
+		}
+
+		public override void Dispose()
+		{
+			Callbacks.StatsReceived -= OnStatsReceived;
+			_serverApi.Connection.UnregisterStatsCallbackHandler(loader.HlrHandle, Callbacks.OnStatsReceived, IntPtr.Zero);
+
+			base.Dispose();
+		}
+
+		public void GetStats()
+		{
+			_serverApi.Connection.GetStats(loader.HlrHandle);
+		}
+
+		public void OnStatsReceived(IntPtr statsData, IntPtr userData)
+		{
+			StatsDelivered?.Invoke(statsData);
+		}
+	}
+
 	public class IsarClientCamera : IsarCustomSend
 	{
+		private object _dataLock = new object();
+		private bool _toggle;
+
+		public struct CameraConfiguration
+		{
+			public int width;
+			public int height;
+			public float framerate;
+
+			public override bool Equals(object obj) => obj is CameraConfiguration other && this.Equals(other);
+			public bool Equals(CameraConfiguration rhs)
+			{
+				return width == rhs.width
+					&& height == rhs.height
+					&& framerate == rhs.framerate;
+			}
+			public override int GetHashCode() => (width, height, framerate).GetHashCode();
+			public static bool operator ==(CameraConfiguration lhs, CameraConfiguration rhs) => lhs.Equals(rhs);
+			public static bool operator !=(CameraConfiguration lhs, CameraConfiguration rhs) => !(lhs == rhs);
+		}
+		public static readonly CameraConfiguration[] SupportedResolutions = {
+			new CameraConfiguration{ width = 1952, height=1100, framerate=60 },
+			new CameraConfiguration{ width = 1504, height=846,  framerate=60 },
+			new CameraConfiguration{ width = 1504, height=846,  framerate=30 },
+			new CameraConfiguration{ width = 1920, height=1080, framerate=30 },
+			new CameraConfiguration{ width = 1280, height=720,  framerate=30 },
+			new CameraConfiguration{ width = 1952, height=1100, framerate=30 },
+			new CameraConfiguration{ width = 640,  height=360,  framerate=30 },
+			new CameraConfiguration{ width = 760,  height=428,  framerate=30 },
+			new CameraConfiguration{ width = 960,  height=540,  framerate=30 },
+			new CameraConfiguration{ width = 1128, height=636,  framerate=30 },
+			new CameraConfiguration{ width = 424,  height=240,  framerate=30 },
+			new CameraConfiguration{ width = 500,  height=282,  framerate=30 },
+			new CameraConfiguration{ width = 1504, height=846,  framerate=15 },
+			new CameraConfiguration{ width = 1920, height=1080, framerate=15 },
+			new CameraConfiguration{ width = 1280, height=720,  framerate=15 },
+			new CameraConfiguration{ width = 1952, height=1100, framerate=15 },
+			new CameraConfiguration{ width = 640,  height=360,  framerate=15 },
+			new CameraConfiguration{ width = 760,  height=428,  framerate=15 },
+			new CameraConfiguration{ width = 960,  height=540,  framerate=15 },
+			new CameraConfiguration{ width = 1128, height=636,  framerate=15 },
+			new CameraConfiguration{ width = 424,  height=240,  framerate=15 },
+			new CameraConfiguration{ width = 500,  height=282,  framerate=15 },
+			new CameraConfiguration{ width = 1504, height=846,  framerate=5  },
+		};
+		public static readonly CameraConfiguration DefaultConfiguration = SupportedResolutions[2];
+		private CameraConfiguration _config = DefaultConfiguration;
+
+		public struct CameraSettings
+		{
+			public bool autoExposure;
+			private const byte _padding0 = 0;
+			private const Int16 _padding1 = 0;
+			private const Int32 _padding2 = 0;
+			public Int64 exposure;
+			public float exposureCompensation;
+			public Int32 whiteBalance;
+		}
+		public static readonly CameraSettings DefaultSettings = new CameraSettings
+		{
+			autoExposure = EXPOSURE_AUTO_DEFAULT_VALUE,
+			exposure = EXPOSURE_DEFAULT_VALUE,
+			exposureCompensation = EXPOSURE_COMPENSATION_DEFAULT_VALUE,
+			whiteBalance = WHITE_BALANCE_DEFAULT_VALUE
+		};
+		private CameraSettings _settings = DefaultSettings;
+
 		public struct CameraIntrinsics
 		{
 			public UInt32 width;
 			public UInt32 height;
-			public float focal_length_x;
-			public float focal_length_y;
-			public float camera_model_principal_point_x;
-			public float camera_model_principal_point_y;
-			public float distortion_model_radial_k1;
-			public float distortion_model_radial_k2;
-			public float distortion_model_radial_k3;
-			public float distortion_model_tangential_p1;
-			public float distortion_model_tangential_p2;
+			public float focalLengthX;
+			public float focalLengthY;
+			public float cameraModelPrincipalPointX;
+			public float cameraModelPrincipalPointY;
+			public float distortionModelRadialK1;
+			public float distortionModelRadialK2;
+			public float distortionModelRadialK3;
+			public float distortionModelTangentialP1;
+			public float distortionModelTangentialP2;
 		}
 
 		public struct CameraMetadata
 		{
 			public CameraIntrinsics intrinsics; // 44
 			public HlrMatrix4x4 extrinsics;    // 64
+			private const Int32 _padding0 = 0;
+			public CameraSettings settings;
 		} // 108
-
-
 		public delegate void IsarClientCameraMetadataCallback(Int64 captureTimeHNS, in CameraMetadata metadata);
 		public event IsarClientCameraMetadataCallback MetadataReceived;
 
@@ -514,74 +645,185 @@ namespace HoloLight.Isar
 
 		public override void Dispose()
 		{
-			if (IsConnected && _toggle) {
-					Send(MessageType.CAMERA_DISABLE);
-			}
 			CustomMessageReceived -= OnCustomMessageReceived;
 			ConnectionStateChanged -= OnConnectionStateChanged;
 
 			base.Dispose();
 		}
 
-		private void OnCustomMessageReceived(in HlrCustomMessage message)
-		{
-			Shared.Assertions.Assert(message.Length >= Marshal.SizeOf<Int32>());
-			IntPtr dataPtr = message.Data;
-			MessageType messageType = (MessageType)Marshal.ReadInt32(dataPtr);
-			dataPtr = IntPtr.Add(dataPtr, Marshal.SizeOf<Int32>());
-			if (messageType != MessageType.CAMERA_METADATA)
-				return;
-
-			Shared.Assertions.Assert(message.Length == Marshal.SizeOf<Int32>() + Marshal.SizeOf<CameraMetadata>() + Marshal.SizeOf<Int64>());
-
-			var cameraMetadata = Marshal.PtrToStructure<CameraMetadata>(dataPtr);
-			dataPtr = IntPtr.Add(dataPtr, Marshal.SizeOf<CameraMetadata>());
-
-			Int64 captureTimeNS = Marshal.ReadInt64(dataPtr);
-
-			MetadataReceived?.Invoke(captureTimeNS, cameraMetadata);
-		}
-
-		// We currently only support these hardcoded frame attributes
-		public static readonly int WIDTH = 1504;
-		public static readonly int HEIGHT = 846;
-		//public static readonly int BIT_COUNT = 12; // nv12
-		public static readonly int BIT_COUNT = 32; // rgba
-		public static readonly int SIZE = (WIDTH * HEIGHT * BIT_COUNT) / sizeof(byte);
-		public static readonly UnityEngine.TextureFormat FORMAT = UnityEngine.TextureFormat.RGBA32;
-
-		public bool TryDequeueFrame(ref Int64 captureTimeHNS, IntPtr unmanagedData)
-		{
-			if (!IsConnected) return false;
-
-			// i420
-			return Convert.ToBoolean(HlrSvApi.CameraDequeue(unmanagedData, SIZE, ref captureTimeHNS));
-		}
-
-		private bool _toggle;
-		public bool Toggle
-		{
-			get => _toggle;
-			set
-			{
-				if(_toggle == value) return;
-				_toggle = value;
-				if (IsConnected)
-				{
-					Send(value ? MessageType.CAMERA_ENABLE : MessageType.CAMERA_DISABLE);
-				}
-			}
-		}
-
 		private void OnConnectionStateChanged(HlrConnectionState state)
 		{
 			if (state == HlrConnectionState.Connected)
 			{
-				if (_toggle)
+				// TODO: dispatch onto unity main thread asynchronously so we dont need _dataLock around settings
+				SendSettings();
+			}
+		}
+
+		private void OnCustomMessageReceived(in HlrCustomMessage message)
+		{
+			lock (_dataLock)
+			{
+				// NOTE: there is a delay between server & client toggle
+				if (_toggle == false) return;
+			}
+
+			IntPtr dataPtr = message.Data;
+			int dataLength = (int)message.Length;
+			Shared.Assertions.Assert(dataLength >= Marshal.SizeOf<Int32>());
+			MessageType messageType = (MessageType)Marshal.ReadInt32(dataPtr);
+			dataPtr = IntPtr.Add(dataPtr, Marshal.SizeOf<Int32>());
+			dataLength -= Marshal.SizeOf<Int32>();
+			if (messageType != MessageType.CAMERA_METADATA)
+				return;
+
+			// skip padding
+			dataPtr = IntPtr.Add(dataPtr, Marshal.SizeOf<Int32>());
+			dataLength -= Marshal.SizeOf<Int32>();
+
+			Shared.Assertions.Assert(dataLength >= Marshal.SizeOf<Int64>());
+			Int64 captureTimeNS = Marshal.ReadInt64(dataPtr);
+			dataPtr = IntPtr.Add(dataPtr, Marshal.SizeOf(captureTimeNS));
+			dataLength -= Marshal.SizeOf<Int64>();
+
+			Shared.Assertions.Assert(dataLength >= Marshal.SizeOf<CameraMetadata>());
+			var metadata = Marshal.PtrToStructure<CameraMetadata>(dataPtr);
+			dataPtr = IntPtr.Add(dataPtr, Marshal.SizeOf<CameraMetadata>());
+			dataLength -= Marshal.SizeOf<CameraMetadata>();
+
+			MetadataReceived?.Invoke(captureTimeNS, metadata);
+		}
+
+		public static readonly int DEFAULT_WIDTH = 1504;
+		public static readonly int DEFAULT_HEIGHT = 846;
+		//public static readonly int BIT_COUNT = 12; // nv12
+		public static readonly UnityEngine.TextureFormat DEFAULT_FORMAT = UnityEngine.TextureFormat.RGBA32;
+
+		public bool TryAcquireLatestCameraImage(ref UnityEngine.TextureFormat unityFormat, ref Int32 width, ref Int32 height, ref Int64 timestamp)
+		{
+			if (!IsConnected) return false;
+
+			HlrTextureFormat hlrFormat = HlrTextureFormat.RGBA32;
+
+			bool retVal = HlrSvApi.TryAcquireLatestCameraImage(ref hlrFormat, ref width, ref height, ref timestamp) == HlrError.eNone;
+
+			switch (hlrFormat)
+			{
+				case HlrTextureFormat.RGBA32:
+					unityFormat = TextureFormat.RGBA32;
+					break;
+				default:
+					Debug.Log("Unsupported texture format received from GetCameraFrameDesc.");
+					retVal = false;
+					break;
+			}
+
+			return retVal;
+		}
+
+		public bool TryAcquireCameraImageBuffer(IntPtr unmanagedData, int unmanagedDataSize)
+		{
+			if (!IsConnected) return false;
+
+			return HlrSvApi.TryAcquireCameraImageBuffer(unmanagedData, unmanagedDataSize) == HlrError.eNone;
+		}
+
+		public void Reconfigure(bool toggle, CameraConfiguration config, CameraSettings settings)
+		{
+			lock (_dataLock)
+			{
+				_toggle = toggle;
+				_config = config;
+				_settings = settings;
+			}
+
+			if (!IsConnected) return;
+
+			SendSettings();
+		}
+
+		private void SendSettings()
+		{
+			MessageType messageType = MessageType.INVALID;
+			byte[] bytes = null;
+			lock (_dataLock)
+			{
+				messageType = _toggle ? MessageType.CAMERA_ENABLE : MessageType.CAMERA_DISABLE;
+				if (_toggle == true)
 				{
-					Send(MessageType.CAMERA_ENABLE);
+					int byteSize = Marshal.SizeOf<CameraConfiguration>() + Marshal.SizeOf<CameraSettings>();
+					bytes = new byte[byteSize];
+					IntPtr ptr = IntPtr.Zero;
+					try
+					{
+						ptr = Marshal.AllocHGlobal(byteSize);
+						Marshal.StructureToPtr(_config, ptr, true);
+						Marshal.StructureToPtr(_settings, IntPtr.Add(ptr, Marshal.SizeOf(_config)), true);
+						Marshal.Copy(ptr, bytes, 0, byteSize);
+					}
+					finally
+					{
+						Marshal.FreeHGlobal(ptr);
+					}
 				}
 			}
+			Send(messageType, bytes);
+		}
+
+		//public bool ExposureSupported() { return true; }
+		public static Int64 ExposureMax() { return 660000; }
+		public static Int64 ExposureMin() { return 1000; }
+		public static Int64 ExposureStep() { return 10; }
+		public const Int64 EXPOSURE_DEFAULT_VALUE = 1000;
+
+		// Gets a value that indicates if auto exposure is enabled.
+		public const bool EXPOSURE_AUTO_DEFAULT_VALUE = true;
+		public bool ExposureAuto() { return _settings.autoExposure; }
+		public void ExposureSetAuto(bool value) { _settings.autoExposure = value; }
+		public Int64 ExposureValue() { return _settings.exposure; }
+		public void ExposureSetValue(Int64 ticks)
+		{
+			// contract checks/clamps
+			if (ticks < ExposureMin()
+			 || ticks > ExposureMax()
+			 || ticks != (long)Math.Round((double)ticks / ExposureStep()) * ExposureStep())
+				throw new ArgumentOutOfRangeException("Ensure the value is within the allowed range using the Min, Max and Step functions.");
+
+			_settings.exposure = ticks;
+		}
+
+		//public bool ExposureCompensationSupported() { return true; }
+		public static float ExposureCompensationMax() { return 2.0000064f; }
+		public static float ExposureCompensationMin() { return -2.0000064f; }
+		public static float ExposureCompensationStep() { return 0.166667f; }
+		public const float EXPOSURE_COMPENSATION_DEFAULT_VALUE = 0.0f;
+		public float ExposureCompensationValue() => _settings.exposureCompensation;
+		public void ExposureCompensationSetValue(float value)
+		{
+			// contract checks/clamps
+			if (value < ExposureCompensationMin()
+			 || value > ExposureCompensationMax()
+			 || !Mathf.Approximately(value, (float)Math.Round((double)value / ExposureCompensationStep()) * ExposureCompensationStep()))
+				throw new ArgumentOutOfRangeException("Ensure the value is within the allowed range using the Min, Max and Step functions.");
+
+			_settings.exposureCompensation = value;
+		}
+
+		//public bool WhiteBalanceSupported() { return true; }
+		public static int WhiteBalanceMax() { return 7500; }
+		public static int WhiteBalanceMin() { return 2300; }
+		public static int WhiteBalanceStep() { return 25; }
+		public const int WHITE_BALANCE_DEFAULT_VALUE = 2300;
+		public float WhiteBalanceValue() => _settings.whiteBalance;
+		public void WhiteBalanceSetValue(int value)
+		{
+			// contract checks/clamps
+			if (value > WhiteBalanceMax()
+			 || value < WhiteBalanceMin()
+			 || value != (int)Math.Round((double)value / WhiteBalanceStep()) * WhiteBalanceStep())
+				throw new ArgumentOutOfRangeException("Ensure the value is within the allowed range using the Min, Max and Step functions.");
+
+			_settings.whiteBalance = value;
 		}
 	}
 }

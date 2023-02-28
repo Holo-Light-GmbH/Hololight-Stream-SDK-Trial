@@ -11,7 +11,7 @@ To ease integration, an example scene has been provided to illustrate how to use
 The following steps explain how to enable this example:
 
 1. Add an `Audio Listener` to the main camera. If one already exists, move to the next step
-2. Add the component `StreamAudioWithIsarExample.cs` to the main camera. This can be found at `ISAR Core/Runtime/Examples/AudioStream/`
-3. Add the `AudioStreamExample` prefab to the scene. This can be found at `ISAR Core/Runtime/Examples/AudioStream/`
+2. Add the component `StreamAudioWithIsarExample.cs` to the main camera. This can be found at `ISAR Examples/AudioStream/`
+3. Add the `AudioStreamExample` prefab to the scene. This can be found at `ISAR Examples/AudioStream/`
 4. Expand the `AudioStreamExample` game object and open the `StaticAudioSource1` within the Inspector
 5. Set the desired `Audio Clip`

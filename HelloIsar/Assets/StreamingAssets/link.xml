@@ -9,14 +9,14 @@
     It's recommended to start with this list and narrow down if you want to ensure
     specific bits of code get optimized away.
   -->
-  
+
   <assembly fullname="Microsoft.MixedReality.Toolkit" preserve="all"/>
   <assembly fullname="Microsoft.MixedReality.Toolkit.Input" preserve="all"/>
   <assembly fullname="Microsoft.MixedReality.Toolkit.Services.InputSystem" preserve="all"/>
   <assembly fullname="Microsoft.MixedReality.Toolkit.Services.CameraSystem" preserve="all"/>
-  <assembly fullname="Hololight.Isar.Runtime.MRTK" preserve="all"/>
+  <assembly fullname="HoloLight.Isar.Runtime.MRTK" preserve="all"/>
   <!--
-  
+
   <assembly fullname="Microsoft.MixedReality.Toolkit" preserve="all"/>
   <assembly fullname="Microsoft.MixedReality.Toolkit.Providers.WindowsMixedReality" preserve="all"/>
   <assembly fullname="Microsoft.MixedReality.Toolkit.Providers.WindowsVoiceInput" preserve="all"/>
@@ -29,9 +29,9 @@
   <assembly fullname="Microsoft.MixedReality.Toolkit.Services.SceneSystem" preserve="all"/>
   <assembly fullname="Microsoft.MixedReality.Toolkit.Services.SpatialAwarenessSystem" preserve="all"/>
   <assembly fullname="Microsoft.MixedReality.Toolkit.Services.TeleportSystem" preserve="all"/>
-  <assembly fullname="Hololight.Remoting.Runtime" preserve="all"/>
-  <assembly fullname="Hololight.Remoting.Runtime.Unity.MRTK" preserve="all"/>
-  
+  <assembly fullname="HoloLight.Remoting.Runtime" preserve="all"/>
+  <assembly fullname="HoloLight.Remoting.Runtime.Unity.MRTK" preserve="all"/>
+
   -->
-  
-</linker> 
+
+</linker>

@@ -8,8 +8,7 @@ Before running the client, configure the [ISAR Configuration File](../README.md#
 --- | --- | --- | --- | --- | --- |
 HoloLens 2 | 1440 | 936 | 2 | 35000 | Stable
 Quest 2 | 1920 | 1920 | 2 | 50000 | Stable
-Android | 1920 | 1080 | 1 | 35000 | BETA Version
-
+Android | 1920 | 1080 | 1 | 35000 | Maintenance
 
 ## HoloLens
 ### Supported Versions

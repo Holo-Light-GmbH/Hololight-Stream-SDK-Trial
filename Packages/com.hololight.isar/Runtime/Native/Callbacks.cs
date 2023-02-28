@@ -141,28 +141,19 @@ namespace HoloLight.Isar.Native
 				Debug.LogException(ex);
 			}
 		}
+
+		internal static event HlrStatsCallback StatsReceived;
+		[MonoPInvokeCallback(typeof(HlrStatsCallback))]
+		internal static void OnStatsReceived(IntPtr statsData, IntPtr userData)
+		{
+			try
+			{
+				StatsReceived?.Invoke(statsData, userData);
+			}
+			catch (Exception ex)
+			{
+				Debug.LogException(ex);
+			}
+		}
 	}
-
-	// All the delegates in the original code are unsafe.
-	// Then again, it could be good for performance.
-	// Also, ref returns could be useful.
-	// https://blogs.msdn.microsoft.com/mazhou/2017/12/12/c-7-series-part-7-ref-returns/
-	// https://docs.microsoft.com/en-us/dotnet/standard/native-interop/pinvoke
-	internal delegate void HlrConnectionStateChangedCallback(HlrConnectionState newState, IntPtr userData);
-
-	// using ref instead of pointers.
-	// https://manski.net/2012/06/pinvoke-tutorial-passing-parameters-part-3/#marshalling-structs
-	// [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-	// internal delegate void ViewPoseReceivedCallback(ref StereoViewPose pose, IntPtr userData);
-
-	// [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-	// internal delegate void InputEventReceivedCallback(ref InputEvent pose, IntPtr userData);
-
-	// About string marshalling: SDP spec says it's UTF-8 unless there's a "charset=X" in the desc.
-	// There is UnmanagedType.LPUTF8Str, but not in this version of .NET standard, so we can't use it.
-	// Default marshaling is LPStr, i.e. const char* to ANSI. I guess it should be ok, but in case it's not,
-	// this friendly comment reminds you that string encoding is hard.
-	internal delegate void HlrSdpCreatedCallback(HlrSdpType type, string sdp, IntPtr userData);
-
-	internal delegate void HlrLocalIceCandidateCreatedCallback(string sdpMline, int mlineIndex, string sdpizedCandidate, IntPtr userData);
 }

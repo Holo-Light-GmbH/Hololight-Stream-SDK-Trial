@@ -1,5 +1,5 @@
 {
-    "name": "Hololight.Isar.Runtime.MRTK",
+    "name": "HoloLight.Isar.Runtime.MRTK",
     "references": [
         "GUID:7fd6d53986233194c95fa945899ad7f6",
         "GUID:a7a4c34601384f9389d5c4207f3c6331",
