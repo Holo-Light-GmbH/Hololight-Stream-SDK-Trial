@@ -1,0 +1,2 @@
+Clients/HoloLens[[:space:]]2_ISAR[[:space:]]Client_2023.0.0.0rc4/ISAR[[:space:]]Client_2023.0.0.0_ARM64_Master.appxsym filter=lfs diff=lfs merge=lfs -text
+Clients/ISAR-Quest2-Client-2023.0.0rc5.apk filter=lfs diff=lfs merge=lfs -text

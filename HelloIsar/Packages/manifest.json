@@ -10,9 +10,9 @@
     }
   ],
   "dependencies": {
-    "com.hololight.isar": "file:../../Packages/com.hololight.isar",
-    "com.hololight.isar.examples": "file:../../Packages/com.hololight.isar.examples",
-    "com.hololight.isar.mrtk": "file:../../Packages/com.hololight.isar.mrtk",
+    "com.hololight.isar": "file:../../Packages/com.hololight.isar-2023.0.0.tgz",
+    "com.hololight.isar.examples": "file:../../Packages/com.hololight.isar.examples-2023.0.0.tgz",
+    "com.hololight.isar.mrtk": "file:../../Packages/com.hololight.isar.mrtk-2023.0.0.tgz",
     "com.microsoft.mixedreality.toolkit.foundation": "2.5.4",
     "com.microsoft.mixedreality.toolkit.tools": "2.8.2",
     "com.unity.collab-proxy": "1.17.7",
@@ -23,6 +23,7 @@
     "com.unity.textmeshpro": "3.0.6",
     "com.unity.timeline": "1.6.4",
     "com.unity.ugui": "1.0.0",
+    "com.unity.xr.management": "4.3.3",
     "com.unity.modules.ai": "1.0.0",
     "com.unity.modules.androidjni": "1.0.0",
     "com.unity.modules.animation": "1.0.0",
