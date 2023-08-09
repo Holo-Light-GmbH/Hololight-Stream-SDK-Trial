@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: Isar XR Settings
   m_EditorClassIdentifier: 
   RenderingMode: 1
-  SignalingImplementationType: HoloLight.Isar.Signaling.DebugSignaling
-  SendDepthAlpha: 0
+  SignalingImplementationType: HoloLight.Isar.Signaling.SampleServerSignaling
+  SendDepthAlpha_Preview: 0
