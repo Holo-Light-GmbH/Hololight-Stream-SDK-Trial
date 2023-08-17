@@ -1,7 +1,7 @@
 # ISAR SDK - Trial Version
 
 <p align="center">
-    <img src="images/ISAR_Icon.png" width="180px">
+    <img src="Docs/images/ISAR_Icon.png" width="180px">
 </p>
 
 ISAR (Interactive Streaming for Augmented Reality) is a Software Development Kit that allows developers to stream their applications remotely to an XR device, with minimal integration overhead, from managed environments, hosted clouds or on-premise solutions.
@@ -27,7 +27,9 @@ ISAR (Interactive Streaming for Augmented Reality) is a Software Development Kit
 4. Add the desired toolset following the instructions below
     - [MRTK](/Docs/mrtk_extension.md); supports HoloLens 2, Oculus Quest 2 and iOS clients
     - [XR Interaction Toolkit](/Docs/xr_interaction_toolkit.md); supports Oculus Quest 2 client
-
+5. ISAR SDK now offers support for the H.265 video codec. To take advantage of the enhanced video rendering capabilities offered by H.265, users may need to install additional software.
+    - The extension can be downloaded from the Microsoft Store [here](https://apps.microsoft.com/store/detail/hevc-video-extensions/9NMZLZ57R3T7?hl=en-us&gl=us) for a one time charge of € 0,99 cents.
+    
 ### Project Configuration
 
 1. Navigate to `Edit -> Project Settings -> XR Plug-in Management`
