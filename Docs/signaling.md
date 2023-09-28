@@ -2,14 +2,7 @@
 
 In order to establish a connection with a remote peer, connection information must first be exchanged. This process is called Signaling (for more information see [WebRTC - Signaling](https://www.tutorialspoint.com/webrtc/webrtc_signaling.htm)).
 
-Developers may provide their own signaling implementation to be used by ISAR to establish a connection with a remote peer. A sample implementation has been provided and can be found within the `com.hololight.isar.examples/Signaling` directory. If no signaling implementation is provided, a default implementation will be instantiated, see [Default Signaling](signaling.md#default-signaling-implementation).
-
-
-## Default Signaling Implementation
-
-If no signaling implementation is provided, ISAR instantiates a default implementation. The default is a generic TCP socket that sends and receives signaling related messages over network. It uses the configured port as described in the [Signaling Port](README.md#default-signaling-implementation) section.
-
-> :warning: Please note that default signaling implementation does not provide any encryption on the signaling messages that are sent and received.
+Developers must provide their own signaling implementation to be used by ISAR to establish a connection with a remote peer. A sample implementation has been provided and will be used by default if no other implementation is provided. This can be found within the `com.hololight.isar/Runtime/Signaling` directory.
 
 ## Signaling Base Class
 
