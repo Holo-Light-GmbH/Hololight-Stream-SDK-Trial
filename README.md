@@ -4,6 +4,10 @@
     <img src="Docs/images/ISAR_Icon.png" width="180px">
 </p>
 
+🎉 *Due to Hololight's rebranding in September 2023, ISAR SDK is now called Hololight Stream SDK. For more information about Hololight's rebranding, please* [click here](https://hololight.com/the-evolution-of-hololight-rebranding/).
+
+We will rebrand our GitHub presence together with the release of Hololight Stream SDK (formerly ISAR SDK).
+
 ISAR (Interactive Streaming for Augmented Reality) is a Software Development Kit that allows developers to stream their applications remotely to an XR device, with minimal integration overhead, from managed environments, hosted clouds or on-premise solutions.
 
 ## Getting Started
