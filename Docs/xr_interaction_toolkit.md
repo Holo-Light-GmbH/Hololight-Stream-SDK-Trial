@@ -1,6 +1,6 @@
 # Unity's XR Interaction Toolkit
 
-ISAR supports Unity's [XR Interaction Toolkit](https://docs.unity3d.com/Packages/com.unity.xr.interaction.toolkit@0.9/manual/index.html) and [Input System](https://docs.unity3d.com/Packages/com.unity.inputsystem@1.0/manual/QuickStartGuide.html).
+Hololight Stream supports Unity's [XR Interaction Toolkit](https://docs.unity3d.com/Packages/com.unity.xr.interaction.toolkit@0.9/manual/index.html) and [Input System](https://docs.unity3d.com/Packages/com.unity.inputsystem@1.0/manual/QuickStartGuide.html).
 
 ## Getting Started
 ### Prerequisites
@@ -57,6 +57,6 @@ Follow the steps listed in [First Run](README.md#first-run).
 
 
 ## Troubleshooting
-The below list contains specific issues that may occur when running the ISAR SDK with Unity's new XR Interaction Toolkit and Input System. For all other troubleshooting issues, see [Troubleshooting](README.md#troubleshooting).
+The below list contains specific issues that may occur when running the Hololight Stream SDK with Unity's new XR Interaction Toolkit and Input System. For all other troubleshooting issues, see [Troubleshooting](README.md#troubleshooting).
 
 -  The **Game** view requires window focus when running in the editor. If focus is not given, input data will not be updated.

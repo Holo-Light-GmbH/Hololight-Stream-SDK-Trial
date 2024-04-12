@@ -1,6 +1,6 @@
 # Spatial Anchors
 
-ISAR supports use of spatial anchors in Unity for use with HoloLens 2 client and contains the implementation of Unity's AR Subsystems which provide the functionality requested by AR Foundation. [ISAR](ar_foundation.md) includes associated spatial anchor subsystem for the required functionality.
+Hololight Stream supports use of spatial anchors in Unity for use with HoloLens 2 client and contains the implementation of Unity's AR Subsystems which provide the functionality requested by AR Foundation. [Hololight Stream AR Foundation](ar_foundation.md) includes associated spatial anchor subsystem for the required functionality.
 
 > :warning: This feature is only supported on the HoloLens 2 Client.
 
@@ -8,16 +8,18 @@ ISAR supports use of spatial anchors in Unity for use with HoloLens 2 client and
 
 ### Scene Configuration
 
+- Go to package manager and select the `Hololight Stream Examples` package
+- Expand the `Samples` section and import the `Anchor` sample
 - Follow the steps in [AR Foundation](ar_foundation.md#scene-configuration).
-- Expand the **AR Session Origin** object and add the **AR Anchor Manager** to it. For more information on using the AR Anchor Manager, see the description https://docs.unity3d.com/Packages/com.unity.xr.arfoundation@4.1/manual/anchor-manager.html."
-- Make sure to set **Anchor Prefab** on **AR Anchor Manager**. As example, there is already  **Spatial Anchor Object** prefab object that can be used, which can be found at `Packages/ISAR Examples/Anchor`
+- Expand the **AR Session Origin** object and add the **AR Anchor Manager** to it. For more information on using the AR Anchor Manager, see the description [here](https://docs.unity3d.com/Packages/com.unity.xr.arfoundation@4.1/manual/anchor-manager.html).
+- Set **Anchor Prefab** on **AR Anchor Manager**. As example, a  **Spatial Anchor Object** prefab has been provided.
 
 ### Testing Functionality
-A pre-built scene can be found at `Packages/ISAR Examples/Anchor/Anchoring Sample Scene` to test the anchoring functionality. To integrate the example into an existing scene, add the **Anchor Example** prefab in the scene which can be found at `Packages/ISAR Examples/Anchor/`.
+A pre-built scene can be found in the Anchor sample to test the anchoring functionality, `Anchoring Sample Scene`. To integrate the example into an existing scene, add the **Anchor Example** prefab in the scene.
 
 #### Creation & Deletion of Spatial Anchors
 
-- When the application is run there should be a control panel and a spatial anchor creator object (transparent blue sphere) in your surroundings as can be seen below images.
+- When the application is ran there should be a control panel and a spatial anchor creator object (transparent blue sphere) in your surroundings as can be seen below images.
 &nbsp;
   ![image](images/spatial-anchors-4.PNG)
 &nbsp;
@@ -44,7 +46,7 @@ A pre-built scene can be found at `Packages/ISAR Examples/Anchor/Anchoring Sampl
 
 #### Export & Import of Spatial Anchors
 
-- All created spatial anchors can be exported from the client device and stored in a binary file for future usage. In the example, clicking the `Export Anchors` button in control panel will download the file from the client and store it in `Packages/ISAR Examples/Anchor/data.isa`. This operation may take a long time, increasing with the number of anchors, therefore the function accepts a timeout argument. It is the responsibility of the developer to provide an appropriate timeout value for their scenario, see `\Packages\com.hololight.isar\Runtime\Examples\SpatialAnchor\ISARAnchorExampleUtils.cs` for more information about how to control the timeout logic.
+- All created spatial anchors can be exported from the client device and stored in a binary file for future usage. In the example, clicking the `Export Anchors` button in control panel will download the file from the client and store it in streaming assests directory. This operation may take a long time, increasing with the number of anchors, therefore the function accepts a timeout argument. It is the responsibility of the developer to provide an appropriate timeout value for their scenario, see `AnchorExampleUtils.cs` for more information about how to control the timeout logic.
 &nbsp;
   ![image](images/spatial-anchors-5.PNG)
   ![image](images/spatial-anchors-6.PNG)
@@ -52,13 +54,13 @@ A pre-built scene can be found at `Packages/ISAR Examples/Anchor/Anchoring Sampl
 &nbsp;
 &nbsp;
 
-- Exported spatial anchors data can be imported onto the client device to load previously established spatial anchors back into the user's surroundings. In the example, clicking the `Import Anchors` button will upload the anchors data file `Packages/ISAR Examples/Anchor/data.isa` to the client device. This operation may also take a long time, increasing with the number of anchors, therefore the function accepts a timeout argument. It is the responsibility of the developer to provide an appropriate timeout value for their scenario, see  `Packages/ISAR Examples/Anchor/ISARAnchorExampleUtils.cs` for more information about how to control the timeout logic.
+- Exported spatial anchors data can be imported onto the client device to load previously established spatial anchors back into the user's surroundings. In the example, clicking the `Import Anchors` button will upload the anchors data file, from streaming assets, to the client device. This operation may also take a long time, increasing with the number of anchors, therefore the function accepts a timeout argument. It is the responsibility of the developer to provide an appropriate timeout value for their scenario, see  `AnchorExampleUtils.cs` for more information about how to control the timeout logic.
 &nbsp;
   ![image](images/spatial-anchors-8.PNG)
 &nbsp;
 &nbsp;
 
-** Note: ** Exporting/Importing can sometimes fail due to network conditions. It is recommended to catch failed exports/imports and retry the action.
+> **_NOTE:_** Exporting/Importing can sometimes fail due to network conditions. It is recommended to catch failed exports/imports and retry the action.
 
 #### Persisting Anchors on HoloLens2 Spatial Anchor Store
 
@@ -86,16 +88,3 @@ A pre-built scene can be found at `Packages/ISAR Examples/Anchor/Anchoring Sampl
   &nbsp;
   - **`Clear Anchor Store`**: Clears all persisted anchor data from the client device.
     &nbsp;
-
-#### Example Scripts & Prefabs
-
-- Example scene, prefabs & associated scripts regarding spatial anchors can be found at `Packages/ISAR Examples/Anchor` as can be seen below:
-
-  &nbsp;
-    ![image](images/spatial-anchors-13.PNG)
-    ![image](images/spatial-anchors-7.PNG)
-  &nbsp;
-
-- As has been mentioned above, some of the functions require a timeout argument to indicate the length of time to wait until giving up on a function. For examples on how this timeout should be used, see `ISARAnchorExampleUtils.cs` & `ISARAnchorPersistenceUtils.cs`.
-
-- Additionally, the file name and the file path for export & import functions that explained above is defined in `ISARAnchorExampleUtils.cs` file which can be changed upon the needs of the test scenario

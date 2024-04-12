@@ -1,11 +1,11 @@
 # Occlusion Support
 
 ## Overview
-The ISAR SDK provides functionality to toggle occlusion feature and send camera information for iOS and iPadOS devices. Occlusion quality will increase depending on the sensor installed on your device and depth map resolution of your device.
+Hololight Stream provides functionality to toggle occlusion feature and send camera information for iOS and iPadOS devices. Occlusion quality will increase depending on the sensor installed on your device and depth map resolution of your device.
 
-**Note:** This feature is currently only available on Apple devices equipped with a LIDAR sensor. Using this with a non-LIDAR Apple device will have no effect.
+> **_NOTE:_** This feature is currently only available on Apple devices equipped with a LIDAR sensor. Using this with a non-LIDAR Apple device will have no effect.
 
-Depth/alpha information must be enabled to use this feature under Project Settings → XR Plug-in Management → ISAR. The main cameras alpha value must be set to 255 to achieve non transparent blending with the background.
+Depth information must be enabled to use this feature under Project Settings → XR Plug-in Management → Hololight Stream. The main cameras alpha value must be set to 255 to achieve non transparent blending with the background.
 
 For a simple use, a class called OcclusionExtension has been provided. This class manages the logic required to toggle and configure occlusion functionality on the client device.
 
@@ -34,7 +34,7 @@ public void SendToggleWrapper()
 
 The camera configuration can be sent (which includes near and far plane distance values of your camera) using the `SendCameraInfo()` function. This function requires a `Camera` object to read camera information.
 
-**Note:** `SendCameraInfo()` function must be called on Unity main thread, otherwise main camera will not be accessible.
+> **_NOTE:_** `SendCameraInfo()` function must be called on Unity main thread, otherwise main camera will not be accessible.
 
 ```cs
 public void SendCameraWrapper(Camera cam)
@@ -77,4 +77,4 @@ private void Update()
 
 ## Samples
 
-For further information on how to use this feature, see the `OcclusionController` sample within the `DataChannel` folder of the `com.hololight.isar.examples` package. This sample sends configuration and toggle messages. This script can be added to an empty object in the scene to trigger the functions to enable/disable the occlusion.
+For further information on how to use this feature, see the `OcclusionController` sample within the `DataChannel` folder of the `com.hololight.stream.examples` package. This sample sends configuration and toggle messages. This script can be added to an empty object in the scene to trigger the functions to enable/disable the occlusion.

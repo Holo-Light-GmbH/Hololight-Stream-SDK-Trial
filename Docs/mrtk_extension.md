@@ -23,28 +23,29 @@ Follow the steps listed in [Project Configuration](README.md#project-configurati
 
 #### One-Click Scene Config
 
-- Choose `ISAR -> Configure MRTK` to configure the scene for ISAR. This will add and configure the necessary objects to the scene.
+- Choose `Hololight -> Stream -> Configure MRTK` to configure the scene for Hololight Stream. This will add and configure the necessary objects to the scene.
 
 #### Manual Config
 
 To configure the scene manually (e.g. to integrate with existing MRTK configurations) follow the steps below.
 
 - Configured the scene to use **MRTK** by selecting `Mixed Reality Toolkit -> Add to Scene and Configure...` in the top menu bar of Unity.
-- Select **MixedRealityToolkit** from the scene and in the **Inspector** panel, change the configuration profile to **IsarXRSDKConfigurationProfile**
+- Select **MixedRealityToolkit** from the scene and in the **Inspector** panel, change the configuration profile to **HololightStreamConfigurationProfile**
 
 #### Checklist
 After configuring the scene, confirm:
-- [x] ... MixedRealityToolkit -> Input -> **Input Data Providers** contains **ISAR XRSDK Device Manager**
-- [x] ... MixedRealityToolkit -> Input -> **Input Data Providers** contains **ISAR XRSDK Touch Device Manager**
-- [x] ... MixedRealityToolkit -> Input -> **Input Data Providers** contains **ISAR Speech Input**
-- [x] ... MixedRealityToolkit -> Input -> **Input Data Providers** contains **ISAR Dictation Input**
 - [x] ... MixedRealityToolkit -> Camera -> **Camera Settings Providers** contains **XR SDK Camera Settings**
+- [x] ... MixedRealityToolkit -> Input -> **Input Data Providers** contains **Hand Joint Server**
+- [x] ... MixedRealityToolkit -> Input -> **Input Data Providers** contains **Hololight Stream Device Manager**
+- [x] ... MixedRealityToolkit -> Input -> **Input Data Providers** contains **Hololight Stream Touch Device Manager**
+- [x] ... MixedRealityToolkit -> Input -> **Input Data Providers** contains **Hololight Stream Dictation Input**
+- [x] ... MixedRealityToolkit -> Input -> **Input Data Providers** contains **Hololight Stream Speech Input**
 
 ### First Run
 
 Follow the steps listed in [First Run](README.md#first-run).
 
 ## Troubleshooting
-The below list contains specific issues that may occur when running with the ISAR MRTK Extension package installed. For all other troubleshooting issues, see [Troubleshooting](README.md#troubleshooting).
+The below list contains specific issues that may occur when running with the Hololight Stream MRTK Extension package installed. For all other troubleshooting issues, see [Troubleshooting](README.md#troubleshooting).
 
-- If several missing assembly reference errors appear, open `ISAR Core MRTK Extensions/Runtime/Hololight.Isar.Runtime.MRTK` with Unity and confirm **Override References** is checked. If not, check it.
+- If several missing assembly reference errors appear, open `Hololight Stream Extension for MRTK/Runtime/Hololight.Stream.Runtime.MRTK` with Unity and confirm **Override References** is checked. If not, check it.

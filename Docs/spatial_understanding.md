@@ -1,6 +1,6 @@
 # Spatial Awareness
 
-ISAR supports [Unity's Meshing Subsystem](https://docs.unity3d.com/es/2020.2/Manual/xrsdk-meshing.html) to retrieve mesh data from the HoloLens 2 client. This mesh data can be retrieved and displayed using [MRTK Spatial Awareness System](https://docs.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/features/spatial-awareness/spatial-awareness-getting-started?view=mrtkunity-2021-05) or [AR Foundations Mesh Manager](https://docs.unity3d.com/Packages/com.unity.xr.arfoundation@4.1/manual/mesh-manager.html).
+Hololight Stream supports [Unity's Meshing Subsystem](https://docs.unity3d.com/es/2020.2/Manual/xrsdk-meshing.html) to retrieve mesh data from the HoloLens 2 client. This mesh data can be retrieved and displayed using [MRTK Spatial Awareness System](https://docs.microsoft.com/en-us/windows/mixed-reality/mrtk-unity/features/spatial-awareness/spatial-awareness-getting-started?view=mrtkunity-2021-05) or [AR Foundations Mesh Manager](https://docs.unity3d.com/Packages/com.unity.xr.arfoundation@4.1/manual/mesh-manager.html).
 
 ## Getting Started
 
@@ -11,7 +11,7 @@ Before enabling Spatial Awareness, follow the getting started of [Getting Starte
 1. In the Unity Scene, select `Mixed Reality Toolkit`
 2. On the `Inspector`, check the `Spatial Awareness->Enable Spatial Awareness System` checkbox
 3. Set the `Spatial Awareness System Type` to `MixedRealitySpatialAwarenessSystem`
-4. Set the profile to `IsarXRSDKSpatialAwarenessSystemProfile`
+4. Set the profile to `HololightStreamSpatialAwarenessSystemProfile`
 
 ## Additional information
 

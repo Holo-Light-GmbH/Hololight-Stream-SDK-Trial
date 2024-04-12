@@ -1,12 +1,12 @@
 # Data Channels (Extensions)
 
-Data channels can be created by developers to extend the default ISAR functionality for sending and receiving custom data. These channels can be used as extensions to ISAR, providing additional user specific functionality.
+Data channels can be created by developers to extend the default Hololight Stream functionality by sending and receiving custom data. These channels can be used as extensions to Hololight Stream, providing additional user specific functionality.
 
 > :warning: Data channels require implementation on both client and server applications. Extensions written with data channels will only be possible if writing a custom client to send/receive the custom data.
 
 ## Registering a Data Channel
 
-Data channels can be registered by exposing a function with the `DataChannelRegistration` attribute. This function will be called by ISAR and it is expected that the implementor register themselves at this point. The below snippet provides and example of registering a data channel.
+Data channels can be registered by exposing a function with the `DataChannelRegistration` attribute. This function will be called by Hololight Stream and it is expected that the implementor register themselves at this point. The below snippet provides and example of registering a data channel.
 
 ```
 [DataChannelRegistration]
@@ -32,7 +32,7 @@ The name field is used for handling negotiation of channels with the client endp
 An abstract base class, `DataChannel`, has been provided to be used as a base for all data channel extensions. This must be inherited from when implementing an extension or the registration of the channel will be rejected.
 
 ```
-using namespace HoloLight.Isar
+using namespace Hololight.Stream
 public class SampleExtension : DataChannel
 {
     /// Implementing code here
@@ -48,7 +48,7 @@ The DataChannel has a number of functions provided for usage/implementation:
 
 ### DataChannelManager
 
-The `DataChannelManager` is a static class which is used by ISAR for instantiated and managing data channels. It is intended for implementors not to instantiate channels themselves, and instead call to the manager to grab the channel.
+The `DataChannelManager` is a static class which is used by Hololight Stream for instantiating and managing data channels. It is intended for implementors not to instantiate channels themselves, and instead call to the manager to grab the channel.
 
 The `DataChannelManager.GetDataChannel` static generic function is provided for implementors to grab the instantiated data channel extension for sending and receiving data.
 
@@ -84,7 +84,7 @@ public class Sample : MonoBehaviour
 
 ## Samples
 
-For further information on data channel extensions, see the `MessagingExtension` sample within the `DataChannel` folder of the `com.hololight.isar.examples` package. This sample sends and receives string messages to and from the client for logging.
+For further information on data channel extensions, see the `MessagingExtension` sample within the `DataChannel` folder of the `com.hololight.stream.examples` package. This sample sends and receives string messages to and from the client for logging.
 
-> :note: This sample is intended as an example of how to implement an extension. It is not functional and no client supports this extension.
+> **_NOTE:_** This sample is intended as an example of how to implement an extension. It is not functional and no client supports this extension.
 
