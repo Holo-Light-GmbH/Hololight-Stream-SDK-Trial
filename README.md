@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="images/Stream_Icon.png">
+    <img src="Docs/images/Stream_Icon.png">
 </p>
 
 Hololight Stream is a powerful remote rendering solution designed to stream high-quality XR experiences from local servers or cloud-based infrastructure. Stream entire AR or VR applications, visualize high-polygon content, and use its cross platform compatibility to support AR/VR glasses, smartphones, and tablets.
