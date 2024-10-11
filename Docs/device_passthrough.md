@@ -27,20 +27,20 @@ The below steps explain how to adapt the post-processing data for alpha renderin
 - In the copied shader, change the first line to `Shader Hidden/Universal Render Pipeline/UberPostWithAlpha"` and add below lines, outputing the alpha channel from the shader.
 
 <p align="center">
-    <img src="images/URPAlphaPassthrough1.PNG" width="700">
+    <img src="images/URPAlphaPassthrough1.png" width="700">
 </p>
 
 - Copy the `Post Process Data` file to the assets, found at `Packages/Universal RP/Runtime/Data`.
 - Select the copied `Post Process Data` file and set the inspector to `Debug`, see below.
 
 <p align="center">
-    <img src="images/URPAlphaPassthrough2.PNG" width="600">
+    <img src="images/URPAlphaPassthrough2.png" width="600">
 </p>
 
 - Expand the `Shaders` section and set the `Uber Post PS` to the copied `UberPost` shader.
 
 <p align="center">
-    <img src="images/URPAlphaPassthrough3.PNG" width="600">
+    <img src="images/URPAlphaPassthrough3.png" width="600">
 </p>
 
 - Set the `Post Process Data` section of the default Universal Renderer, in the active Render Pipeline Settings specified in the Project Settings Graphic's and Quality Settings, to the copied `Post Process Data` file.
@@ -54,13 +54,13 @@ The below steps explain how to adapt the post-processing data for alpha renderin
 - Set the `Assets\Settings\Universal Renderer` files `Post Processing Data` section to `URPPostProcessDataWithAlpha`.
 
 <p align="center">
-    <img src="images/URPAlphaPassthrough4.PNG" width="400">
+    <img src="images/URPAlphaPassthrough4.png" width="400">
 </p>
 
 - Disable the `HDR` checkbox within the `Quality` section of `Assets\Settings\UniversalRP-HighQuality`.
 
 <p align="center">
-    <img src="images/URPAlphaPassthrough5.PNG" width="300">
+    <img src="images/URPAlphaPassthrough5.png" width="300">
 </p>
 
 - Right click the Scene section and click `XR -> Convert Main Camera to XR Rig` to use the scene with an XR device.
@@ -70,7 +70,7 @@ The below steps explain how to adapt the post-processing data for alpha renderin
     - `Culling Mask` to `Default`
 
 <p align="center">
-    <img src="images/URPAlphaPassthrough6.PNG" width="300">
+    <img src="images/URPAlphaPassthrough6.png" width="300">
 </p>
 
 - Go to `XRRig -> Camera Offset -> Main Camera` and, in the `Background` section, set:

@@ -1,21 +1,22 @@
 # Spatial Anchors
 
-Hololight Stream supports use of spatial anchors in Unity for use with HoloLens 2 client and contains the implementation of Unity's AR Subsystems which provide the functionality requested by AR Foundation. [Hololight Stream AR Foundation](ar_foundation.md) includes associated spatial anchor subsystem for the required functionality.
-
-> :warning: This feature is only supported on the HoloLens 2 Client.
+Hololight Stream supports use of spatial anchors in Unity for use with HoloLens 2, Quest and iOS clients and contains the implementation of Unity's AR Subsystems which provide the functionality requested by AR Foundation. [Hololight Stream AR Foundation](ar_foundation.md) includes associated spatial anchor subsystem for the required functionality.
 
 ## Getting Started
 
 ### Scene Configuration
 
-- Go to package manager and select the `Hololight Stream Examples` package
-- Expand the `Samples` section and import the `Anchor` sample
+- Go to package manager and make sure you have Hololight Stream Extension for MRTK (2 or 3, depending on your project) package installed.
+- In the package manager, select the `Hololight Stream Examples` package.
+- Expand the `Samples` section and import the `Anchoring` sample (MRTK 2 or 3, depending on your project).
 - Follow the steps in [AR Foundation](ar_foundation.md#scene-configuration).
 - Expand the **AR Session Origin** object and add the **AR Anchor Manager** to it. For more information on using the AR Anchor Manager, see the description [here](https://docs.unity3d.com/Packages/com.unity.xr.arfoundation@4.1/manual/anchor-manager.html).
 - Set **Anchor Prefab** on **AR Anchor Manager**. As example, a  **Spatial Anchor Object** prefab has been provided.
 
 ### Testing Functionality
-A pre-built scene can be found in the Anchor sample to test the anchoring functionality, `Anchoring Sample Scene`. To integrate the example into an existing scene, add the **Anchor Example** prefab in the scene.
+A pre-built scene can be found in the Anchoring sample to test the anchoring functionality, `Anchoring Sample Scene`. To integrate the example into an existing scene, add the **Anchor Example** prefab in the scene.
+
+> Below steps are explained with screenshots from MRTK 2 sample, which can show visual differences to MRTK 3 sample. However, the functionalities are the same.
 
 #### Creation & Deletion of Spatial Anchors
 
@@ -46,11 +47,12 @@ A pre-built scene can be found in the Anchor sample to test the anchoring functi
 
 #### Export & Import of Spatial Anchors
 
-- All created spatial anchors can be exported from the client device and stored in a binary file for future usage. In the example, clicking the `Export Anchors` button in control panel will download the file from the client and store it in streaming assests directory. This operation may take a long time, increasing with the number of anchors, therefore the function accepts a timeout argument. It is the responsibility of the developer to provide an appropriate timeout value for their scenario, see `AnchorExampleUtils.cs` for more information about how to control the timeout logic.
+> :warning: Exporting & importing of spatial anchors is not supported on Quest clients.
+
+- All created spatial anchors can be exported from the client device and stored in a binary file for future usage. In the example, clicking the `Export Anchors` button in control panel will download the file from the client and store it in streaming assets directory. This operation may take a long time, increasing with the number of anchors, therefore the function accepts a timeout argument. It is the responsibility of the developer to provide an appropriate timeout value for their scenario, see `AnchorExampleUtils.cs` for more information about how to control the timeout logic.
 &nbsp;
   ![image](images/spatial-anchors-5.PNG)
   ![image](images/spatial-anchors-6.PNG)
-  ![image](images/spatial-anchors-7.PNG)
 &nbsp;
 &nbsp;
 
@@ -62,7 +64,7 @@ A pre-built scene can be found in the Anchor sample to test the anchoring functi
 
 > **_NOTE:_** Exporting/Importing can sometimes fail due to network conditions. It is recommended to catch failed exports/imports and retry the action.
 
-#### Persisting Anchors on HoloLens2 Spatial Anchor Store
+#### Persisting Anchors on Client Device Spatial Anchor Store
 
 - An alternative to exporting and importing anchor data is to persist the anchors directly on the client device. Persisted anchors are stored per application and exist on the device for duration of the application being installed. In order to begin, persisting anchors, a connection to the client's spatial anchor store must first be established. This can be done by clicking the `Create Store Connection` button from control panel, as illustrated below:
 
@@ -78,7 +80,7 @@ A pre-built scene can be found in the Anchor sample to test the anchoring functi
   ![image](images/spatial-anchors-11.PNG)
 &nbsp;
 
-- The control panel contains additional functionally for interacting with spatial anchors:
+- The control panel contains additional functionality for interacting with spatial anchors:
 
   - **`Enumerate Persisted Names`**: Queries the persisted anchor names from the spatial anchor store on device:
   &nbsp;
@@ -86,5 +88,5 @@ A pre-built scene can be found in the Anchor sample to test the anchoring functi
   &nbsp;
   - **`Create Anchors From Persisted Names`**: Load all the persisted anchors from anchor store of client device
   &nbsp;
-  - **`Clear Anchor Store`**: Clears all persisted anchor data from the client device.
+  - **`Clear Anchor Store`**: Clear all persisted anchor data from the client device.
     &nbsp;

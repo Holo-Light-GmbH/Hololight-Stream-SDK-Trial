@@ -15,5 +15,7 @@ EditorBuildSettings:
       type: 2}
     Unity.XR.HoloLight.ISAR: {fileID: 11400000, guid: 76565fbef6473fa4ba0b998420b1a3a0,
       type: 2}
+    com.unity.xr.arfoundation.simulation_settings: {fileID: 11400000, guid: b72603208d1efac418fd890f1c18c06a,
+      type: 2}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 923d6d2186ceb524185cbe52b1080b5e,
       type: 2}

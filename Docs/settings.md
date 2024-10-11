@@ -10,7 +10,7 @@ To configure the server side settings, click `Hololight -> Stream -> Configure S
 
 ### Signaling Port
 
-The signaling port allows the user to specific the port to be used for the signaling process. The number must be between 1024 and 65535 and if unset, is default to 9999. If desired, this value can be set to the same as that specified in [Port Range](#port-range), limiting the number of ports required to be exposes from the firewall.
+The signaling port allows the user to specify the port to be used for the signaling process. The number must be between 1024 and 65535 and if unset, is default to 9999. If desired, this value can be set to the same as that specified in [Port Range](#port-range), limiting the number of ports required to be exposes from the firewall.
 
 ### Encoder Bandwidth
 
@@ -23,7 +23,7 @@ When enabled, a number of statisics will be logged to a CSV file to aid networki
 It is recommended to only enable this setting when investigating potential issues as it may have a performance impact. To enable this setting in a build application, specify `stats-collector` in the `diagnostic-options` section of the config file, see [Configuration File](#configuration-file).
 
 | Statistic | Description |
-| :--- 	    | :--- |
+| :---      | :---        |
 | Timestamp | The timestamp since epoch the stats were gathered |
 | Frame Rate | The rate frames are being received at the encoder |
 | Encoder Target Bitrate | The bitrate which has been configured for the encoder. This usually corresponds to the bitrate set in [Encoder Bandwidth](#encoder-bandwidth) |
@@ -31,7 +31,7 @@ It is recommended to only enable this setting when investigating potential issue
 
 ### Port Range
 
-The port range allows the user to specific the ports which can be used for the running connection. The range must be between 1024 and 65535 and it is possible to set a single port by specifying the miniumum and maximum as the same value. By default, the port is set to 50100. If desired, this value can be set to the same as that specified in [Signaling Port](#signaling-port).
+The port range allows the user to specify the ports which can be used for the running connection. The range must be between 1024 and 65535 and it is possible to set a single port by specifying the minimum and maximum as the same value. By default, the port is set to 50100. If desired, this value can be set to the same as that specified in [Signaling Port](#signaling-port).
 
 ### Configuration File
 
@@ -41,7 +41,7 @@ After building the project, the settings above can be edited, with any text edit
 
 To configure the client side settings, see the settings tab of the client UI.
 
-> **_NOTE:_** Not all settings are available on every client. The below describes the combined settings from all clients.
+> **_NOTE:_** Not all settings are available on every client. The below described settings are the combined settings from all clients.
 
 ### Default Port
 
@@ -69,12 +69,21 @@ Specifies the codec which would be preferred to be used. The preference will onl
 
 Specifies the color space which is used for rendering. This should be the same as specified in Unity.
 
+> **_NOTE:_** For Unity servers using the Universal Render Pipeline (URP), client color space selection must be Gamma, regardless of the server color space setting.
+
 #### Latency Logging
 
-Enable logging of latency information to a CSV file stored on the client device to aid with networking investigations.
+Enable logging of latency information to a CSV file stored on the client device to aid with networking investigations. You can find the log files for the supported devices in following locations:
+
+- HoloLens 2, through the device portal interface of HoloLens 2:
+	```User Folders\LocalAppData\Holo-LightGmBH.ISARClient_2024.0.0.0_arm64__vd04nf0pw2njt\LocalState\```
+
+- Quest, after succesfully connecting Quest device to computer:
+	```(COMPUTER NAME)\Quest 3\Internal shared storage\Android\media\com.holo_light.isar_client.config\log\latency```
+
+- iOS, via Files application you can find it in following the path:
+	```Files/On My iPhone/Stream Client/Hololight Stream Log_(DATETIME).csv```
 
 #### Depth Buffer (Preview)
 
 Enables sending of the depth buffer from server to client to make use of depth reprojection. For more information, see [Depth Reprojection](object_stabilization.md#depth-based-reprojection-preview).
-
-

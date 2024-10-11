@@ -10,9 +10,9 @@
     }
   ],
   "dependencies": {
-    "com.hololight.stream": "file:../../Packages/com.hololight.stream-2023.1.0.tgz",
-    "com.hololight.stream.examples": "file:../../Packages/com.hololight.stream.examples-2023.1.0.tgz",
-    "com.hololight.stream.mrtk": "file:../../Packages/com.hololight.stream.mrtk-2023.1.0.tgz",
+    "com.hololight.stream": "file:../../Packages/com.hololight.stream-2024.0.0.tgz",
+    "com.hololight.stream.examples": "file:../../Packages/com.hololight.stream.examples-2024.0.0.tgz",
+    "com.hololight.stream.mrtk": "file:../../Packages/com.hololight.stream.mrtk-2024.0.0.tgz",
     "com.microsoft.mixedreality.toolkit.foundation": "2.5.4",
     "com.microsoft.mixedreality.toolkit.tools": "2.8.2",
     "com.unity.collab-proxy": "1.17.7",

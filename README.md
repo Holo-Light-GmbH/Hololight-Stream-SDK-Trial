@@ -8,7 +8,7 @@ Hololight Stream is a powerful remote rendering solution designed to stream high
 
 ### Prerequisites
 
-- Minimum Unity 2020.3.x
+- Unity LTS versions 2021.3.x and above
 
 ### First Installation
 
@@ -20,14 +20,17 @@ Hololight Stream is a powerful remote rendering solution designed to stream high
     - Open **Package Manager** in the Unity editor (`Window -> Package Manager`)
     - Click the **+** then **Add package from tarball...** and select the file `com.hololight.stream-<version>.tgz`, where version is the current version, from the `Packages` directory contained in this repository
 4. Add the desired toolset following the instructions below
-    - [MRTK](/Docs/mrtk_extension.md)
+    - [MRTK 2](/Docs/mrtk2_extension.md)
+    - [MRTK 3](/Docs/mrtk3_extension.md)
     - [XR Interaction Toolkit](/Docs/xr_interaction_toolkit.md)
 
 ### Project Configuration
 
 1. Navigate to `Edit -> Project Settings -> XR Plug-in Management`
     - Enable **Hololight Stream**
-2. Open `File -> Build Settings...`
+2. (Optional) Navigate to `Edit -> Project Settings -> XR Plug-in Management -> Hololight Stream`
+    - Provide a custom signaling implementation type if necessary. For details about signaling, see [Signaling](/Docs/signaling.md)
+3. Open `File -> Build Settings...`
     - Ensure the following configuration is selected:
         - Platform: **PC, Mac & Linux Standalone** + Architecture: **x86_64**
 
@@ -79,19 +82,26 @@ Hololight Stream supports a number of additional features. Below illustrates whe
 
 - [Object Stabilization](/Docs/object_stabilization.md)
 - [Unity Audio Stream](/Docs/unity_audio_stream.md)
-- [Client Camera Stream](/Docs/client_device_camera.md)
+- [Client Camera Stream](/Docs/camera_stream.md)
 - [Client Microphone Stream](/Docs/microphone.md)
 - [AR Foundation](/Docs/ar_foundation.md)
+- [Spatial Anchors](/Docs/spatial_anchors.md)
+- [Spatial Awareness](/Docs/spatial_understanding.md)
 - [QR Code Tracking](/Docs/qr_code.md)
 - [Speech Recognition](/Docs/speech_recognition.md)
 - [iOS Occlusion](/Docs/occlusion.md)
 - [Custom Extensions](/Docs/data_channels.md)
-- [Device Passthrough](/Docs/urp_hdrp_alpha_passthrough.md)
+- [Device Passthrough](/Docs/device_passthrough.md)
+- [Haptics](/Docs/haptics.md)
+- [Eye Tracking](/Docs/eye_tracking.md)
+
+## DirectX 12 Support
+- Please refer to [DirectX 12](/Docs/dx12.md) documentation page for information on usage, limitations and troubleshooting details.
 
 ## Troubleshooting
 
 - If the client fails to connect, check the IP address is entered correctly (e.g. 192.168.0.122).
-- Check if the Firewall is blocking the connection. The fireware must be disabled for the ports specified in [Signaling Port](#signaling-port) and [Port Range](#port-range).
+- Check if the Firewall is blocking the connection. The firewall must be disabled for the ports specified in [Signaling Port](/Docs/settings.md#signaling-port) and [Port Range](/Docs/settings.md#port-range).
 - If the Unity editor crashes when trying to run the app and Hololight Stream is not required but is still in the project, follow the steps in [Disabling Hololight Stream](#disabling-hololight-stream) to debug the issue.
 - If using a **HDRP** project and the `Main Camera` is not moving, remove the `SimpleCameraController` script attached to the `Main Camera`.
 - When opening the HelloStream project for the first time, a missing reference to **com.hololight.stream** may be flagged. If this occurs:
@@ -99,7 +109,7 @@ Hololight Stream supports a number of additional features. Below illustrates whe
   - Once the project has loaded, follow the steps in [First Installation](#first-installation) to add Hololight Stream to the example
 
 ## License
-By downloading/using/evaluating Hololight Stream, you agree to the [proprietary license terms and conditions](/Licenses/HololightStream.txt). Licensing information can be found in the "Licenses" directory of this repository.
+By downloading/using/evaluating Hololight Stream, you agree to the [proprietary license terms and conditions](/Licenses/STREAM.txt). Licensing information can be found in the "Licenses" directory of this repository.
 
 ## Usage Outside Unity
 The following documentation specifically references usage with the Unity Game Engine, however Hololight Stream can be used independently of Unity. For more support regarding usage outside of Unity, please [contact us](https://hololight.com/contact).

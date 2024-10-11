@@ -7,7 +7,7 @@ Developers may provide their own signaling implementation to be used by Hololigh
 
 ## Default Signaling Implementation
 
-If no signaling implementation is provided, Hololight Stream instantiates a default implementation. The default is a generic TCP socket that sends and receives signaling related messages over network. It uses the configured port as described in the [Signaling Port](README.md#signaling-port) section.
+If no signaling implementation is provided, Hololight Stream instantiates a default implementation. The default is a generic TCP socket that sends and receives signaling related messages over network. It uses the configured port as described in the [Signaling Port](../README.md#signaling-port) section.
 
 > :warning: Please note that default signaling implementation does not provide any encryption on the signaling messages that are sent and received.
 

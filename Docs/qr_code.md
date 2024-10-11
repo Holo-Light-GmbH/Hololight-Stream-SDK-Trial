@@ -1,7 +1,7 @@
 # QR Code Support
 
 ## Overview
-Hololight Stream provides functionality to scan QR Codes in the physical environment and receive the information within Unity to be processed.
+Hololight Stream provides functionality to scan QR Codes in the physical environment and receive the information within Unity to be processed. This feature is supported on HoloLens 2, iOS/iPadOS and Magic Leap 2 clients.
 
 This functionality has been implemented as a tracked AR Subsystem called `XRQrCodeTrackingSubsystem`. This follows similar implementations to other Unity subsystems, such as [image tracking](https://docs.unity3d.com/Packages/com.unity.xr.arsubsystems@4.1/manual/image-tracking.html) and [anchors](https://docs.unity3d.com/Packages/com.unity.xr.arsubsystems@4.1/manual/anchor-subsystem.html).
 

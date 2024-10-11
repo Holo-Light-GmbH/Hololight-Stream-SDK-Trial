@@ -5,17 +5,17 @@ Hololight Stream supports Unity's [XR Interaction Toolkit](https://docs.unity3d.
 ## Getting Started
 ### Prerequisites
 
-- [Prerequisites](README.md#prerequisites)
+- [Prerequisites](../README.md#prerequisites)
 - XR Interaction Toolkit (tested with 1.0.0-pre.5)
 
 ### First Installation
 
-1. Follow the steps listed in [First Installation](README.md#first-installation)
+1. Follow the steps listed in [First Installation](../README.md#first-installation)
 2. Import XR Interaction Toolkit into project via **Package Manager**
 
 ### Project Configuration
 
-Follow the steps listed in [Project Configuration](README.md#project-configuration).
+Follow the steps listed in [Project Configuration](../README.md#project-configuration).
 
 ### Scene Configuration
 
@@ -53,10 +53,10 @@ When configuring the scene, or setting up action bindings, all bindings must be 
 
 ### First Run
 
-Follow the steps listed in [First Run](README.md#first-run).
+Follow the steps listed in [First Run](../README.md#first-run).
 
 
 ## Troubleshooting
-The below list contains specific issues that may occur when running the Hololight Stream SDK with Unity's new XR Interaction Toolkit and Input System. For all other troubleshooting issues, see [Troubleshooting](README.md#troubleshooting).
+The below list contains specific issues that may occur when running the Hololight Stream SDK with Unity's new XR Interaction Toolkit and Input System. For all other troubleshooting issues, see [Troubleshooting](../README.md#troubleshooting).
 
 -  The **Game** view requires window focus when running in the editor. If focus is not given, input data will not be updated.

@@ -12,7 +12,7 @@ To ease integration, an example scene has been provided to illustrate how to use
 
 The following steps explain how to enable this example:
 
-1. Add the `ISAR Examples` package to the Unity Project.
+1. Add the `Hololight Stream Examples` package to the Unity Project.
 2. Import the `Audio Stream` sample into the project.
 3. Add an `Audio Listener` to the main camera. If one already exists, move to the next step.
 4. Add the `AudioStreamer.cs` component to the main camera.

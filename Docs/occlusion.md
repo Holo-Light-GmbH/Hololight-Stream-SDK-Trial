@@ -1,7 +1,7 @@
 # Occlusion Support
 
 ## Overview
-Hololight Stream provides functionality to toggle occlusion feature and send camera information for iOS and iPadOS devices. Occlusion quality will increase depending on the sensor installed on your device and depth map resolution of your device.
+Hololight Stream provides the functionality to toggle the occlusion feature and send camera information for iOS and iPadOS devices. Occlusion quality will increase depending on the sensor installed on your device and depth map resolution of your device.
 
 > **_NOTE:_** This feature is currently only available on Apple devices equipped with a LIDAR sensor. Using this with a non-LIDAR Apple device will have no effect.
 
@@ -77,4 +77,4 @@ private void Update()
 
 ## Samples
 
-For further information on how to use this feature, see the `OcclusionController` sample within the `DataChannel` folder of the `com.hololight.stream.examples` package. This sample sends configuration and toggle messages. This script can be added to an empty object in the scene to trigger the functions to enable/disable the occlusion.
+For further information on how to use this feature, see `OcclusionController` within the `Occlusion` sample from the `com.hololight.stream.examples` package. This sample sends configuration and toggle messages. This script can be added to an empty object in the scene to trigger the functions to enable/disable the occlusion.

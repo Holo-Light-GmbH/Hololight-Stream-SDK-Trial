@@ -1,40 +1,42 @@
 # AR Foundation
 
-Hololight Stream supports Unity's [AR Foundation](https://docs.unity3d.com/Packages/com.unity.xr.arfoundation@4.2/manual/index.html). The currently supported AR Foundation features with this package are listed in the table below.
+Hololight Stream supports Unity's [AR Foundation](https://docs.unity3d.com/Packages/com.unity.xr.arfoundation@5.0/manual/index.html). The currently supported AR Foundation features with this package are listed in the table below.
 
-Combined with the AR Foundation support, Hololight Stream also provides touch input for iOS Client with the new input system.
+Combined with the AR Foundation support, Hololight Stream also provides [touch input](#touch-input) for iOS Client with the new input system.
 
-| Feature 					| HoloLens 2 | iOS | Quest 2 / Pro / 3 | Magic Leap 2 |
-| :--- 						| :---: | :---: | :---: | :---: |
-| Device tracking 			| ✓ | ✓ | ✓ | ✓ |
-| QR Code Tracking          | ✓ |   |    | ✓ |
-| Plane tracking 			| ✓ | ✓ |   | |
-| Point clouds				|   |   |   | |
-| Anchors					| ✓ |   |   | |
-| Light estimation			|   |   |   | |
-| Enviroment Probes			|   |   |   | |
-| Face tracking				|   |   |   | |
-| 2D Image tracking			|   | ✓ |   | |
-| 3D Object tracking		|   |   |   | |
-| Meshing					| ✓ | ✓ |   | |
-| 2D & 3D body tracking		|   |   |   | |
-| Collaborative participants|   |   |   | |
-| Human segmentation		|   |   |   | |
-| Raycast					|   | ✓ |   | |
-| Pass-through video		|   |   |   | |
-| Session management		|   |   |   | |
-| Occlusion					|   |   |   | |
+| Feature                    | HoloLens 2 | iOS/iPadOS | Quest 2 / Pro / 3 | Magic Leap 2 | Lenovo VRX | Desktop |
+| :---                       | :---: | :---: | :---: | :---: | :---: | :---: |
+| Collaborative participants |       |       |       |       |       |       |
+| Camera                     |   ✓   |   ✓   |       |       |       |       |
+| Device tracking            |   ✓   |   ✓   |   ✓   |   ✓   |   ✓   |   ✓   |
+| Enviroment Probes          |       |       |       |       |       |       |
+| Face tracking              |       |       |       |       |       |       |
+| Human segmentation         |       |       |       |       |       |       |
+| Light estimation           |       |       |       |       |       |       |
+| Meshing                    |   ✓   |   ✓   |       |       |       |       |
+| Occlusion                  |       |   *   |       |       |       |       |
+| Plane tracking             |   ✓   |   ✓   |       |       |       |       |
+| Point clouds               |       |       |       |       |       |       |
+| QR Code Tracking           |   ✓   |       |       |   ✓   |       |       |
+| Raycast                    |       |   ✓   |       |       |       |       |
+| Session management         |       |       |       |       |       |       |
+| Spatial Anchors            |   ✓   |   ✓   |   ✓   |       |       |       |
+| 2D Image tracking          |       |   ✓   |       |       |       |       |
+| 2D & 3D body tracking      |       |       |       |       |       |       |
+| 3D Object tracking         |       |       |       |       |       |       |
+
+\* Supported outside of AR Foundation, see [Occlusion Support](./occlusion.md)
 
 ## Getting Started
 
 ### Prerequisites
 
 - [Prerequisites](../README.md#prerequisites)
-- AR Foundation 4.2.7
+- AR Foundation 5.0.5
 
 ### First Installation
 
-1. Follow the steps listed in [First Installation](README.md#first-installation)
+1. Follow the steps listed in [First Installation](../README.md#first-installation)
 
 ### Scene Configuration
 
@@ -45,75 +47,85 @@ Combined with the AR Foundation support, Hololight Stream also provides touch in
 
 ### First Run
 
-Follow the steps listed in [First Run](README.md#first-run).
+Follow the steps listed in [First Run](../README.md#first-run).
 
-## Touch Input
+## Features
 
-Touch data is passed to Unity via the new Input System. This data can be accessed through actions which are configured with Unity Input Actions. To find out more about the new Input system, see Unity's [Input System](https://docs.unity3d.com/Packages/com.unity.inputsystem@1.0/manual/QuickStartGuide.html) manual.
+### Camera
 
-### Supported Functionality
+AR Foundation enables users to use device camera through AR Camera Manager. For the usages of camera within AR Foundation, see [Unity Documentation](https://docs.unity3d.com/Packages/com.unity.xr.arfoundation@5.0/manual/features/Camera/camera.html). For additional usages of camera through Stream, see [Camera Stream](./camera_stream.md).
 
-Currently, Hololight Stream only supports single touch with the iOS client which will always be considered the primary touch.
+### Meshing
 
-## Plane Tracking
+The package provides the meshing subsystem to receive and render the real world mesh. This can either be used directly with the subsystem, through AR Foundation's [AR Mesh Manager](https://docs.unity3d.com/Packages/com.unity.xr.arfoundation@5.0/manual/features/meshing.html) or MRTK's [Spatial Awareness](./spatial_understanding.md).
 
-The package provides the plane tracking feature to detect and visualise planes within the environment. For instructions on how to use plane tracking, see Unity's [Plane Detection](https://docs.unity3d.com/Packages/com.unity.xr.arfoundation@4.2/manual/plane-manager.html) manual.
+| Functionality             | HoloLens 2 | iOS | Quest 2 / Pro / 3 | Magic Leap 2 |
+| :---                      | :---: | :---: | :---: | :---: |
+| World Meshes              |   ✓   |   ✓   |       |       |
 
-### Supported Functionality
+### Plane Tracking
+
+The package provides the plane tracking feature to detect and visualise planes within the environment. For instructions on how to use plane tracking, see Unity's [Plane Detection](https://docs.unity3d.com/Packages/com.unity.xr.arfoundation@5.0/manual/features/plane-detection.html) manual. To use it as a part of MRTK's Scene Understanding feature, see [Spatial Awareness](./spatial_understanding.md).
+
+#### Supported Functionality
 
 The plane tracking feature supports the following functionality:
 
-| Functionality					| HoloLens 2 | iOS | Quest 2 / Pro / 3 | Magic Leap 2 |
-| :--- 							| :---: | :---: | :---: | :---: |
-| Horizontal Plane Detection	| ✓ | ✓ |   |   |
-| Vertical Plane Detection		| ✓ | ✓ |   |   |
-| Arbitrary Plane Detection		| ✓ |   |   |   |
-| Boundary Vertices				| * | ✓ |   |   |
-| Classification				| ✓ | ✓ |   |   |
+| Functionality                 | HoloLens 2 | iOS | Quest 2 / Pro / 3 | Magic Leap 2 |
+| :---                          | :---: | :---: | :---: | :---: |
+| Arbitrary Plane Detection     |   ✓   |       |       |       |
+| Boundary Vertices             |   *   |   ✓   |       |       |
+| Classification                |   ✓   |   ✓   |       |       |
+| Horizontal Plane Detection    |   ✓   |   ✓   |       |       |
+| Vertical Plane Detection      |   ✓   |   ✓   |       |       |
 
-* The HoloLens 2 Client does not support Boundary Vertices therefore, the boundary vertices correspond to the 4 vertices at the plane extents.
+\* The HoloLens 2 Client does not support Boundary Vertices therefore, the boundary vertices correspond to the 4 vertices at the plane extents.
 
-## 2D Image Tracking
+### QR Code Tracking
 
-The package provides the 2D image tracking feature to detect and track images in the environment from a supplied library. For instructions on how to use 2D image tracking, see Unity's [Image Tracking](https://docs.unity3d.com/Packages/com.unity.xr.arfoundation@4.2/manual/tracked-image-manager.html) manual.
+Stream adds the QR Code Tracking to the features of AR Foundation. For more detailed information, see [QR Code Support](./qr_code.md).
 
-> :warning: When running in editor play mode, the `Keep Texture at Runtime` checkbox within for the images within the `Image Library` must be checked. If not, a warning within Unity will appear due to the texture not being available.
+### Raycasting
 
-### Supported Functionality
+The package provides the raycast feature which will carry out hit tests on real world object, such as detected planes. For instructions on how to carry out raycasts, see Unity's [Raycast](https://docs.unity3d.com/Packages/com.unity.xr.arfoundation@5.0/manual/features/raycasts.html) manual.
 
-The 2D image tracking feature supports the following functionality:
-
-| Functionality				| HoloLens 2 | iOS | Quest 2 / Pro / 3 | Magic Leap 2 |
-| :--- 						| :---: | :---: | :---: | :---: |
-| Moving Images				|   | ✓ |   |   |
-| Mutable Library			| 	|   |   |   |
-| Image Validation			|  	|   |   |   |
-
-## Raycasting
-
-The package provides the raycast feature which will carry out hit tests on real world object, such as detected planes. For instructions on how to carry out raycasts, see Unity's [Raycast](https://docs.unity3d.com/Packages/com.unity.xr.arfoundation@4.2/manual/raycast-manager.html) manual.
-
-### Supported Functionality
+#### Supported Functionality
 
 The raycast feature supports the following functionality. Currently, the raycast feature only supports raycasts against planes:
 
-| Functionality				| HoloLens 2 | iOS | Quest 2 / Pro / 3 | Magic Leap 2 |
-| :--- 						| :---: | :---: | :---: | :---: |
-| Viewpoint Raycasts		|   |   |   |   |
-| World Based Raycasts		|   | ✓ |   |   |
-| Tracked Raycasts			|  	|   |   |   |
+| Functionality             | HoloLens 2 | iOS | Quest 2 / Pro / 3 | Magic Leap 2 |
+| :---                      | :---: | :---: | :---: | :---: |
+| Tracked Raycasts          |       |       |       |       |
+| Viewpoint Raycasts        |       |       |       |       |
+| World Based Raycasts      |       |   ✓   |       |       |
 
-## Meshing
+### Spatial Anchors
 
-The package provides the meshing subsystem to receive and render the real world mesh. This can either be used directly with the subsystem, through AR Foundation's [AR Mesh Manager](https://docs.unity3d.com/Packages/com.unity.xr.arfoundation@4.2/manual/mesh-manager.html) or MRTK's [Spatial Awareness](./spatial_understanding.md).
+The package provides the anchoring subsystem to add, track and remove real world anchors. For instructions on how to use them with AR Foundation, see Unity's [Anchor Manager](https://docs.unity3d.com/Packages/com.unity.xr.arfoundation@5.0/manual/features/anchors.html) manual. Additionally, for more information about how to use the Anchor's extension methods, see [Spatial Anchors](./spatial_anchors.md).
 
-| Functionality				| HoloLens 2 | iOS | Quest 2 / Pro / 3 | Magic Leap 2 |
-| :--- 						| :---: | :---: | :---: | :---: |
-| World Meshes				| ✓ | ✓ |   |   |
+### Touch Input
 
-## Anchors
+Touch data is passed to Unity via the new Input System. This data can be accessed through actions which are configured with Unity Input Actions. To find out more about the new Input system, see Unity's [Input System](https://docs.unity3d.com/Packages/com.unity.inputsystem@1.0/manual/QuickStartGuide.html) manual.
 
-The package provides the anchoring subsystem to add, track and remove real world anchors. For instructions on how to use them with AR Foundation, see Unity's [Anchor Manager](https://docs.unity3d.com/Packages/com.unity.xr.arfoundation@4.2/manual/anchor-manager.html) manual. Additionally, for more information about how to use the Anchor's extension methods, see [Spatial Anchors](./spatial_anchors.md).
+#### Supported Functionality
+
+Currently, Hololight Stream only supports single touch with the iOS client which will always be considered the primary touch.
+
+### 2D Image Tracking
+
+The package provides the 2D image tracking feature to detect and track images in the environment from a supplied library. For instructions on how to use 2D image tracking, see Unity's [Image Tracking](https://docs.unity3d.com/Packages/com.unity.xr.arfoundation@5.0/manual/features/image-tracking.html) manual.
+
+> :warning: When running in editor play mode, the `Keep Texture at Runtime` checkbox within for the images within the `Image Library` must be checked. If not, a warning within Unity will appear due to the texture not being available.
+
+#### Supported Functionality
+
+The 2D image tracking feature supports the following functionality:
+
+| Functionality             | HoloLens 2 | iOS | Quest 2 / Pro / 3 | Magic Leap 2 |
+| :---                      | :---: | :---: | :---: | :---: |
+| Image Validation          |       |       |       |       |
+| Moving Images             |       |   ✓   |       |       |
+| Mutable Library           |       |       |       |       |
 
 ## Examples
 
